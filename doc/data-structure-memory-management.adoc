@@ -1,0 +1,22 @@
+All modify operations "consume" their argument, returning a structure appropriately modified.
+This enables transient structural updates. For a split in data structure history, use a special
+split command, which consumes and gives back two.
+
+Data layout, especially of tree nodes.
+
+
+Requirements:
+Don't mix reading and writing - On the shared heap, pointer to atomic reference count.
+Low thread contention from local calculations - pool counts per thread - implies local storage
+ - Layer of indirection, would be inconsistent with local heap layout (would need polymorphism)
+ - Paired pointers, one to data, one to local count. Memory overhead for pointers.
+   Local heap objects need to be able to free other local objects. Need either a pointer to count,
+   or embed count in target object, or mapping from objects to counts.
+   Function of pointer to an integer somewhere.
+    Integer can be - in object
+                   - referenced by object
+		   - referenced by pointer origin
+		   - mapped to by data structure
+    Objectives: smooth transition to shared status - how to coordinate this with any existent local pointers
+    fast cloning and destroying of local references
+    Slim references within heap

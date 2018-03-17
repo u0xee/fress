@@ -1,3 +1,7 @@
+//! Use fressian data in Rust
+
+mod memory;
+
 #[cfg(target_arch = "x86_64")]
 #[derive(Debug)]
 struct Value {
@@ -45,6 +49,11 @@ impl Value {
         self.handle & 0x07 == 0x03
     }
 
+    fn is_string(&self) -> bool {
+        // TODO separate char immediate and string
+        self.handle & 0x07 == 0x03
+    }
+
     fn is_immediate_number(&self) -> bool {
         self.handle & 0x03 == 0x01
     }
@@ -63,45 +72,108 @@ impl Value {
     }
 }
 
+/**
+Trie representation. Similarities - associative, local memory interest table,
+vector nodes.
 
-// https://github.com/rust-lang/rust/issues/27700#issuecomment-169014713
-fn allocate(word_count: usize) -> *mut u64 {
-    let mut v = Vec::with_capacity(word_count);
-    let ptr = v.as_mut_ptr();
-    std::mem::forget(v);
-    ptr
+Capacity Dispatch Count Meta Hash Pop Tail
+Capacity Tail
+
+Capacity Dispatch Count Meta Hash Root Tail
+Capacity Tail
+
+Layout of fields by constant indices. Getters, query helpers, inserts removes.
+
+Methods on Value are the main library API:
+- Static code dispatching based on union base, possibly to assembled trait object
+- ValueView into another Value (during its scope)
+- AssociativeValue, etc trait object specializations
+- Special high level operations like split
+
+Types:
+- Atomics
+ - boolean
+ - nil
+ - char
+ - string
+ - symbol
+ - keyword
+ - regex
+ - integral
+ - float
+ - ratio
+- Collections
+ - List
+ - Vector
+ - Map
+ - Set
+ - SortedMap
+ - SortedSet
+- Other
+ - Seq
+ - Atom
+*/
+
+/// A trait to dynamically dispatch methods on heap values
+trait Dispatch {
+
 }
 
-fn deallocate(ptr: *mut u64, count: usize) {
-    unsafe {
-        std::mem::drop(Vec::from_raw_parts(ptr, 0, count));
-    }
+// TODO sort out place of sequence (Seq).
+// Is it a collection? Should it have meta?
+// Should it support conj directly, or use a helper like cons?
+trait Seq : Coll {
+    fn first(&self);
+    fn rest(&self);
+    fn next(&self);
+}
+trait IntoSeq {
+    fn seq(&self) -> &'static Seq;
+}
+trait Coll : IntoSeq {
+    fn conj(&self);
+    fn meta(&self);
+    fn with_meta(&self);
+}
+trait Counted : Coll {
+    fn count();
+}
+trait Associative : Counted {
+    fn get();
+    fn contains();
+    fn assoc();
+    fn dissoc();
+}
+trait Sequential {
+    fn nth();
+}
+trait Sorted : Associative {
+    fn subseq(); // ascending/descending
+}
+trait Reversible {
+    fn rseq();
+}
+trait Stack : Counted {
+    fn peek();
+    fn pop();
+}
+trait Named {
+    // Keyword and Symbol only
+    fn name();
+    fn namespace();
+}
+trait Deref {
+    fn deref();
+    fn deref_timeout();
+}
+trait Atom : Deref {
+    fn swap();
 }
 
-
-struct MapHeader {
-    count: usize,
-    hasheq: u32,
-    meta: Value,
-    pop: u32,
-    inode_pop: u32,
-}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn allocate_deallocate() {
-        let x = allocate(34);
-        deallocate(x, 34);
-        assert_eq!(2 + 2, 4);
-    }
-
-    #[test]
-    fn print_values() {
-        assert_eq!("(Value { handle: 7 }, Value { handle: 7 })",
-                   format!("{:?}", (Value {handle: 7}.split())));
-    }
 
     #[test]
     fn is_immediate() {

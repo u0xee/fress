@@ -112,56 +112,71 @@ Types:
 - Other
  - Seq
  - Atom
+
+Common Rust traits:
+Clone
+PartialEq
+PartialOrd
+Hash
+Default
+Numeric traits galore
+Index
+Fn
+Display
+Drop
+IntoIterator
+From/Into
+Send/Sync
 */
 
 /// A trait to dynamically dispatch methods on heap values
 trait Dispatch {
-
+    fn hash();
+    fn eq(); // lt, gt
+    fn fmt(); // to_string()
+    fn cast_to_type();
+    fn cast_to_trait_object();
 }
 
-// TODO sort out place of sequence (Seq).
-// Is it a collection? Should it have meta?
-// Should it support conj directly, or use a helper like cons?
-trait Seq : Coll {
-    fn first(&self);
-    fn rest(&self);
-    fn next(&self);
+trait Aggregate {
+    fn conj(&self, v: Value);
 }
-trait IntoSeq {
+trait Seqable {
     fn seq(&self) -> &'static Seq;
 }
-trait Coll : IntoSeq {
-    fn conj(&self);
+trait Seq : Aggregate + Seqable {
+    fn first(&self);
+    fn rest(&self);
+}
+trait Coll : Seq {
+    fn count();
     fn meta(&self);
     fn with_meta(&self);
 }
-trait Counted : Coll {
-    fn count();
-}
-trait Associative : Counted {
+trait Associative : Coll {
     fn get();
     fn contains();
     fn assoc();
     fn dissoc();
 }
-trait Sequential {
+trait Sequential : Coll {
     fn nth();
-}
-trait Sorted : Associative {
-    fn subseq(); // ascending/descending
+    fn peek();
+    fn pop();
 }
 trait Reversible {
     fn rseq();
 }
-trait Stack : Counted {
-    fn peek();
-    fn pop();
+trait Sorted : Associative + Reversible {
+    fn subseq();
+    fn rsubseq();
 }
 trait Named {
     // Keyword and Symbol only
     fn name();
     fn namespace();
 }
+// Numeric traits?
 trait Deref {
     fn deref();
     fn deref_timeout();

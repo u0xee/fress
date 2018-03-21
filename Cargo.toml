@@ -2,6 +2,6 @@
 name = "fress-rust"
 version = "0.1.0"
 authors = ["Cole Frederick <csp.frederick@gmail.com>"]
-description = "Use fressian data in Rust"
+description = "A cohesive fressian library for rust"
 
 [dependencies]

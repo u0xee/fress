@@ -1,6 +1,9 @@
-//! Use fressian data in Rust
+//! A cohesive fressian library for rust
+use std::fmt;
 
 mod memory;
+mod map;
+mod core;
 
 #[cfg(target_arch = "x86_64")]
 #[derive(Debug)]
@@ -72,22 +75,46 @@ impl Value {
     }
 }
 
+impl Value {
+    fn type_name(&self) -> &'static str {
+        &"Value"
+    }
+    fn map_value(&self) {
+        panic!("{} is NOT a MapValue", self.type_name())
+    }
+    fn set_value(&self) {
+        panic!("{} is NOT a SetValue", self.type_name())
+    }
+    fn vector_value(&self) {
+        panic!("{} is NOT a VectorValue", self.type_name())
+    }
+    fn list_value(&self) {
+        panic!("{} is NOT a ListValue", self.type_name())
+    }
+    fn string_value(&self) {
+        panic!("{} is NOT a StringValue", self.type_name())
+    }
+    fn symbol(&self) {
+        panic!("{} is NOT a Symbol", self.type_name())
+    }
+    fn keyword(&self) {
+        panic!("{} is NOT a Keyword", self.type_name())
+    }
+    fn integral(&self) {
+        panic!("{} is NOT an Integral", self.type_name())
+    }
+    fn rational(&self) {
+        panic!("{} is NOT a Rational", self.type_name())
+    }
+    fn float_point(&self) {
+        panic!("{} is NOT a FloatPoint", self.type_name())
+    }
+}
+
 /**
-Trie representation. Similarities - associative, local memory interest table,
-vector nodes.
-
-Capacity Dispatch Count Meta Hash Pop Tail
-Capacity Tail
-
-Capacity Dispatch Count Meta Hash Root Tail
-Capacity Tail
-
-Layout of fields by constant indices. Getters, query helpers, inserts removes.
-
 Methods on Value are the main library API:
 - Static code dispatching based on union base, possibly to assembled trait object
-- ValueView into another Value (during its scope)
-- AssociativeValue, etc trait object specializations
+- &Value into another Value (during its scope)
 - Special high level operations like split
 
 Types:
@@ -98,10 +125,9 @@ Types:
  - string
  - symbol
  - keyword
- - regex
  - integral
- - float
- - ratio
+ - rational
+ - float point
 - Collections
  - List
  - Vector
@@ -109,9 +135,6 @@ Types:
  - Set
  - SortedMap
  - SortedSet
-- Other
- - Seq
- - Atom
 
 Common Rust traits:
 Clone
@@ -130,59 +153,98 @@ Send/Sync
 */
 
 /// A trait to dynamically dispatch methods on heap values
-trait Dispatch {
-    fn hash();
-    fn eq(); // lt, gt
-    fn fmt(); // to_string()
-    fn cast_to_type();
-    fn cast_to_trait_object();
+trait Dispatch : fmt::Display {
+    fn type_name(&self) -> &'static str;
+    fn type_sentinel(&self) -> *const u8;
+    fn hash(&self) -> u32;
+    fn eq(&self, other: &Dispatch) -> bool;
+
+    fn conj(&mut self, x: Value) -> Value {
+        panic!("Can't conj onto a {}", self.type_name())
+    }
+    fn empty(&mut self) -> Value {
+        panic!("Can't call empty on a {}", self.type_name())
+    }
+    fn first(&self) {
+        panic!("Can't call first on a {}", self.type_name())
+    }
+    fn rest(&self) {
+        panic!("Can't call rest on a {}", self.type_name())
+    }
+    fn count(&self) {
+        panic!("Can't count a {}", self.type_name())
+    }
+    fn get(&self) {
+        panic!("Can't call get on a {}", self.type_name())
+    }
+    fn nth(&self) {
+        panic!("Can't call nth on a {}", self.type_name())
+    }
+
+    fn seq_value(&self) -> &Seq {
+        panic!("{} is NOT a SeqValue", self.type_name())
+    }
+    fn coll_value(&self) -> &Coll {
+        panic!("{} is NOT a CollValue", self.type_name())
+    }
+    fn associative_value(&self) -> &Associative {
+        panic!("{} is NOT an AssociativeValue", self.type_name())
+    }
+    fn sequential_value(&self) -> &Sequential {
+        panic!("{} is NOT a SequentialValue", self.type_name())
+    }
+    fn sorted_value(&self) -> &Sorted {
+        panic!("{} is NOT a SortedValue", self.type_name())
+    }
+    fn numeric_value(&self) -> bool {
+        panic!("{} is NOT a NumericValue", self.type_name())
+    }
 }
 
 trait Aggregate {
-    fn conj(&self, v: Value);
+    fn conj(&mut self, v: Value) -> Value;
 }
 trait Seqable {
-    fn seq(&self) -> &'static Seq;
+    fn seq(&self) -> Value;
 }
 trait Seq : Aggregate + Seqable {
-    fn first(&self);
-    fn rest(&self);
+    fn first(&self) -> Value;
+    fn rest(&self) -> Value;
 }
 trait Coll : Seq {
-    fn count();
-    fn meta(&self);
-    fn with_meta(&self);
+    fn count(&self) -> u32;
+    fn empty(&self) -> Value;
+    fn meta(&self) -> Value;
+    fn with_meta(&self) -> Value;
 }
 trait Associative : Coll {
-    fn get();
-    fn contains();
-    fn assoc();
-    fn dissoc();
+    fn get(&self, k: Value) -> Value;
+    fn contains(&self, k: Value) -> bool;
+    fn assoc(&self, k: Value, v: Value) -> Value;
+    fn dissoc(&self, k: Value) -> Value;
 }
 trait Sequential : Coll {
-    fn nth();
-    fn peek();
-    fn pop();
+    fn nth(&self, idx: i64) -> Value;
+    fn peek(&self) -> Value;
+    fn pop(&self) -> Value;
 }
 trait Reversible {
-    fn rseq();
+    fn rseq(&self) -> Value;
 }
 trait Sorted : Associative + Reversible {
-    fn subseq();
-    fn rsubseq();
+    fn subseq(&self, start: Value, end: Value) -> Value;
+    fn rsubseq(&self, start: Value, end: Value) -> Value;
 }
 trait Named {
-    // Keyword and Symbol only
-    fn name();
-    fn namespace();
+    fn name(&self) -> &str;
+    fn namespace(&self) -> &str;
 }
-// Numeric traits?
 trait Deref {
-    fn deref();
-    fn deref_timeout();
+    fn deref(&self) -> Value;
+    fn deref_timeout(&self, time: u64) -> Value;
 }
 trait Atom : Deref {
-    fn swap();
+    fn swap(&self, f: &Fn(Value) -> Value);
 }
 
 

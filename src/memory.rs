@@ -16,15 +16,12 @@ K - Pointer to memory
 V - Shared? and Local Count
 */
 
-
-pub const CAPACITY_FIELD: u32 = 0;
-
-pub fn space_for(capacity: u64) -> *mut u64 {
-    let mut v: Vec<u64> = Vec::with_capacity(capacity as usize);
-    let size_in_bytes: u64 = capacity << 3; // times 8
+pub fn space_for(capacity: usize) -> *mut u64 {
+    let mut v: Vec<u64> = Vec::with_capacity(capacity);
+    let size_in_bytes: u64 = (capacity as u64) << 3; // times 8
     let ptr = v.as_mut_ptr();
     unsafe {
-        *ptr.offset(CAPACITY_FIELD as isize) = size_in_bytes;
+        *ptr = size_in_bytes;
     }
     mem::forget(v);
     ptr
@@ -32,11 +29,13 @@ pub fn space_for(capacity: u64) -> *mut u64 {
 
 pub fn capacity_of(ptr: *const u64) -> u64 {
     unsafe {
-        let size_in_bytes = *ptr.offset(CAPACITY_FIELD as isize);
+        // TODO long loads atomic on x86, I think. Verify
+        let size_in_bytes = *ptr;
         if size_in_bytes & 0x01 == 0x00 {
             size_in_bytes >> 3 // divide by 8
         } else {
-            let atomic_count_ptr: *const usize = (size_in_bytes - 1) as *const usize;
+            // Clear the bottom bit of the marked pointer
+            let atomic_count_ptr: *const usize = (size_in_bytes & !1u64) as *const usize;
             let size_in_bytes = *(atomic_count_ptr.offset(1));
             size_in_bytes as u64 >> 3
         }
@@ -55,9 +54,9 @@ pub fn is_shared(p: *const u64) -> bool {
     unimplemented!()
 }
 
-fn free_memory(ptr: *mut u64, capacity: u64) {
+fn free_memory(ptr: *mut u64, capacity: usize) {
     unsafe {
-        let v: Vec<u64> = Vec::from_raw_parts(ptr, 0, capacity as usize);
+        let v: Vec<u64> = Vec::from_raw_parts(ptr, 0, capacity);
         mem::drop(v);
     }
 }

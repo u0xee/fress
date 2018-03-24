@@ -1,0 +1,8 @@
+= Heap Polymorphism Design
+
+== Base dispatch trait
+* Common to all polymorphic objects on the heap
+* Heap objects begin with one word, which gives access to the capacity
+of the allocated chunk.
+* Polymorphic heap objects have a vtable pointer as their second word.
+

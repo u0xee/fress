@@ -3,11 +3,13 @@ use std::fmt;
 
 mod memory;
 mod map;
+mod vec;
 mod core;
+mod bit;
 
 #[cfg(target_arch = "x86_64")]
 #[derive(Debug)]
-struct Value {
+pub struct Value {
     handle: usize,
 }
 
@@ -76,8 +78,21 @@ impl Value {
 }
 
 impl Value {
-    fn type_name(&self) -> &'static str {
-        &"Value"
+    pub fn type_name(&self) -> String {
+        if self.is_immediate() {
+            "Immediate Value".to_string()
+        } else {
+            unsafe {
+                let table_ptr = (self.handle as *const u64).offset(1);
+                let t_object: [u64; 2] = [table_ptr as u64, *table_ptr];
+                use std::mem::transmute;
+                let dispatch = transmute::<[u64;2], &Dispatch>(t_object);
+                let s = dispatch.type_name();
+                use std::mem::forget;
+                forget(dispatch);
+                s
+            }
+        }
     }
     fn map_value(&self) {
         panic!("{} is NOT a MapValue", self.type_name())
@@ -154,7 +169,7 @@ Send/Sync
 
 /// A trait to dynamically dispatch methods on heap values
 trait Dispatch : fmt::Display {
-    fn type_name(&self) -> &'static str;
+    fn type_name(&self) -> String;
     fn type_sentinel(&self) -> *const u8;
     fn hash(&self) -> u32;
     fn eq(&self, other: &Dispatch) -> bool;
@@ -200,6 +215,30 @@ trait Dispatch : fmt::Display {
         panic!("{} is NOT a NumericValue", self.type_name())
     }
 }
+
+// Data and vtable for trait
+struct SeqValue {}
+struct CollValue {}
+struct AssociativeValue {}
+struct SequentialValue {}
+struct SortedValue {}
+struct NumericValue {}
+
+// Constructed via typecheck on Value
+// Static dispatch to methods
+struct MapValue {}
+struct SortedMapValue {}
+struct SetValue {}
+struct SortedSetValue {}
+struct VectorValue {}
+struct ListValue {}
+struct StringValue {}
+struct Symbol {}
+struct Keyword {}
+struct Integral {}
+struct Rational {}
+struct FloatPoint {}
+
 
 trait Aggregate {
     fn conj(&mut self, v: Value) -> Value;

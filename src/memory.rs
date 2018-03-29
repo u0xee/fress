@@ -16,7 +16,9 @@ K - Pointer to memory
 V - Shared? and Local Count
 */
 
-pub fn space_for(capacity: usize) -> *mut u64 {
+pub const CACHE_LINE: usize = 8;
+
+pub fn space(capacity: usize) -> *mut u64 {
     let mut v: Vec<u64> = Vec::with_capacity(capacity);
     let size_in_bytes: u64 = (capacity as u64) << 3; // times 8
     let ptr = v.as_mut_ptr();
@@ -25,6 +27,10 @@ pub fn space_for(capacity: usize) -> *mut u64 {
     }
     mem::forget(v);
     ptr
+}
+
+pub fn space_for(capacity: usize) -> *mut u64 {
+    space(capacity + 1)
 }
 
 pub fn capacity_of(ptr: *const u64) -> u64 {
@@ -50,8 +56,8 @@ pub fn deregister_interest(ptr: *const u64) {
     unimplemented!()
 }
 
-pub fn is_shared(p: *const u64) -> bool {
-    unimplemented!()
+pub fn is_shared(ptr: *const u64) -> bool {
+    false
 }
 
 fn free_memory(ptr: *mut u64, capacity: usize) {

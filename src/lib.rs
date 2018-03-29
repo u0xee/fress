@@ -89,7 +89,7 @@ impl Value {
                 let dispatch = transmute::<[u64;2], &Dispatch>(t_object);
                 let s = dispatch.type_name();
                 use std::mem::forget;
-                forget(dispatch);
+                //forget(dispatch);
                 s
             }
         }

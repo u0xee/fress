@@ -4,6 +4,7 @@ use bit::{bottom_32, top_32, top_16, MASK_32, MASK_16, top_byte, with_top_byte, 
 use Dispatch;
 use Value;
 
+
 pub const FIELD_COUNT: isize = 1;
 pub const FIELD_META: isize = 2;
 pub const FIELD_HASH: isize = 3;
@@ -287,6 +288,107 @@ impl Vector {
             fields.set_hash(0);
 
         }
+    }
+}
+
+mod path_copy {
+    use memory;
+
+    pub struct Tree {
+        base: *const u64,
+        header_word_count: u16,
+        pointer_count: u16,
+        index: u16,
+        shared: bool,
+    }
+
+    fn not_shared_count(path: &[Tree]) -> u8 {
+        for (index, tree) in path.iter().enumerate() {
+            if memory::is_shared(tree.base) {
+                return index as u8
+            }
+        }
+        path.len()
+    }
+
+    fn is_three_quarters(filled: u16, cap: u16) -> bool {
+        let line = (3 * cap) / 4;
+        filled >= line
+    }
+
+    pub fn set(path: &mut[Tree], v: u64, shared_root: bool) -> *mut u64 {
+        let (exclusive, shared) =
+            path.split_at_mut(if shared_root { 0 } else { not_shared_count(path) });
+        for tree in exclusive {
+            tree.shared = false;
+        }
+        for tree in shared {
+            tree.shared = true;
+        }
+        let (leaf, but_leaf) = path.split_last().unwrap();
+        let set_leaf = settable_leaf(leaf);
+
+        unsafe { *set_leaf.offset(leaf.index as isize) = v; }
+
+        let root: *mut u64 = but_leaf.iter().rev().fold(set_leaf, thread_through_trees);
+        root
+    }
+
+    fn settable_leaf(leaf: &Tree) -> *mut u64 {
+        let filled_count = leaf.header_word_count + leaf.pointer_count;
+        let is_append = leaf.index == filled_count;
+        assert!(leaf.index <= filled_count);
+
+        let leaf_cap = memory::capacity_of(leaf.base);
+        if leaf.shared {
+            let double_now = leaf_cap < super::TAIL_CAP &&
+                is_three_quarters(filled_count, leaf_cap);
+            let copy_capacity = leaf_cap << if double_now { 1 } else { 0 };
+            let leaf_copy = memory::copy_of(leaf.base, filled_count, copy_capacity);
+            for i in leaf.header_word_count..filled_count {
+                if i != leaf.index {
+                    unsafe {
+                        memory::register_interest(leaf.base.offset(i));
+                    }
+                }
+            }
+            leaf_copy
+        } else { // not shared
+            if is_append && !(leaf.index < leaf_cap) {
+                memory::copy_of(leaf.base, filled_count - 1, leaf_cap << 1)
+            } else {
+                leaf.base
+            }
+        }
+    }
+
+    fn thread_through_trees(prev_tree: *mut u64, tree: &Tree) -> *mut u64 {
+        if tree.shared {
+            let tree_filled = tree.header_word_count + tree.pointer_count;
+            let tree_copy = memory::copy_of(tree.base, tree_filled - 1,
+                                            memory::capacity_of(tree.base) << 1);
+            for i in tree.header_word_count..tree_filled {
+                if i != tree.index {
+                    unsafe {
+                        memory::register_interest(tree.base.offset(i));
+                    }
+                }
+            }
+            unsafe {
+                *tree_copy.offset(tree.index) = prev_tree;
+            }
+            tree_copy
+        } else {
+            unsafe {
+                memory::deregister_interest(tree.base.offset(tree.index));
+                *tree.base.offset(tree.index) = prev_tree;
+            }
+            tree.base as *mut u64
+        }
+    }
+
+    pub fn unset(path: &mut[Tree], shared_root: bool) -> *mut u64 {
+        unimplemented!()
     }
 }
 

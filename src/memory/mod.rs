@@ -1,5 +1,10 @@
 use std::mem;
 
+mod unit;
+mod anchor;
+mod segment;
+
+
 /*
 Memory System API
 - Request memory
@@ -66,3 +71,20 @@ fn free_memory(ptr: *mut u64, capacity: usize) {
         mem::drop(v);
     }
 }
+
+pub fn copy(from: *const u64, to: *mut u64, word_count: usize) {
+    use std::slice::{from_raw_parts, from_raw_parts_mut};
+    unsafe {
+        from_raw_parts_mut(to, word_count).copy_from_slice(from_raw_parts(from, word_count))
+    }
+}
+
+pub fn copy_of(source: *const u64, copy_word_count: usize, capacity: usize) -> *mut u64 {
+    let c = space(capacity);
+    unsafe {
+        copy(source.offset(1), c.offset(1), copy_word_count);
+    }
+    c
+}
+
+

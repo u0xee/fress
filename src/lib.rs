@@ -3,8 +3,7 @@ use std::fmt;
 
 mod memory;
 mod map;
-mod vec;
-mod core;
+mod vector;
 mod bit;
 
 #[cfg(target_arch = "x86_64")]

@@ -15,11 +15,11 @@ pub fn top_16(x: u64) -> u64 {
 }
 
 pub fn top_byte(x: u64) -> u8 {
-    x >> 56 // () as u8
+    (x >> 56) as u8
 }
 
 pub fn second_top_byte(x: u64) -> u8 {
-    x << 8 >> 48
+    (x << 8 >> 48) as u8
 }
 
 pub fn with_top_byte(x: u64, b: u8) -> u64 {
@@ -35,7 +35,8 @@ pub fn clear_top(x: u64, bit_count: u8) -> u64 {
 }
 
 pub fn clear_bottom(x: u64, bit_count: u8) -> u64 {
-    x >> bit_count << bit_count
+    let bit_shift = bit_count % 64;
+    x >> bit_shift << bit_shift
 }
 
 pub fn splice(top: u64, bottom: u64, top_bit_count: u8) -> u64 {

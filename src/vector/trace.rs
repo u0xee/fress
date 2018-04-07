@@ -12,6 +12,7 @@ pub mod spec {
 }
 
 pub mod stack {
+    use std::ops::Range;
     pub enum Element {
         Top,
         Next,
@@ -28,14 +29,15 @@ pub mod stack {
 }
 
 pub mod compile {
-    use super::{spec, stack::Instruction};
+    use super::spec;
+    use super::stack::Instruction;
 
     struct InstructionLog<'a> {
         storage: &'a mut [Instruction],
-        fill_count: u32,
+        fill_count: usize,
     }
 
-    impl InstructionLog {
+    impl<'a> InstructionLog<'a> {
         fn add(&mut self, x: Instruction) {
             self.storage[self.fill_count] = x;
             self.fill_count += 1;
@@ -44,7 +46,7 @@ pub mod compile {
 
     /// Plan an addition to the first branch, and steps to thread it through the
     /// remaining branches. Places the instructions in the buffer provided.
-    pub fn addition(branches: &[spec::Branch], instructions: &mut[Instruction]) -> &[Instruction] {
+    pub fn addition<'a>(branches: &[spec::Branch], instructions: &'a mut[Instruction]) -> &'a [Instruction] {
         let log = InstructionLog { fill_count: 0, storage: instructions };
         unimplemented!()
     }

@@ -1,7 +1,7 @@
 //! Define named unions of methods.
 //!
 
-use value::Value;
+use Value;
 
 pub trait Aggregate {
     fn conj(&mut self, v: Value) -> Value;

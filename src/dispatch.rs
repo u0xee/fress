@@ -49,7 +49,7 @@ pub trait AggregateAbstractions : Identification {
     }
 }
 
-use value::Value;
+use Value;
 
 pub trait StreamlinedMethods : Identification {
     fn conj(&mut self, x: Value) -> Value {

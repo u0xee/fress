@@ -1,4 +1,4 @@
-use value::Value;
+use Value;
 
 impl Value {
     pub fn hello(&self) -> String {

@@ -1,7 +1,6 @@
 //! A cohesive fressian library for rust
 
 mod bit;
-mod boolean;
 mod character;
 mod dispatch;
 mod float_point;

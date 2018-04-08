@@ -1,15 +1,26 @@
 //! A cohesive fressian library for rust
 
-mod memory;
-mod map;
-mod vector;
 mod bit;
-mod value;
+mod boolean;
+mod character;
 mod dispatch;
+mod float_point;
+mod integral;
+mod keyword;
+mod list;
+mod map;
+mod memory;
 mod method_union;
+mod rational;
+mod set;
+mod sorted_map;
+mod sorted_set;
+mod string;
+mod symbol;
+pub mod value;
+mod vector;
 
 use value::Value;
-
 
 #[cfg(test)]
 mod tests {

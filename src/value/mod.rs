@@ -33,6 +33,28 @@ use std;
 use dispatch::Dispatch;
 
 impl Value {
+    //! handle bit patterns:
+    //!
+    //! !(handle | 0x08) => 0, boolean
+    //! 0xFFFFFFFFFFFFFFFF true
+    //! 0xFFFFFFFFFFFFFFF7 false
+    //!
+    //! End in 0b0111, logically negative
+    //! 0x0000000000000007 nil
+    //! 0xFFFFFFFFFFFFFFF7 false
+    //!
+    //! End in 0b011
+    //! 0xXXXXXXXX00000003 char
+    //! 0xXXXXXXXXXXXXXXLB string, L holds count
+    //!
+    //! End in 0b001
+    //! 0xXXXXXXXXXXXXXXX1 integral
+    //! 0xXXXXXXXXXXXXXXX9 FloatPoint
+    //!
+    //! Even handles (rightmost bit of 0) are pointers.
+    //! They point to segments that have a distributor as the first unit.
+    //!
+
     pub fn split(self) -> (Value, Value) {
         // TODO support non immediate values
         (Value {handle: self.handle}, Value {handle: self.handle})

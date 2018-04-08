@@ -5,8 +5,11 @@ mod map;
 mod vector;
 mod bit;
 mod value;
+mod dispatch;
+mod method_union;
 
 use value::Value;
+
 
 #[cfg(test)]
 mod tests {

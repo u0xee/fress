@@ -2,7 +2,7 @@ use std::fmt;
 use memory;
 use bit::{bottom_32, top_32};
 use Value;
-use Aggregate;
+
 
 pub const FIELD_COUNT: isize = 1;
 pub const FIELD_META: isize = 2;
@@ -58,6 +58,8 @@ pub static MAP_SENTINEL: u8 = 0;
 pub struct Map {
     base: u64,
 }
+
+use method_union::Aggregate;
 
 impl Aggregate for Map {
     fn conj(&mut self, v: Value) -> Value {

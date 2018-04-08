@@ -1,7 +1,7 @@
 use std::fmt;
 use memory;
 use bit::{bottom_32, top_32, top_16, MASK_32, MASK_16, top_byte, with_top_byte, second_top_byte, clear_top, clear_bottom, splice, with_second_top_byte};
-use Dispatch;
+use dispatch::Dispatch;
 use Value;
 
 pub mod trace;
@@ -176,7 +176,9 @@ impl fmt::Display for Vector {
     }
 }
 
-impl Dispatch for Vector {
+use dispatch::{Identification, Contrast, AggregateAbstractions, StreamlinedMethods};
+
+impl Identification for Vector {
     fn type_name(&self) -> String {
         "Vector".to_string()
     }
@@ -184,7 +186,9 @@ impl Dispatch for Vector {
     fn type_sentinel(&self) -> *const u8 {
         (& VECTOR_SENTINEL) as *const u8
     }
+}
 
+impl Contrast for Vector {
     fn hash(&self) -> u32 {
         unimplemented!()
     }
@@ -192,6 +196,15 @@ impl Dispatch for Vector {
     fn eq(&self, other: &Dispatch) -> bool {
         unimplemented!()
     }
+}
+
+impl AggregateAbstractions for Vector {
+}
+
+impl StreamlinedMethods for Vector {
+}
+
+impl Dispatch for Vector {
 }
 
 impl Drop for Vector {

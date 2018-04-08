@@ -1,24 +1,29 @@
 /// A trait to dynamically dispatch methods on heap values
 
-trait Dispatch :
+
+pub trait Dispatch :
 Identification +
 Contrast +
 AggregateAbstractions +
 StreamlinedMethods {}
 
-trait Identification : fmt::Display {
+use std::fmt::Display;
+
+pub trait Identification : Display {
     fn type_name(&self) -> String;
 
     fn type_sentinel(&self) -> *const u8;
 }
 
-trait Contrast {
+pub trait Contrast {
     fn hash(&self) -> u32;
 
     fn eq(&self, other: &Dispatch) -> bool;
 }
 
-trait AggregateAbstractions : Identification {
+use method_union::*;
+
+pub trait AggregateAbstractions : Identification {
     fn seq_value(&self) -> &Seq {
         panic!("{} is NOT a SeqValue", self.type_name())
     }
@@ -44,7 +49,9 @@ trait AggregateAbstractions : Identification {
     }
 }
 
-trait StreamlinedMethods : Identification {
+use value::Value;
+
+pub trait StreamlinedMethods : Identification {
     fn conj(&mut self, x: Value) -> Value {
         panic!("Can't conj onto a {}", self.type_name())
     }

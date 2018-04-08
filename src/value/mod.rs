@@ -5,7 +5,6 @@ Methods on Value are the main library API:
 - Special high level operations like split
 
 Types:
-- Atomics
 - boolean
 - nil
 - char
@@ -15,7 +14,7 @@ Types:
 - integral
 - rational
 - float point
-- Collections
+
 - List
 - Vector
 - Map
@@ -31,7 +30,7 @@ pub struct Value {
 }
 
 use std;
-use Dispatch;
+use dispatch::Dispatch;
 
 impl Value {
     pub fn split(self) -> (Value, Value) {

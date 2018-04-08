@@ -1,26 +1,12 @@
+mod distinguished;
+mod generic;
+mod immediate;
+
 /*
-Methods on Value are the main library API:
+Value is the main library API:
 - Static code dispatching based on union base, possibly to assembled trait object
 - &Value into another Value (during its scope)
 - Special high level operations like split
-
-Types:
-- boolean
-- nil
-- char
-- string
-- symbol
-- keyword
-- integral
-- rational
-- float point
-
-- List
-- Vector
-- Map
-- Set
-- SortedMap
-- SortedSet
 */
 
 #[cfg(target_arch = "x86_64")]
@@ -116,9 +102,7 @@ impl Value {
     pub fn as_i64(&self) -> i64 {
         (self.handle as i64) >> 3
     }
-}
 
-impl Value {
     pub fn type_name(&self) -> String {
         if self.is_immediate() {
             "Immediate Value".to_string()
@@ -135,58 +119,5 @@ impl Value {
             }
         }
     }
-    fn map_value(&self) {
-        panic!("{} is NOT a MapValue", self.type_name())
-    }
-    fn set_value(&self) {
-        panic!("{} is NOT a SetValue", self.type_name())
-    }
-    fn vector_value(&self) {
-        panic!("{} is NOT a VectorValue", self.type_name())
-    }
-    fn list_value(&self) {
-        panic!("{} is NOT a ListValue", self.type_name())
-    }
-    fn string_value(&self) {
-        panic!("{} is NOT a StringValue", self.type_name())
-    }
-    fn symbol(&self) {
-        panic!("{} is NOT a Symbol", self.type_name())
-    }
-    fn keyword(&self) {
-        panic!("{} is NOT a Keyword", self.type_name())
-    }
-    fn integral(&self) {
-        panic!("{} is NOT an Integral", self.type_name())
-    }
-    fn rational(&self) {
-        panic!("{} is NOT a Rational", self.type_name())
-    }
-    fn float_point(&self) {
-        panic!("{} is NOT a FloatPoint", self.type_name())
-    }
 }
 
-
-// Data and vtable for trait
-struct SeqValue {}
-struct CollValue {}
-struct AssociativeValue {}
-struct SequentialValue {}
-struct SortedValue {}
-struct NumericValue {}
-
-// Constructed via typecheck on Value
-// Static dispatch to methods
-struct MapValue {}
-struct SortedMapValue {}
-struct SetValue {}
-struct SortedSetValue {}
-struct VectorValue {}
-struct ListValue {}
-struct StringValue {}
-struct Symbol {}
-struct Keyword {}
-struct Integral {}
-struct Rational {}
-struct FloatPoint {}

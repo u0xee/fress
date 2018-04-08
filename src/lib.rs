@@ -1,10 +1,7 @@
 //! A cohesive fressian library for rust
 
 mod bit;
-mod character;
 mod dispatch;
-mod float_point;
-mod integral;
 mod keyword;
 mod list;
 mod map;
@@ -16,10 +13,10 @@ mod sorted_map;
 mod sorted_set;
 mod string;
 mod symbol;
-pub mod value;
+mod value;
 mod vector;
 
-use value::Value;
+pub use value::Value;
 
 #[cfg(test)]
 mod tests {

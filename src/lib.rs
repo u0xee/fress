@@ -23,6 +23,12 @@ mod tests {
     use super::*;
 
     #[test]
+    fn testbed() {
+        let x = Value { handle: 7 };
+
+    }
+
+    #[test]
     fn is_immediate() {
         assert!(Value {handle: 7}.is_immediate())
     }

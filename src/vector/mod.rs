@@ -176,7 +176,7 @@ impl fmt::Display for Vector {
     }
 }
 
-use dispatch::{Identification, Contrast, AggregateAbstractions, StreamlinedMethods};
+use dispatch::{Identification, Distinguish, AggregateAbstractions, StreamlinedMethods};
 
 impl Identification for Vector {
     fn type_name(&self) -> String {
@@ -188,12 +188,17 @@ impl Identification for Vector {
     }
 }
 
-impl Contrast for Vector {
+use std::cmp::Ordering;
+impl Distinguish for Vector {
     fn hash(&self) -> u32 {
         unimplemented!()
     }
 
     fn eq(&self, other: &Dispatch) -> bool {
+        unimplemented!()
+    }
+
+    fn cmp(&self, other: &Dispatch) -> Ordering {
         unimplemented!()
     }
 }

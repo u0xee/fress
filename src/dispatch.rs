@@ -3,7 +3,7 @@
 
 pub trait Dispatch :
 Identification +
-Contrast +
+Distinguish +
 AggregateAbstractions +
 StreamlinedMethods {}
 
@@ -15,10 +15,14 @@ pub trait Identification : Display {
     fn type_sentinel(&self) -> *const u8;
 }
 
-pub trait Contrast {
+use std::cmp::Ordering;
+
+pub trait Distinguish {
     fn hash(&self) -> u32;
 
     fn eq(&self, other: &Dispatch) -> bool;
+
+    fn cmp(&self, other: &Dispatch) -> Ordering;
 }
 
 use method_union::*;

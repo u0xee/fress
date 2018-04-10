@@ -1,5 +1,4 @@
-mod distinguished;
-mod generic;
+mod distinguish;
 mod immediate;
 
 /*
@@ -17,6 +16,12 @@ pub struct Value {
 
 use std;
 use dispatch::Dispatch;
+
+impl From<u64> for Value {
+    fn from(x: u64) -> Self {
+        Value { handle: x as usize }
+    }
+}
 
 impl Value {
     //! handle bit patterns:
@@ -43,6 +48,7 @@ impl Value {
 
     pub fn split(self) -> (Value, Value) {
         // TODO support non immediate values
+
         (Value {handle: self.handle}, Value {handle: self.handle})
     }
 

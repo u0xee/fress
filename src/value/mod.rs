@@ -1,3 +1,6 @@
+mod aggregate;
+mod arithmetic;
+mod convert;
 mod distinguish;
 mod immediate;
 
@@ -8,7 +11,8 @@ Value is the main library API:
 - Special high level operations like split
 */
 
-#[cfg(target_arch = "x86_64")]
+use memory::unit::Unit;
+
 #[derive(Debug)]
 pub struct Value {
     pub handle: usize,
@@ -16,12 +20,6 @@ pub struct Value {
 
 use std;
 use dispatch::Dispatch;
-
-impl From<u64> for Value {
-    fn from(x: u64) -> Self {
-        Value { handle: x as usize }
-    }
-}
 
 impl Value {
     //! handle bit patterns:

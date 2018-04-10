@@ -63,4 +63,12 @@ mod tests {
         assert!(Value {handle: 1}.is_immediate_number() &&
         Value {handle: 5}.is_immediate_number())
     }
+
+    #[test]
+    fn from_u64() {
+        let x: u64 = 17;
+        let y: Value = x.into();
+        let z: u64 = y.into();
+        assert_eq!(x, z)
+    }
 }

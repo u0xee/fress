@@ -1,8 +1,9 @@
 use std::mem;
 
-mod unit;
+pub mod unit;
 mod anchor;
 mod segment;
+
 
 
 /*
@@ -20,6 +21,20 @@ Thread local associative structure. Capacity, no dispatch, meta, or hash.
 K - Pointer to memory
 V - Shared? and Local Count
 */
+
+use self::unit::Unit;
+
+pub fn set(address: *const Unit, u: Unit) {
+    unsafe {
+        *(address as *mut Unit) = u;
+    }
+}
+
+pub fn get(address: *const Unit) -> Unit {
+    unsafe {
+        *address
+    }
+}
 
 pub const CACHE_LINE: usize = 8;
 
@@ -88,3 +103,16 @@ pub fn copy_of(source: *const u64, copy_word_count: usize, capacity: usize) -> *
 }
 
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use super::unit::Unit;
+
+    #[test]
+    fn unit_from_f32() {
+        let f: f32 = 5.4;
+        let u: Unit = f.into();
+        let ff: f32 = u.into();
+        assert_eq!(f, ff)
+    }
+}

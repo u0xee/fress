@@ -23,7 +23,7 @@ impl Segment {
         let cap = after_anchor_unit_count + 1; // for the anchor
 
         let unanchored: Segment = {
-            let mut v: Vec<Unit> = Vec::with_capacity(cap);
+            let v: Vec<Unit> = Vec::with_capacity(cap);
             let ptr = v.as_ptr();
             mem::forget(v);
             Unit::from(ptr).into()

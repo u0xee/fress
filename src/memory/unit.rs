@@ -1,10 +1,12 @@
 //! A unit of memory.
 
+
+use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
 /// A Unit is one processor word. Here, 64 bits.
 #[cfg(target_arch = "x86_64")]
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Unit {
-    word: usize,
+    pub word: usize,
 }
 
 use super::segment::Segment;
@@ -51,6 +53,17 @@ impl Unit {
         self.word & 0x01 == 0
     }
 
+    pub fn u(&self) -> usize {
+        self.word as usize
+    }
+
+    pub fn i(&self) -> isize {
+        self.word as isize
+    }
+
+    pub fn u64(&self) -> u64 {
+        self.word as u64
+    }
     // high zeros?
     // break into fields
     // bit manipulation needed to decode vector header
@@ -203,6 +216,7 @@ impl<T> Into<*mut T> for Unit {
         self.word as *mut T
     }
 }
+
 
 #[cfg(test)]
 mod test {

@@ -3,8 +3,8 @@ use std::mem;
 pub mod unit;
 mod anchor;
 mod segment;
-
-
+mod thread;
+mod degree;
 
 /*
 Memory System API

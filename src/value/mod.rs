@@ -1,7 +1,6 @@
 mod aggregate;
 mod arithmetic;
-mod convert;
-mod distinguish;
+pub mod distinguish;
 mod immediate;
 
 /*
@@ -12,116 +11,93 @@ Value is the main library API:
 */
 
 use memory::unit::Unit;
+use dispatch::{Distributor, as_dispatch_obj};
 
 #[derive(Debug)]
 pub struct Value {
-    pub handle: usize,
+    pub handle: Unit,
 }
 
 use std;
 use dispatch::Dispatch;
 
 impl Value {
-    //! handle bit patterns:
-    //!
-    //! !(handle | 0x08) => 0, boolean
-    //! 0xFFFFFFFFFFFFFFFF true
-    //! 0xFFFFFFFFFFFFFFF7 false
-    //!
-    //! End in 0b0111, logically negative
-    //! 0x0000000000000007 nil
-    //! 0xFFFFFFFFFFFFFFF7 false
-    //!
-    //! End in 0b011
-    //! 0xXXXXXXXX00000003 char
-    //! 0xXXXXXXXXXXXXXXLB string, L holds count
-    //!
-    //! End in 0b001
-    //! 0xXXXXXXXXXXXXXXX1 integral
-    //! 0xXXXXXXXXXXXXXXX9 FloatPoint
-    //!
-    //! Even handles (rightmost bit of 0) are pointers.
-    //! They point to segments that have a distributor as the first unit.
-    //!
-
-    pub fn split(self) -> (Value, Value) {
-        // TODO support non immediate values
-
-        (Value {handle: self.handle}, Value {handle: self.handle})
-    }
-
-    pub fn is_immediate(&self) -> bool {
-        self.handle & 0x01 == 0x01
-    }
-
-    pub fn is_not(&self) -> bool {
-        self.handle & 0x0F == 0x07
-    }
-
-    pub fn is_so(&self) -> bool {
-        !self.is_not()
-    }
-
-    // TODO associated constants may not be good. factory fn?
-    pub const NIL: Value = Value {handle: 0x07};
-
-    pub fn is_nil(&self) -> bool {
-        self.handle == 0x07
-    }
-
-    pub const TRUE: Value = Value {handle: std::usize::MAX};
-
-    pub fn is_true(&self) -> bool {
-        self.handle == Value::TRUE.handle
-    }
-
-    pub const FALSE: Value = Value {handle: !0x08};
-
-    pub fn is_false(&self) -> bool {
-        self.handle == std::usize::MAX & !8
-    }
-
-    pub fn is_char(&self) -> bool {
-        self.handle & 0x07 == 0x03
-    }
-
-    pub fn is_string(&self) -> bool {
-        // TODO separate char immediate and string
-        self.handle & 0x07 == 0x03
-    }
-
-    pub fn is_immediate_number(&self) -> bool {
-        self.handle & 0x03 == 0x01
-    }
-
-    pub fn is_number(&self) -> bool {
-        // TODO support boxed numbers
-        self.is_immediate_number()
-    }
-
-    pub fn as_pointer(&self) -> *mut () {
-        self.handle as *mut ()
-    }
-
-    pub fn as_i64(&self) -> i64 {
-        (self.handle as i64) >> 3
-    }
+    pub const NIL: Value = Value { handle: Unit { word: 0x07 } };
+    pub const TRUE: Value = Value { handle: Unit { word: std::usize::MAX } };
+    pub const FALSE: Value = Value { handle: Unit { word: !0x08usize } };
 
     pub fn type_name(&self) -> String {
         if self.is_immediate() {
             "Immediate Value".to_string()
         } else {
             unsafe {
-                let table_ptr = (self.handle as *const u64).offset(1);
-                let t_object: [u64; 2] = [table_ptr as u64, *table_ptr];
-                use std::mem::transmute;
-                let dispatch = transmute::<[u64;2], &Dispatch>(t_object);
-                let s = dispatch.type_name();
-                use std::mem::forget;
-                //forget(dispatch);
-                s
+                let d: *const Distributor = self.handle.into();
+                let distributor_offset = 1;
+                let o = as_dispatch_obj(d.offset(distributor_offset));
+                o.type_name()
             }
         }
     }
 }
 
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn passes() {
+        assert!(true)
+    }
+    /*
+    #[test]
+    fn testbed() {
+        let x = Value { handle: 7 };
+
+    }
+
+    #[test]
+    fn is_immediate() {
+        assert!(Value {handle: 7}.is_immediate())
+    }
+
+    #[test]
+    fn is_not() {
+        assert!(Value::NIL.is_not() && Value::FALSE.is_not())
+    }
+
+    #[test]
+    fn is_so() {
+        assert!(Value {handle: 0}.is_so())
+    }
+
+    #[test]
+    fn is_nil() {
+        assert!(Value {handle: 7}.is_nil())
+    }
+
+    #[test]
+    fn is_true() {
+        assert!(Value {handle: !0}.is_true())
+    }
+
+    #[test]
+    fn is_false() {
+        assert!(Value {handle: !0 - 8}.is_false())
+    }
+
+    #[test]
+    fn is_immediate_number() {
+        assert!(Value {handle: 1}.is_immediate_number() &&
+            Value {handle: 5}.is_immediate_number())
+    }
+
+    #[test]
+    fn from_u64() {
+        let x: u64 = 17;
+        let y: Value = x.into();
+        let z: u64 = y.into();
+        assert_eq!(x, z)
+    }
+    */
+}

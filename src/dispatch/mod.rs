@@ -1,5 +1,12 @@
 /// A trait to dynamically dispatch methods on heap values
+mod mechanism;
+pub use self::mechanism::{distributor, as_dispatch_obj};
+use memory::unit::Unit;
 
+#[derive(Debug)]
+pub struct Distributor {
+    pub opaque_method_table_ptr: Unit,
+}
 
 pub trait Dispatch :
 Identification +

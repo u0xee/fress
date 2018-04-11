@@ -238,15 +238,14 @@ fn digit_iter(x: u32, digits: u8) {
     // Digit iterator struct
 }
 
+use dispatch::{Distributor, distributor};
+
+/*
 impl Vector {
     fn store_trait_table(location: *mut u64) {
         unsafe {
-            let mut vector_ref = &mut *(location as *mut Vector);
-            let mut dispatch_object = vector_ref as &mut Dispatch;
-            use std::mem::transmute;
-            let location_table = transmute::<&mut Dispatch, [u64;2]>(dispatch_object);
-            assert_eq!(location as u64, location_table[0]);
-            *location = location_table[1];
+            let d = distributor::<Vector>();
+            *location = d.opaque_method_table_ptr.into()
         }
     }
 
@@ -260,7 +259,7 @@ impl Vector {
         fields.set_count(0);
         fields.set_inline_tail_hash(0);
         fields.set_inline_tail_has_meta(0);
-        Value { handle: base_ptr as usize }
+        Value { handle: Unit::from(base_ptr) }
     }
 
     fn conj(&mut self, x: Value) -> Value {
@@ -292,7 +291,7 @@ impl Vector {
                 fields.set_root(root as u64);
                 fields.set_tail(tail as u64);
                 // TODO manage sharing
-                return Value { handle: base_ptr as usize };
+                return Value { handle: Unit::from(base_ptr) };
             } else {
                 // TODO grow inline tail
             }
@@ -312,6 +311,7 @@ impl Vector {
         }
     }
 }
+*/
 
 /*
 mod path_copy {
@@ -420,11 +420,4 @@ mod path_copy {
 mod tests {
     use super::*;
 
-    #[test]
-    fn new_vector() {
-        let imm = Value::NIL;
-        //assert_eq!("Immediate Value".to_string(), imm.type_name());
-        let v = Vector::new();
-        //assert_eq!("Vector".to_string(), v.type_name());
-    }
 }

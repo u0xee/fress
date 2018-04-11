@@ -23,52 +23,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn testbed() {
-        let x = Value { handle: 7 };
-
+    fn add_integers() {
+        let seven: Value = 7.into();
+        let eight = 8.into();
+        let ans: i32 = (seven + eight).into();
+        assert_eq!(ans, 15)
     }
 
     #[test]
-    fn is_immediate() {
-        assert!(Value {handle: 7}.is_immediate())
+    fn add_floats() {
+        let seven: Value = 7.25.into();
+        let eight = 8.5.into();
+        let ans: f64 = (seven + eight).into();
+        assert_eq!(ans, 15.75)
     }
 
     #[test]
-    fn is_not() {
-        assert!(Value::NIL.is_not() && Value::FALSE.is_not())
-    }
+    fn conj_vector() {
+        use value::distinguish::VectorValue;
+        let mut v = VectorValue::new();
 
-    #[test]
-    fn is_so() {
-        assert!(Value {handle: 0}.is_so())
-    }
+        for x in 1..5 {
+            v = v.conj(x.into());
+        }
 
-    #[test]
-    fn is_nil() {
-        assert!(Value {handle: 7}.is_nil())
-    }
-
-    #[test]
-    fn is_true() {
-        assert!(Value {handle: !0}.is_true())
-    }
-
-    #[test]
-    fn is_false() {
-        assert!(Value {handle: !0 - 8}.is_false())
-    }
-
-    #[test]
-    fn is_immediate_number() {
-        assert!(Value {handle: 1}.is_immediate_number() &&
-        Value {handle: 5}.is_immediate_number())
-    }
-
-    #[test]
-    fn from_u64() {
-        let x: u64 = 17;
-        let y: Value = x.into();
-        let z: u64 = y.into();
-        assert_eq!(x, z)
+        let s = String::from("[1 2 3 4 5]");
+        assert_eq!(v.edn(), s)
     }
 }

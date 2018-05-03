@@ -4,7 +4,8 @@ use bit::{bottom_32, top_32, top_16, MASK_32, MASK_16, top_byte, with_top_byte, 
 use dispatch::Dispatch;
 use Value;
 
-pub mod trace;
+pub mod tree;
+pub mod memory;
 
 pub const FIELD_COUNT: isize = 1;
 pub const FIELD_META: isize = 2;

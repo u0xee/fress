@@ -1,4 +1,8 @@
-= Heap Polymorphism Design
+= Polymorphism in fress-rust
+
+There are different kinds of values. For example, there are several
+types of numbers, and different kinds of collections.
+
 
 == Base dispatch trait
 * Common to all polymorphic objects on the heap

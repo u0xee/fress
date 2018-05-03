@@ -1,5 +1,5 @@
-use super::unit::Unit;
 use memory;
+use memory::unit::Unit;
 
 pub struct Anchor {
     pub unit: Unit,

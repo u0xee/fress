@@ -46,4 +46,59 @@ impl Segment {
             mem::drop(v);
         }
     }
+
+    pub fn copy_of_n(&self, n: usize) -> Segment {
+        let mut cpy = Segment::new(n);
+        for i in 1..(n + 1) {
+            cpy[i] = src[i];
+        }
+        cpy
+    }
+
+    pub fn copy_of(&self) -> Segment {
+        self.copy_of_n(self.capacity() - 1) // since we won't be copying the anchor
+    }
+}
+
+use std::ops::{Index, IndexMut, Range, RangeTo};
+
+impl Index<usize> for Segment {
+    type Output = Unit;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        unsafe {
+            let anchor_line = self.line.line as *const Unit;
+            & *anchor_line.offset(index as isize)
+        }
+    }
+}
+
+impl IndexMut<usize> for Segment {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        unsafe {
+            let anchor_line = self.line.line as *mut Unit;
+            &mut *anchor_line.offset(index as isize)
+        }
+    }
+}
+
+impl Index<Range<usize>> for Segment {
+    type Output = [Unit];
+
+    fn index(&self, index: Range<usize>) -> &Self::Output {
+        use std::slice::from_raw_parts;
+        let anchor_line = self.line.line as *mut Unit;
+        unsafe {
+            from_raw_parts(anchor_line.offset(index.start as isize),
+                           (index.end - index.start))
+        }
+    }
+}
+
+impl Index<RangeTo<usize>> for Segment {
+    type Output = [Unit];
+
+    fn index(&self, index: RangeTo<usize>) -> &Self::Output {
+        self.index(1..index.end)
+    }
 }

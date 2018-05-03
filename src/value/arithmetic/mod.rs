@@ -30,3 +30,11 @@ impl Add for Value {
         } else { panic!("Add not implemented for non-immediate_number types.") }
     }
 }
+
+impl<'a> Add for &'a Value {
+    type Output = Value;
+
+    fn add(self, rhs: &'a Value) -> Self::Output {
+        unimplemented!()
+    }
+}

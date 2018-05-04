@@ -1,3 +1,10 @@
+// Copyright (c) Cole Frederick. All rights reserved.
+// The use and distribution terms for this software are covered by the
+// Eclipse Public License 1.0 (https://opensource.org/licenses/eclipse-1.0.php)
+// which can be found in the file epl-v10.html at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by the terms of this license.
+// You must not remove this notice, or any other, from this software.
+
 use std::fmt;
 use memory;
 use bit::{bottom_32, top_32, top_16, MASK_32, MASK_16, top_byte, with_top_byte, second_top_byte, clear_top, clear_bottom, splice, with_second_top_byte};

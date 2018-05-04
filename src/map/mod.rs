@@ -2,7 +2,7 @@ use std::fmt;
 use memory;
 use bit::{bottom_32, top_32};
 use Value;
-use Aggregate;
+
 
 pub const FIELD_COUNT: isize = 1;
 pub const FIELD_META: isize = 2;
@@ -59,19 +59,6 @@ pub struct Map {
     base: u64,
 }
 
-impl Aggregate for Map {
-    fn conj(&mut self, v: Value) -> Value {
-        let mf = MapFields {base: &mut self.base as *mut u64};
-        let base_ptr = &mut self.base;
-        let erased_ptr = base_ptr as *mut u64;
-        unsafe {
-            *erased_ptr = 14;
-            *erased_ptr.offset(1) = 15
-        }
-        Value::NIL
-    }
-}
-
 
 // Basic operations: struct as u64, impl treating struct as base address
 // Using ptr as struct reference, then trait object. Calling object methods.
@@ -81,6 +68,7 @@ impl Aggregate for Map {
 mod tests {
     use super::*;
 
+    /*
     #[test]
     fn can_erase() {
         let mut v: Vec<u64> = Vec::with_capacity(2);
@@ -106,4 +94,5 @@ mod tests {
         assert_eq!(v[0], 14);
         assert_eq!(v[1], 15);
     }
+    */
 }

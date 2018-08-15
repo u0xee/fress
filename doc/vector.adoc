@@ -1,0 +1,59 @@
+= Vector
+
+== Layout
+
+```
+Anchor, Distributor, Guide, Hash, Meta, Tail, Root
+
+Empty Vector:
+A D G
+
+A D G R
+
+A D G R R
+
+A D G R R R
+
+A D G R ... R
+
+A D G T R ... R
+      |
+      -> X ... X
+
+Guide, 8 bytes. If count fits in 16 bits:
+a i h h | h h c c
+
+a - offset from distributor to anchor
+i - info byte, explained below
+h - slot for hash code
+c - count of collection
+
+Else if count doesn't fit in 16 bits:
+a i u u | c c c c
+
+u - unused
+
+Info byte in bit fields:
+h? m? l? u | u ic ic ic
+hash present?
+meta present?
+large count?
+index of contents - 3 bits
+
+
+Vector, Hash, Sort:
+A D | G H? M? | Tail Root-Contents
+A D | G H? M? | Pop  Root-Contents
+A D | G H? M? | Keys Root-Contents
+
+Tail is a segment storing the tail contents.
+
+Pop is a population map describing the root contents.
+- top 32 bits are key population
+- bottom 32 bits are child node population
+P N P N | K V K V K V K V
+
+Keys is the number of keys in the root and height of the tree.
+K K K K | N N N N N | V V V V
+
+```

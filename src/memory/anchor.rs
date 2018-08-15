@@ -13,16 +13,32 @@ pub struct Anchor {
 }
 
 impl Anchor {
-    pub fn for_capacity(capacity: usize) -> Anchor {
-        let ensure_odd = (capacity << 1) + 1;
+    pub fn for_capacity(capacity: u32) -> Anchor {
+        let ensure_odd = (capacity << 1) | 1u32;
         // ensure_odd is distinct from a pointer,
         // by virtue of being odd
         Unit::from(ensure_odd).into()
     }
 
-    pub fn capacity(&self) -> usize {
-        let c: usize = self.unit.into();
+    pub fn capacity(&self) -> u32 {
+        let c: u32 = self.unit.into();
         c >> 1
+    }
+
+    pub fn alias_field(&self) -> u32 {
+        let a: u64 = self.unit.into();
+        (a >> 32) as u32
+    }
+
+    pub fn with_alias_field(&self, f: u32) -> Anchor {
+        let c: u32 = self.unit.into();
+        Anchor { unit: Unit::from(((f as u64) << 32) | (c as u64)) }
+    }
+}
+
+impl From<Unit> for Anchor {
+    fn from(u: Unit) -> Self {
+        Anchor { unit: u }
     }
 }
 
@@ -43,5 +59,11 @@ impl AnchorLine {
         } else {
             anchor_or_ptr.into()
         }
+    }
+}
+
+impl From<Unit> for AnchorLine {
+    fn from(u: Unit) -> Self {
+        AnchorLine { line: u.into() }
     }
 }

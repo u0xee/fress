@@ -10,6 +10,7 @@ use std::mem;
 pub mod unit;
 mod anchor;
 pub mod segment;
+pub mod line;
 mod thread;
 mod degree;
 

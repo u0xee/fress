@@ -7,6 +7,7 @@
 
 use memory::unit::Unit;
 
+#[derive(Copy, Clone)]
 pub struct Guide {
     pub post: Unit,
 }

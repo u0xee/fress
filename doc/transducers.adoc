@@ -1,0 +1,55 @@
+= Transducers
+
+Transducers are trait objects with one main operation:
+```
+trait Transducer {
+    fn process(&self) -> Box<Process>;
+}
+```
+Which returns a trait object for the Process trait.
+
+Transducers will normally be aggregated into stacks:
+```
+Vec<Arc<Transducer>>
+```
+
+== Process
+
+A Process trait object has two main operations:
+```
+trait Process {
+    fn ingest(&mut self, x: Value, s: Stack) -> Option<Value>;
+    fn complete(&mut self, s: Stack) -> Value;
+}
+```
+
+Ingest takes a new item and incorporates it into the overall process.
+Complete requests the final result, signaling the end of input to the
+overall process, and gives stateful Processes a chance to flush saved state.
+
+Additionally, a Process has an ingest method that takes a key and associated value
+as a single unit of input.
+```
+trait Process {
+    ...
+    fn ingest_kv(&mut self, k: Value, v: Value, s: Stack) -> Option<Value>;
+}
+```
+
+Default implementations cover all three methods, simply calling
+through down the stack in absence of an explicit implementation.
+
+== Stack
+
+A Stack is a combination of a reference to the runtime stack of
+Process trait objects, and the index of the current Process in
+said stack. Something like:
+```
+struct Stack {
+    stack: &mut [Box<Process>],
+    index: u32,
+}
+```
+
+A Process will call one or more methods on the Process below
+it in the stack, in order to drive the overall process forward.

@@ -23,6 +23,7 @@ use memory::line::Line;
 use std::mem;
 use std::ops::{Index, IndexMut};
 
+#[derive(Copy, Clone)]
 pub struct Segment {
     pub line: Line,
 }

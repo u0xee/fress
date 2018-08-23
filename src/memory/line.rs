@@ -9,6 +9,7 @@ use memory::unit::Unit;
 use memory::segment::Segment;
 use std::ops::{Index, IndexMut};
 
+#[derive(Copy, Clone)]
 pub struct Line {
     pub line: *const Unit,
 }

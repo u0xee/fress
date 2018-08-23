@@ -8,11 +8,13 @@
 use std::mem;
 
 pub mod unit;
-mod anchor;
-pub mod segment;
 pub mod line;
-mod thread;
-mod degree;
+pub mod segment;
+pub mod anchor;
+pub use self::unit::Unit;
+pub use self::line::Line;
+pub use self::segment::Segment;
+pub use self::anchor::Anchor;
 
 /*
 Memory System API
@@ -30,53 +32,9 @@ K - Pointer to memory
 V - Shared? and Local Count
 */
 
-use self::unit::Unit;
-
-pub fn set(address: *const Unit, u: Unit) {
-    unsafe {
-        *(address as *mut Unit) = u;
-    }
-}
-
-pub fn get(address: *const Unit) -> Unit {
-    unsafe {
-        *address
-    }
-}
-
-
-pub fn interest_in(values: &[Value]) {
-    for v in values {
-        if Unit::from(v).is_even() {
-            register_interest(Unit::from(v).into())
-        }
-    }
-}
-
-pub fn register_interest(ptr: *const u64) {
-    unimplemented!()
-}
-
-pub fn deregister_interest(ptr: *const u64) {
-    unimplemented!()
-}
-
-pub fn is_shared(ptr: *const u64) -> bool {
-    false
-}
-
-
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use super::unit::Unit;
 
-    #[test]
-    fn unit_from_f32() {
-        let f: f32 = 5.4;
-        let u: Unit = f.into();
-        let ff: f32 = u.into();
-        assert_eq!(f, ff)
-    }
 }

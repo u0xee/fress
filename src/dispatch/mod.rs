@@ -6,95 +6,112 @@
 // You must not remove this notice, or any other, from this software.
 
 mod mechanism;
-pub use self::mechanism::{distributor, as_dispatch_obj};
+pub use self::mechanism::prism;
+mod value_unit;
+pub use self::value_unit::ValueUnit;
 use memory::unit::Unit;
-
-#[derive(Debug)]
-pub struct Distributor {
-    pub opaque_method_table_ptr: Unit,
-}
+use std::fmt::Display;
+use std::cmp::Ordering;
 
 /// A trait to dynamically dispatch methods on heap values
 pub trait Dispatch :
 Identification +
 Distinguish +
-AggregateAbstractions +
-StreamlinedMethods {}
-
-use std::fmt::Display;
+Aggregate +
+Sequential +
+Associative +
+Reversible +
+Sorted +
+Named {
+    fn tear_down(&self) {
+        unimplemented!()
+    }
+}
 
 pub trait Identification : Display {
-    fn type_name(&self) -> String;
-
-    fn type_sentinel(&self) -> *const u8;
+    fn type_name(&self) -> String {
+        unimplemented!()
+    }
+    fn type_sentinel(&self) -> *const u8 {
+        unimplemented!()
+    }
 }
-
-use std::cmp::Ordering;
 
 pub trait Distinguish {
-    fn hash(&self) -> u32;
-
-    fn eq(&self, other: &Dispatch) -> bool;
-
-    fn cmp(&self, other: &Dispatch) -> Ordering;
-}
-
-use method_union::*;
-
-pub trait AggregateAbstractions : Identification {
-    fn seq_value(&self) -> &Seq {
-        panic!("{} is NOT a SeqValue", self.type_name())
+    fn hash(&self) -> u32 {
+        unimplemented!()
     }
-
-    fn coll_value(&self) -> &Coll {
-        panic!("{} is NOT a CollValue", self.type_name())
+    fn eq(&self, other: Unit) -> bool {
+        unimplemented!()
     }
-
-    fn associative_value(&self) -> &Associative {
-        panic!("{} is NOT an AssociativeValue", self.type_name())
-    }
-
-    fn sequential_value(&self) -> &Sequential {
-        panic!("{} is NOT a SequentialValue", self.type_name())
-    }
-
-    fn sorted_value(&self) -> &Sorted {
-        panic!("{} is NOT a SortedValue", self.type_name())
-    }
-
-    fn numeric_value(&self) -> bool {
-        panic!("{} is NOT a NumericValue", self.type_name())
+    fn cmp(&self, other: Unit) -> Ordering {
+        unimplemented!()
     }
 }
 
-use Value;
-
-pub trait StreamlinedMethods : Identification {
-    fn conj(&mut self, x: Value) -> Value {
-        panic!("Can't conj onto a {}", self.type_name())
+pub trait Aggregate {
+    fn count(&self) -> u32 {
+        unimplemented!()
     }
-
-    fn empty(&mut self) -> Value {
-        panic!("Can't call empty on a {}", self.type_name())
+    fn empty(&self) -> Unit {
+        unimplemented!()
     }
-
-    fn first(&self) {
-        panic!("Can't call first on a {}", self.type_name())
+    fn conj(&self, x: Unit) -> Unit {
+        unimplemented!()
     }
-
-    fn rest(&self) {
-        panic!("Can't call rest on a {}", self.type_name())
+    fn meta(&self) -> Unit {
+        unimplemented!()
     }
-
-    fn count(&self) {
-        panic!("Can't count a {}", self.type_name())
+    fn with_meta(&self, m: Unit) -> Unit {
+        unimplemented!()
     }
-
-    fn get(&self) {
-        panic!("Can't call get on a {}", self.type_name())
+    fn peek(&self) -> Unit {
+        unimplemented!()
     }
-
-    fn nth(&self) {
-        panic!("Can't call nth on a {}", self.type_name())
+    fn pop(&self) -> Unit {
+        unimplemented!()
+    }
+    fn get(&self, k: Unit) -> Unit {
+        unimplemented!()
     }
 }
+
+pub trait Sequential {
+    fn nth(&self, idx: u32) -> Unit {
+        unimplemented!()
+    }
+}
+
+pub trait Associative {
+    fn contains(&self, x: Unit) -> bool {
+        unimplemented!()
+    }
+    fn assoc(&self, k: Unit, v: Unit) -> Unit {
+        unimplemented!()
+    }
+    fn dissoc(&self, k: Unit) -> Unit {
+        unimplemented!()
+    }
+}
+
+pub trait Reversible {
+    fn reverse(&self) -> Unit {
+        unimplemented!()
+    }
+}
+
+pub trait Sorted {
+    fn subrange(&self, start: Unit, end: Unit) -> Unit {
+        unimplemented!()
+    }
+}
+
+pub trait Named {
+    fn name(&self) -> Unit {
+        unimplemented!()
+    }
+    fn namespace(&self) -> Unit {
+        unimplemented!()
+    }
+}
+

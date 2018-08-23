@@ -17,7 +17,7 @@ pub struct Unit {
 }
 
 use super::segment::Segment;
-use super::anchor::{Anchor, AnchorLine};
+use super::anchor::Anchor;
 
 impl From<Anchor> for Unit {
     fn from(a: Anchor) -> Self {
@@ -25,33 +25,9 @@ impl From<Anchor> for Unit {
     }
 }
 
-impl Into<Anchor> for Unit {
-    fn into(self) -> Anchor {
-        Anchor { unit: self }
-    }
-}
-
-impl From<AnchorLine> for Unit {
-    fn from(al: AnchorLine) -> Self {
-        al.line.into()
-    }
-}
-
-impl Into<AnchorLine> for Unit {
-    fn into(self) -> AnchorLine {
-        AnchorLine { line: self.into() }
-    }
-}
-
 impl From<Segment> for Unit {
     fn from(s: Segment) -> Self {
         s.line.into()
-    }
-}
-
-impl Into<Segment> for Unit {
-    fn into(self) -> Segment {
-        Segment { line: self.into() }
     }
 }
 
@@ -135,6 +111,18 @@ impl From<u32> for Unit {
 impl Into<u32> for Unit {
     fn into(self) -> u32 {
         self.word as u32
+    }
+}
+
+impl From<u16> for Unit {
+    fn from(x: u16) -> Self {
+        Unit { word: x as usize }
+    }
+}
+
+impl Into<u16> for Unit {
+    fn into(self) -> u16 {
+        self.word as u16
     }
 }
 

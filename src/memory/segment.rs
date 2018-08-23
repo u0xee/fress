@@ -17,12 +17,14 @@
 //! The anchor allows several threads to read information from the segment, sharing
 //! the responsibility to return the segment to the memory pool when no longer needed.
 
-use super::unit::Unit;
-use super::anchor::{Anchor, AnchorLine};
+use memory::unit::Unit;
+use memory::anchor::Anchor;
+use memory::line::Line;
 use std::mem;
+use std::ops::{Index, IndexMut};
 
 pub struct Segment {
-    pub line: AnchorLine,
+    pub line: Line,
 }
 
 impl Segment {
@@ -31,103 +33,100 @@ impl Segment {
     }
 
     pub fn with_capacity(capacity: u32) -> Segment {
-        let unanchored: Segment = {
+        let mut unanchored: Segment = {
             let v: Vec<Unit> = Vec::with_capacity(capacity as usize);
             let ptr = v.as_ptr();
             mem::forget(v);
             Unit::from(ptr).into()
         };
 
-        unanchored.line.set_anchor(Anchor::for_capacity(capacity));
+        unanchored.line[0] = Anchor::for_capacity(capacity).into();
         let anchored = unanchored;
         anchored
-    }
-
-    pub fn capacity(&self) -> u32 {
-        self.line.get_anchor().capacity()
     }
 
     pub fn free(s: Segment) {
         unsafe {
             let cap = s.capacity();
             let v: Vec<Unit> =
-                Vec::from_raw_parts(Unit::from(s).into(), 0, cap);
+                Vec::from_raw_parts(Unit::from(s).into(), 0,
+                                    cap as usize);
             mem::drop(v);
         }
     }
 
-    pub fn pointer_to_unit(&self, index: usize) -> *const Unit {
-        let anchor_line = self.line.line as *const Unit;
-        unsafe {
-            anchor_line.offset(index as isize)
-        }
-    }
-
-    fn other_aliases(&self) -> u32 {
-        self.line.get_anchor().alias_field()
+    pub fn capacity(&self) -> u32 {
+        Anchor::from(self.line[0]).capacity()
     }
 
     pub fn is_aliased(&self) -> bool {
-        self.other_aliases() != 0
+        Anchor::from(self.line[0]).is_aliased()
     }
 
-    pub fn unalias(&self) -> bool {
-        let a = self.line.get_anchor();
-        let alias_count = a.alias_field();
-        if alias_count == 0 {
-            false
-        } else {
-            self.line.set_anchor(a.with_alias_field(alias_count - 1));
-            true
-        }
+    pub fn alias(&mut self) {
+        // TODO CAS
+        let a: usize = self.line[0].into();
+        self.line[0] = (a + 1).into();
+    }
+
+    pub fn unalias(&mut self) -> u32 {
+        // TODO CAS
+        let a: usize = self.line[0].into();
+        self.line[0] = (a - 1).into();
+        Anchor::from(self.line[0]).aliases()
     }
 }
 
-use memory::line::Line;
+impl From<Unit> for Segment {
+    fn from(u: Unit) -> Self {
+        Segment { line: u.into() }
+    }
+}
 
 impl From<Line> for Segment {
     fn from(line: Line) -> Self {
-        Segment { line: Unit::from(line).into() }
+        Segment { line: line }
     }
 }
-
-use std::ops::{Index, IndexMut, Range, RangeTo};
 
 impl Index<usize> for Segment {
     type Output = Unit;
 
     fn index(&self, index: usize) -> &Self::Output {
-        unsafe {
-            &*self.pointer_to_unit(index)
-        }
+        &self.line[index]
     }
 }
 
 impl IndexMut<usize> for Segment {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        unsafe {
-            &mut *(self.pointer_to_unit(index) as *mut Unit)
-        }
+        &mut self.line[index]
     }
 }
 
-impl Index<Range<usize>> for Segment {
-    type Output = [Unit];
+impl Index<u32> for Segment {
+    type Output = Unit;
 
-    fn index(&self, index: Range<usize>) -> &Self::Output {
-        use std::slice::from_raw_parts;
-        let anchor_line = self.line.line as *mut Unit;
-        unsafe {
-            from_raw_parts(anchor_line.offset(index.start as isize),
-                           (index.end - index.start))
-        }
+    fn index(&self, index: u32) -> &Self::Output {
+        &self.line[index as usize]
     }
 }
 
-impl Index<RangeTo<usize>> for Segment {
-    type Output = [Unit];
+impl IndexMut<u32> for Segment {
+    fn index_mut(&mut self, index: u32) -> &mut Self::Output {
+        &mut self.line[index as usize]
+    }
+}
 
-    fn index(&self, index: RangeTo<usize>) -> &Self::Output {
-        self.index(1..index.end)
+impl Index<i32> for Segment {
+    type Output = Unit;
+
+    fn index(&self, index: i32) -> &Self::Output {
+        &self.line[index as usize]
+    }
+}
+
+impl IndexMut<i32> for Segment {
+    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
+        &mut self.line[index as usize]
     }
 }

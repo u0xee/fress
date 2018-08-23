@@ -5,8 +5,9 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use memory;
 use memory::unit::Unit;
+use memory::segment::Segment;
+use std::ops::{Index, IndexMut};
 
 pub struct Line {
     pub line: *const Unit,
@@ -30,15 +31,11 @@ impl Into<Unit> for Line {
     }
 }
 
-use memory::segment::Segment;
-
 impl From<Segment> for Line {
     fn from(seg: Segment) -> Self {
-        Line { line: Unit::from(seg.line.line).into() }
+        seg.line
     }
 }
-
-use std::ops::{Index, IndexMut};
 
 impl Index<usize> for Line {
     type Output = Unit;

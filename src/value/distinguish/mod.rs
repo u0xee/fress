@@ -96,51 +96,7 @@ impl Value {
         self.is_immediate_number()
     }
 }
-
-
-
-impl Value {
-    pub fn map_value(&self) {
-        panic!("{} is NOT a MapValue", self.type_name())
-    }
-
-    pub fn set_value(&self) {
-        panic!("{} is NOT a SetValue", self.type_name())
-    }
-
-    pub fn vector_value(&self) {
-        panic!("{} is NOT a VectorValue", self.type_name())
-    }
-
-    pub fn list_value(&self) {
-        panic!("{} is NOT a ListValue", self.type_name())
-    }
-
-    pub fn string_value(&self) {
-        panic!("{} is NOT a StringValue", self.type_name())
-    }
-
-    pub fn symbol(&self) {
-        panic!("{} is NOT a Symbol", self.type_name())
-    }
-
-    pub fn keyword(&self) {
-        panic!("{} is NOT a Keyword", self.type_name())
-    }
-
-    pub fn integral(&self) {
-        panic!("{} is NOT an Integral", self.type_name())
-    }
-
-    pub fn rational(&self) {
-        panic!("{} is NOT a Rational", self.type_name())
-    }
-
-    pub fn float_point(&self) {
-        panic!("{} is NOT a FloatPoint", self.type_name())
-    }
-}
-
+// casts to specific types
 
 // Constructed via typecheck on Value
 // Static dispatch to methods

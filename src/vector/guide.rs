@@ -25,6 +25,14 @@ pub struct Guide {
 // H is presence of hash
 // Three C bits are count shift
 
+// New B byte layout
+// Info byte in bit fields:
+// h? m? l? u | u ic ic ic
+// hash present?
+// meta present?
+// large count?
+// index of contents - 3 bits
+
 // Count algorithm:
 // Isolate the large-count-? bit
 // Shift one (a constant) left by this bit
@@ -46,6 +54,18 @@ impl Guide {
         let field_width = (1u64 << large_count) << 4;
         let mask = !(!0u64 << field_width);
         (x & mask) as u32
+    }
+
+    pub fn has_meta(&self) -> bool {
+        let x: u64 = self.post.into();
+        let meta_bit = (x >> 54) & 1;
+        meta_bit == 1
+    }
+
+    pub fn has_hash(&self) -> bool {
+        let x: u64 = self.post.into();
+        let hash_bit = (x >> 55) & 1;
+        hash_bit == 1
     }
 
     pub fn inc(&self) -> Guide {

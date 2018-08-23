@@ -18,7 +18,7 @@ Value is the main library API:
 */
 
 use memory::unit::Unit;
-use dispatch::{Distributor, as_dispatch_obj};
+use memory::segment::Segment;
 
 #[derive(Debug)]
 pub struct Value {
@@ -32,19 +32,6 @@ impl Value {
     pub const NIL: Value = Value { handle: Unit { word: 0x07 } };
     pub const TRUE: Value = Value { handle: Unit { word: std::usize::MAX } };
     pub const FALSE: Value = Value { handle: Unit { word: !0x08usize } };
-
-    pub fn type_name(&self) -> String {
-        if self.is_immediate() {
-            "Immediate Value".to_string()
-        } else {
-            unsafe {
-                let d: *const Distributor = self.handle.into();
-                let distributor_offset = 1;
-                let o = as_dispatch_obj(d.offset(distributor_offset));
-                o.type_name()
-            }
-        }
-    }
 }
 
 

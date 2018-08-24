@@ -221,7 +221,7 @@ fn growing_height(prism: Line, x: Unit, guide: Guide, count: u32,
     header[first_root] = child.into();
     header[first_root + 1] = header[first_root - 1];
     let path_height = trailing_zero_digit_count(tailoff >> BITS);
-    for i in 0..path_height {
+    for _ in 0..path_height {
         let mut c = Segment::new(4);
         c[1] = header[first_root + 1];
         header[first_root + 1] = c.into();
@@ -285,7 +285,7 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
 
 
     let zero_count = trailing_zero_digit_count(tailoff);
-    let last_idx = (tailoff >> (zero_count * BITS)) & MASK;
+    let ultimate_idx = (tailoff >> (zero_count * BITS)) & MASK;
     let digit_count = digit_count(tailoff);
     let (mut stack, root_idx) = {
         let rev = reverse_digits(tailoff >> ((zero_count + 1) * BITS),
@@ -308,14 +308,14 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
             } else {
                 let unit_count = (digit + 1).next_power_of_two();
                 let mut c = Segment::new(unit_count);
-                for i in 1..(digit + 1) {
+                for i in 1..(digit + 1 + 1) {
                     c[i] = s[i];
                 }
-                for i in 1..(digit + 1) {
+                for i in 1..(digit + 1 + 1) {
                     Segment::from(c[i]).alias();
                 }
                 if s.unalias() == 0 {
-                    for i in 1..(digit + 1) {
+                    for i in 1..(digit + 1 + 1) {
                         Segment::from(c[i]).unalias();
                     }
                 }
@@ -328,13 +328,51 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
     };
 
     let mut s = Segment::from(child[0]);
-    if !s.is_aliased() {
-        // ensure it has room
+    let mut leaf_space: Line = if s.is_aliased() {
+        let unit_count = (ultimate_idx + 1).next_power_of_two();
+        let mut t = Segment::new(unit_count);
+        for i in 1..(ultimate_idx + 1) {
+            t[i] = s[i];
+        }
+        for i in 1..(ultimate_idx + 1) {
+            Segment::from(t[i]).alias();
+        }
+        if s.unalias() == 0 {
+            for i in 1..(ultimate_idx + 1) {
+                Segment::from(t[i]).unalias();
+            }
+            Segment::free(s);
+        }
+        child[0] = t.into();
+        Line::from(t).offset((1 + ultimate_idx) as isize)
     } else {
-        // copy out
-    }
+        let cap = s.capacity();
+        if cap == 1 + ultimate_idx {
+            let unit_count = (ultimate_idx + 1).next_power_of_two();
+            let mut t = Segment::new(unit_count);
+            for i in 1..(ultimate_idx + 1) {
+                t[i] = s[i];
+            }
+            Segment::free(s);
+            child[0] = t.into();
+            Line::from(t).offset((1 + ultimate_idx) as isize)
+        } else {
+            Line::from(s).offset((1 + ultimate_idx) as isize)
+        }
+    };
 
-    Unit::from(0)
+    let first_root = anchor_gap + root_gap + 3 /*anchor, prism, guide*/;
+    leaf_space[0] = header[first_root - 1];
+    for _ in 0..(zero_count - 1) {
+        let mut c = Segment::new(4);
+        c[1] = leaf_space[0];
+        leaf_space[0] = c.into();
+    }
+    let mut t = Segment::new(TAIL_CAP);
+    t[1] = x;
+    header[first_root - 1] = t.into();
+    header[2 + anchor_gap] = guide.inc().into();
+    Unit::from(header)
 }
 
 fn reverse_digits(mut x: u32, digit_count: u32) -> u32 {

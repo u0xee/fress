@@ -8,14 +8,15 @@
 //! Store information in segments.
 //!
 //! A segment is a contiguous group of memory units.
-//! We borrow segments from the memory pool, and later return them, after
-//! the segment is no longer needed. Segments may be needed by several threads
-//! at the same time.
+//! We borrow a segment from the memory pool, and later return it, when
+//! the segment is no longer needed. A segment is no longer needed when
+//! no construct exists which references it. No references from the stack,
+//! nor from other segments.
 //!
 //! The first unit of a segment is its anchor. The anchor contains information about
 //! its segment, such as the number of units it contains.
-//! The anchor allows several threads to read information from the segment, sharing
-//! the responsibility to return the segment to the memory pool when no longer needed.
+//! The anchor allows one or more threads to read information from the segment, sharing
+//! the responsibility to return the segment to the memory pool, when no longer needed.
 
 use memory::unit::Unit;
 use memory::anchor::Anchor;

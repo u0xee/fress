@@ -46,28 +46,29 @@ fn conj_untailed_complete(prism: Line, x: Unit, guide: Guide, count: u32) -> Uni
 
 fn unalias_root(mut segment: Segment, anchor_gap: u32, root_gap: u32, root_count: u32, guide: Guide) -> Segment {
     let used_units = anchor_gap + root_gap + root_count + 3 /*anchor, prism, guide*/;
-    // TODO
-    // breathing room?
-    let mut s = Segment::with_capacity(used_units);
+    let cap = used_units - root_count + root_count.next_power_of_two();
+    let mut s = Segment::with_capacity(cap);
     for i in 1..used_units {
         s[i] = segment[i];
     }
     for i in (used_units - root_count)..used_units {
         ValueUnit::from(s[i]).split()
     }
+    if guide.count() > TAIL_CAP {
+        Segment::from(s[used_units - root_count - 1]).alias()
+    }
     if guide.has_meta() {
-        // TODO
-        // + 1 if external hash
-        ValueUnit::from(s[3 + anchor_gap]).split()
+        ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).split()
     }
     if segment.unalias() == 0 {
         for i in (used_units - root_count)..used_units {
             ValueUnit::from(s[i]).retire()
         }
+        if guide.count() > TAIL_CAP {
+            Segment::from(s[used_units - root_count - 1]).unalias();
+        }
         if guide.has_meta() {
-            // TODO
-            // same as above
-            ValueUnit::from(s[3 + anchor_gap]).retire()
+            ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).retire()
         }
         Segment::free(segment)
     }
@@ -401,12 +402,4 @@ fn root_content_count(tailoff: u32) -> u32 {
     let dc = digit_count(last_index);
     let last_root_index = last_index >> (BITS * (dc - 1));
     last_root_index + 1
-}
-
-fn digit(x: u32, idx: u8) -> u8 {
-    (x >> (idx as u32 * BITS)) as u8
-}
-
-fn digit_iter(x: u32, digits: u8) {
-    // Digit iterator struct
 }

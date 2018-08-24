@@ -63,6 +63,12 @@ impl Guide {
         meta_bit == 1
     }
 
+    pub fn meta_gap(&self) -> u32 {
+        let x: u64 = self.post.into();
+        let large_count = (x >> 53) & 1;
+        large_count as u32
+    }
+
     pub fn has_hash(&self) -> bool {
         let x: u64 = self.post.into();
         let hash_bit = (x >> 55) & 1;

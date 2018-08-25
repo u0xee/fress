@@ -9,6 +9,7 @@ use memory::unit::Unit;
 use memory::segment::Segment;
 use dispatch::*;
 
+#[derive(Copy, Clone)]
 pub struct ValueUnit {
     pub unit: Unit,
 }
@@ -27,6 +28,21 @@ impl ValueUnit {
                 s.tear_down()
             }
         }
+    }
+
+    pub fn hash(&self) -> u32 {
+        if self.unit.is_even() {
+            let mut s = Segment::from(self.unit);
+            s.hash()
+        } else {
+            // hash immediate value
+            // TODO
+            self.unit.into()
+        }
+    }
+
+    pub fn eq(&self, other: Unit) -> bool {
+        self.unit == other
     }
 }
 

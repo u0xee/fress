@@ -1,98 +1,89 @@
+// Copyright (c) Cole Frederick. All rights reserved.
+// The use and distribution terms for this software are covered by the
+// Eclipse Public License 1.0 (https://opensource.org/licenses/eclipse-1.0.php)
+// which can be found in the file epl-v10.html at the root of this distribution.
+// By using this software in any fashion, you are agreeing to be bound by the terms of this license.
+// You must not remove this notice, or any other, from this software.
+
 use std::fmt;
-use memory;
-use bit::{bottom_32, top_32};
+use memory::*;
+use dispatch::*;
 use Value;
 
+use vector::guide::Guide;
+pub mod pop;
+use self::pop::Pop;
+mod assoc;
+mod get;
 
-pub const FIELD_COUNT: isize = 1;
-pub const FIELD_META: isize = 2;
-pub const FIELD_HASH: isize = 3;
-pub const FIELD_POP: isize = 4;
-pub const FIELD_TAIL: isize = 5;
-
-struct MapFields {
-    base: *mut u64,
-}
-
-impl MapFields {
-    fn count(&self) -> u64 {
-        unsafe {
-            bottom_32(*self.base.offset(FIELD_COUNT))
-        }
-    }
-
-    fn meta(&self) -> u64 {
-        unsafe {
-            *self.base.offset(FIELD_META)
-        }
-    }
-
-    fn hash(&self) -> u64 {
-        unsafe {
-            bottom_32(*self.base.offset(FIELD_HASH))
-        }
-    }
-
-    fn population(&self) -> u64 {
-        unsafe {
-            bottom_32(*self.base.offset(FIELD_POP))
-        }
-    }
-
-    fn population_leaf(&self) -> u64 {
-        unsafe {
-            top_32(*self.base.offset(FIELD_POP))
-        }
-    }
-
-    fn tail(&self) -> &[u64] {
-        unsafe {
-            let length = self.population().count_ones() * 2;
-            use std::slice::from_raw_parts;
-            from_raw_parts(self.base.offset(FIELD_TAIL), length as usize)
-        }
-    }
-}
+pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
+pub const ARITY: u32 = 1 << BITS;
+pub const NODE_CAP: u32 = ARITY;
+pub const MASK: u32 = ARITY - 1;
+pub const MAX_LEVELS: u32 = (32 + BITS - 1) / BITS;
 
 pub static MAP_SENTINEL: u8 = 0;
+
 pub struct Map {
-    base: u64,
+    prism: Unit,
 }
 
+impl Map {
+    pub fn new() -> Value {
+        let unit_count = 3 /* prism, guide, pop */ + 8 /* four pairs */;
+        let mut s = Segment::new(unit_count);
+        s[1] = prism::<Map>();
+        s[2] = Guide::new().into();
+        s[3] = Pop::new().into();
+        Value { handle: Unit::from(s) }
+    }
 
-// Basic operations: struct as u64, impl treating struct as base address
-// Using ptr as struct reference, then trait object. Calling object methods.
-// Extracting vtable pointer from trait object.
+    fn line(&self) -> Line {
+        Unit::from(&self.prism as *const Unit).into()
+    }
+}
+
+impl Dispatch for Map {
+    fn tear_down(&self) {
+        unimplemented!()
+    }
+}
+
+impl fmt::Display for Map {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        unimplemented!()
+    }
+}
+
+impl Identification for Map {
+    fn type_name(&self) -> String {
+        "Map".to_string()
+    }
+
+    fn type_sentinel(&self) -> *const u8 {
+        (& MAP_SENTINEL) as *const u8
+    }
+}
+
+impl Distinguish for Map {}
+
+impl Aggregate for Map {
+    fn get(&self, k: Unit) -> Unit {
+        unimplemented!()
+    }
+}
+impl Sequential for Map {}
+impl Associative for Map {
+    fn assoc(&self, k: Unit, v: Unit) -> Unit {
+        unimplemented!()
+    }
+}
+impl Reversible for Map {}
+impl Sorted for Map {}
+impl Named for Map {}
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    /*
-    #[test]
-    fn can_erase() {
-        let mut v: Vec<u64> = Vec::with_capacity(2);
-        unsafe {
-            v.set_len(2);
-        }
-        let mut p = v.as_mut_ptr();
-        let mut m = p as *mut Map;
-        let result = unsafe {
-            let mut mref = &mut *m;
-            let mref_as_u64 = mref as *const Map as u64;
-            let mut magg = mref as &mut Aggregate;
-            use std::mem;
-
-            assert_eq!(mem::size_of::<&Map>(), 8);
-            //assert_eq!(;::size_of::<&Aggregate>(), 16);
-            let res = magg.conj(Value::FALSE);
-            let raw_ptrs = unsafe {mem::transmute::<&Aggregate, [u64;2]>(magg)};
-            assert_eq!(raw_ptrs[0], mref_as_u64);
-            res
-        };
-        assert!(result.is_nil());
-        assert_eq!(v[0], 14);
-        assert_eq!(v[1], 15);
-    }
-    */
 }

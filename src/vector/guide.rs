@@ -7,6 +7,9 @@
 
 use memory::unit::Unit;
 
+// TODO make post a u64, don't encapsulate this fact.
+// Necessitates switch in 32-bit word machines, store and rehydrate guide as two Units
+
 #[derive(Copy, Clone)]
 pub struct Guide {
     pub post: Unit,
@@ -17,14 +20,6 @@ pub struct Guide {
 // A byte is distance to anchor
 // Four H bytes are for storing the hash
 // Two C bytes for storing the count of the collection
-
-// B byte is broken down as bit fields:
-// M R R R | H C C C
-//
-// M is presence of meta
-// Three R bits are Root offset
-// H is presence of hash
-// Three C bits are count shift
 
 // New B byte layout
 // Info byte in bit fields:

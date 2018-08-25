@@ -39,7 +39,7 @@ pub fn get(prism: Line, k: Unit) -> Option<Unit> {
     match pop.key_idx(hash_stack & MASK) {
         Ok(idx) => {
             let i = child_count * 2 + idx * 2;
-            if (chunks == 1) & pop.child_idx(hash_stack & MASK).is_ok() {
+            if (chunks == 1) && pop.child_idx(hash_stack & MASK).is_ok() {
                 let collision_count: u32 = base[1 + i as usize].into();
                 let collision: Segment = base[1 + i as usize + 1].into();
                 for j in 0..collision_count {

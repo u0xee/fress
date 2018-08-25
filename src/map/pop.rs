@@ -23,11 +23,19 @@ impl Pop {
         (x & mask) as u32
     }
 
+    pub fn child_pop_count(&self) -> u32 {
+        self.child_pop().count_ones()
+    }
+
     pub fn key_pop(&self) -> u32 {
         let x: u64 = self.population.into();
         let y = x >> ARITY;
         let mask = (1u64 << ARITY) - 1;
         (y & mask) as u32
+    }
+
+    pub fn key_pop_count(&self) -> u32 {
+        self.key_pop().count_ones()
     }
 
     pub fn from_pops(child_pop: u32, key_pop: u32) -> Pop {
@@ -57,6 +65,12 @@ impl Pop {
     pub fn key_idx(&self, hash_chunk: u32) -> Result<u32, u32> {
         let k = self.key_pop();
         Pop::index_in_pop(k, hash_chunk)
+    }
+
+    pub fn any_idx(&self, hash_chunk: u32) -> bool {
+        let test_bit = 1u32 << hash_chunk;
+        let combined_pop = self.child_pop() | self.key_pop();
+        (test_bit & combined_pop) != 0
     }
 }
 

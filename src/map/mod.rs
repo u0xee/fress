@@ -82,6 +82,10 @@ impl Reversible for Map {}
 impl Sorted for Map {}
 impl Named for Map {}
 
+pub fn un_set(guide: Guide) -> u32 {
+    let x: u64 = guide.post.into();
+    (((x >> 52) & 1) ^ 1) as u32
+}
 
 #[cfg(test)]
 mod tests {

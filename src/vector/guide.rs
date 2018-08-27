@@ -75,6 +75,11 @@ impl Guide {
         Unit::from(x + 1).into()
     }
 
+    pub fn dec(&self) -> Guide {
+        let x: u64 = self.post.into();
+        Unit::from(x - 1).into()
+    }
+
     pub fn prism_to_anchor_gap(&self) -> u32 {
         let x: u64 = self.post.into();
         (x >> 56) as u32

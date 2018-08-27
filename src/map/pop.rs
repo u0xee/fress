@@ -67,10 +67,26 @@ impl Pop {
         Pop::index_in_pop(k, hash_chunk)
     }
 
-    pub fn any_idx(&self, hash_chunk: u32) -> bool {
+    pub fn contains(&self, hash_chunk: u32) -> bool {
         let test_bit = 1u32 << hash_chunk;
         let combined_pop = self.child_pop() | self.key_pop();
         (test_bit & combined_pop) != 0
+    }
+
+    pub fn children_below(&self, hash_chunk: u32) -> u32 {
+        let c = self.child_pop();
+        let test_bit = 1u32 << hash_chunk;
+        let mask = test_bit - 1;
+        let children_below_count = (c & mask).count_ones();
+        children_below_count
+    }
+
+    pub fn keys_below(&self, hash_chunk: u32) -> u32 {
+        let k = self.key_pop();
+        let test_bit = 1u32 << hash_chunk;
+        let mask = test_bit - 1;
+        let keys_below_count = (k & mask).count_ones();
+        keys_below_count
     }
 }
 

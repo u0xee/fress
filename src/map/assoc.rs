@@ -11,7 +11,7 @@ pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
     let guide: Guide = prism[1].into();
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
-    let mut pop: Pop = prism[2 + root_gap as usize].into();
+    let pop: Pop = prism[2 + root_gap as usize].into();
 
     let mut s = {
         let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
@@ -23,15 +23,40 @@ pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
     let hash = ValueUnit::from(k).hash();
     let hash_stack = hash;
     let chunks = MAX_LEVELS;
-    let x = pop.child_idx(hash_stack & MASK);
-    let y = pop.key_idx(hash_stack & MASK);
-    if !pop.any_idx(hash_stack & MASK) {
+    let unset = un_set(guide);
+
+    if !pop.contains(hash_stack & MASK) {
         // place key in root
+        let child_count = pop.child_pop_count();
+        let key_count = pop.key_pop_count();
+        let used_units = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/ +
+            (child_count << 1) + (key_count << unset);
+        let free_units = s.capacity() - used_units;
+        let mut s = if free_units >= (1 << unset) {
+            s
+        } else {
+            let total_count = child_count + key_count;
+            let content_room = total_count.next_power_of_two() << 1;
+            let cap = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/ +
+                content_room;
+            let mut segment = Segment::with_capacity(cap);
+            for i in 1..used_units {
+                segment[i] = s[i];
+            }
+            Segment::free(s);
+            segment
+        };
+        let keys_below_count = pop.keys_below(hash_stack & MASK);
+        // A P G | P | P C P C | K V K V K V K V
+        //                     | K K K K
+        //
+
         // return
         unimplemented!()
     } else {
         // line to [pop, child] in unaliased segment
         // hash_stack and chunks
+
         unimplemented!()
     }
 }

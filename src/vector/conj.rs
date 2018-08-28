@@ -55,7 +55,7 @@ pub fn unalias_root(mut segment: Segment, anchor_gap: u32, root_gap: u32, root_c
         Segment::from(s[used_units - root_count - 1]).alias()
     }
     if guide.has_meta() {
-        ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).split()
+        ValueUnit::from(s[3 /*anchor, prism, guide*/ + anchor_gap + guide.meta_gap()]).split()
     }
     if segment.unalias() == 0 {
         for i in (used_units - root_count)..used_units {
@@ -152,6 +152,7 @@ fn conj_untailed_incomplete_unaliased(prism: Line, x: Unit, guide: Guide, count:
     }
 }
 
+// TODO handle growing into large count territory
 fn conj_tailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
     let tailoff = (count - 1) & !MASK;
     let tail_count = count - tailoff;

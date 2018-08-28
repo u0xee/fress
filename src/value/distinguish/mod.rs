@@ -59,15 +59,15 @@ impl Value {
     }
 
     pub fn is_nil(&self) -> bool {
-        self.handle == Value::NIL.handle
+        self.handle == Value::NIL
     }
 
     pub fn is_true(&self) -> bool {
-        self.handle == Value::TRUE.handle
+        self.handle == Value::TRUE
     }
 
     pub fn is_false(&self) -> bool {
-        self.handle == Value::FALSE.handle
+        self.handle == Value::FALSE
     }
 
     pub fn is_char(&self) -> bool {

@@ -29,11 +29,10 @@ use std;
 use dispatch::Dispatch;
 
 impl Value {
-    pub const NIL: Value = Value { handle: Unit { word: 0x07 } };
-    pub const TRUE: Value = Value { handle: Unit { word: std::usize::MAX } };
-    pub const FALSE: Value = Value { handle: Unit { word: !0x08usize } };
+    pub const NIL: Unit = Unit { word: 0x07 };
+    pub const TRUE: Unit = Unit { word: std::usize::MAX };
+    pub const FALSE: Unit = Unit { word: !0x08usize };
 }
-
 
 #[cfg(test)]
 mod test {

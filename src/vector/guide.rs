@@ -58,7 +58,15 @@ impl Guide {
         meta_bit == 1
     }
 
+    pub fn with_meta(&self) -> Guide {
+        let x: u64 = self.post.into();
+        let meta_bit = (x >> 54) & 1;
+        Unit::from(x | (1 << 54)).into()
+    }
+
     pub fn meta_gap(&self) -> u32 {
+        // TODO 32 bit builds need adjustment
+        // part of refactoring guide to be a u64 explicitly
         let x: u64 = self.post.into();
         let large_count = (x >> 53) & 1;
         large_count as u32

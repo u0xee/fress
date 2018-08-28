@@ -15,6 +15,11 @@ use self::guide::Guide;
 mod conj;
 use self::conj::unalias_root;
 mod pop;
+mod nth;
+mod meta;
+mod assoc;
+mod util;
+use self::util::*;
 
 pub const BITS: u32 = 5; // one of 4, 5, 6
 pub const ARITY: u32 = 1 << BITS;
@@ -77,33 +82,10 @@ impl Sorted for Vector {}
 impl Named for Vector {}
 
 
-
-fn reverse_digits(mut x: u32, digit_count: u32) -> u32 {
-    let mut ret = 0u32;
-    for i in 0..digit_count {
-        ret = (ret << BITS) | (x & MASK);
-        x = x >> BITS;
-    }
-    ret
-}
-
-fn significant_bits(x: u32) -> u32 {
-    /*bits in a u32*/ 32 - x.leading_zeros()
-}
-
-fn digit_count(x: u32) -> u32 {
-    (significant_bits(x) + BITS - 1) / BITS
-}
-
-fn trailing_zero_digit_count(x: u32) -> u32 {
-    x.trailing_zeros() / BITS
-}
-
-fn root_content_count(tailoff: u32) -> u32 {
-    let last_index = tailoff - 1;
-    let dc = digit_count(last_index);
-    let last_root_index = last_index >> (BITS * (dc - 1));
-    last_root_index + 1
+pub fn count(prism: Line) -> u32 {
+    let guide: Guide = prism[1].into();
+    let count = guide.count();
+    count
 }
 
 

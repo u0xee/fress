@@ -20,7 +20,7 @@ pub fn nth(prism: Line, idx: u32) -> Unit {
     }
 }
 
-pub fn nth_untailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
+fn nth_untailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
     let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
@@ -28,7 +28,7 @@ pub fn nth_untailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
     segment[first_root + idx]
 }
 
-pub fn nth_tailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
+fn nth_tailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
     let tailoff = (count - 1) & !MASK;
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();

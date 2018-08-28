@@ -18,6 +18,7 @@ mod set;
 mod sorted_map;
 mod sorted_set;
 mod string;
+mod transducer;
 mod symbol;
 mod value;
 mod vector;

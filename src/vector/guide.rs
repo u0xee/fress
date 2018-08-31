@@ -7,12 +7,11 @@
 
 use memory::unit::Unit;
 
-// TODO make post a u64, don't encapsulate this fact.
-// Necessitates switch in 32-bit word machines, store and rehydrate guide as two Units
+// TODO store and read guide in 32-bit environment
 
 #[derive(Copy, Clone)]
 pub struct Guide {
-    pub post: Unit,
+    pub post: u64,
 }
 
 // Layout of guide unit, 64bits in bytes:
@@ -41,11 +40,11 @@ pub struct Guide {
 
 impl Guide {
     pub fn new() -> Guide {
-        Guide { post: Unit::from(0) }
+        Guide { post: 0u64 }
     }
 
     pub fn count(&self) -> u32 {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         let large_count = (x >> 53) & 1;
         let field_width = (1u64 << large_count) << 4;
         let mask = !(!0u64 << field_width);
@@ -53,65 +52,76 @@ impl Guide {
     }
 
     pub fn has_meta(&self) -> bool {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         let meta_bit = (x >> 54) & 1;
         meta_bit == 1
     }
 
     pub fn with_meta(&self) -> Guide {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         let meta_bit = (x >> 54) & 1;
-        Unit::from(x | (1 << 54)).into()
+        (x | (1 << 54)).into()
     }
 
     pub fn meta_gap(&self) -> u32 {
-        // TODO 32 bit builds need adjustment
-        // part of refactoring guide to be a u64 explicitly
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         let large_count = (x >> 53) & 1;
-        large_count as u32
+        let extra_guide_unit: u32 = if cfg!(target_pointer_width = "32") { 1 } else { 0 };
+        (large_count as u32) + extra_guide_unit
     }
 
     pub fn has_hash(&self) -> bool {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         let hash_bit = (x >> 55) & 1;
         hash_bit == 1
     }
 
     pub fn inc(&self) -> Guide {
-        let x: u64 = self.post.into();
-        Unit::from(x + 1).into()
+        let x: u64 = self.post;
+        (x + 1).into()
     }
 
     pub fn dec(&self) -> Guide {
-        let x: u64 = self.post.into();
-        Unit::from(x - 1).into()
+        let x: u64 = self.post;
+        (x - 1).into()
     }
 
     pub fn prism_to_anchor_gap(&self) -> u32 {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         (x >> 56) as u32
     }
 
     pub fn guide_to_root_gap(&self) -> u32 {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         ((x >> 48) & 0b111) as u32
     }
 
     pub fn inc_guide_to_root_gap(&self) -> Guide {
-        let x: u64 = self.post.into();
+        let x: u64 = self.post;
         Unit::from(x + (1u64 << 48)).into()
+    }
+}
+
+impl From<u64> for Guide {
+    fn from(x: u64) -> Self {
+        Guide { post: x }
+    }
+}
+
+impl Into<u64> for Guide {
+    fn into(self) -> u64 {
+        self.post
     }
 }
 
 impl From<Unit> for Guide {
     fn from(u: Unit) -> Self {
-        Guide { post: u }
+        Guide { post: u.into() }
     }
 }
 
 impl Into<Unit> for Guide {
     fn into(self) -> Unit {
-        self.post
+        Unit::from(self.post)
     }
 }

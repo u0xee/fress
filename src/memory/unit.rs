@@ -7,10 +7,11 @@
 
 //! A unit of memory.
 
-
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
-/// A Unit is one processor word. Here, 64 bits.
-#[cfg(target_arch = "x86_64")]
+
+/// A Unit is one processor word. Here, 64 or 32 bits.
+
+#[cfg(any(target_pointer_width = "64", target_pointer_width = "32"))]
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Unit {
     pub word: usize,

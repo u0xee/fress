@@ -5,29 +5,10 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-//! A cohesive fressian library for rust
+use super::*;
 
-mod bit;
-mod dispatch;
-mod fuzz;
-mod keyword;
-mod list;
-mod map;
-mod memory;
-mod rational;
-mod set;
-mod sorted_map;
-mod sorted_set;
-mod string;
-mod transducer;
-mod symbol;
-mod value;
-mod vector;
 
-pub use value::Value;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub fn tear_down(prism: Line) {
 
 }
+

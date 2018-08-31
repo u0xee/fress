@@ -32,6 +32,12 @@ impl Dispatch for Line {
     fn tear_down(&self) {
         as_dispatch(self).tear_down()
     }
+    fn anchor_gap_change(&self, delta: i32) {
+        as_dispatch(self).anchor_gap_change(delta)
+    }
+    fn unaliased(&self) -> Unit {
+        as_dispatch(self).unaliased()
+    }
 }
 
 impl fmt::Display for Line {
@@ -140,11 +146,17 @@ impl Named for Line {
     }
 }
 
-// Teagano
+
 
 impl Dispatch for Segment {
     fn tear_down(&self) {
         self.line.offset(1).tear_down()
+    }
+    fn anchor_gap_change(&self, delta: i32) {
+        self.line.offset(1).anchor_gap_change(delta)
+    }
+    fn unaliased(&self) -> Unit {
+        self.line.offset(1).unaliased()
     }
 }
 

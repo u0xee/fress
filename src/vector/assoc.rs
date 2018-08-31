@@ -27,7 +27,7 @@ pub fn assoc(prism: Line, idx: u32, x: Unit) -> (Unit, Unit) {
 fn assoc_untailed(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32) -> (Unit, Unit) {
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
-    let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
     let mut s = if segment.is_aliased() {
         unalias_root(segment, anchor_gap, root_gap, count, guide)
     } else { segment };
@@ -41,7 +41,7 @@ fn assoc_tailed(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32) -> (Un
     let tailoff = (count - 1) & !MASK;
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
-    let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
     let mut s = if segment.is_aliased() {
         unalias_root(segment, anchor_gap, root_gap, count, guide)
     } else { segment };
@@ -76,7 +76,7 @@ fn assoc_tailed(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32) -> (Un
 }
 
 fn assoc_tailed_tree(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32,
-                     anchor_gap: u32, root_gap: u32, tailoff: u32, mut header: Segment) -> (Unit, Unit) {
+                     anchor_gap: u32, root_gap: u32, tailoff: u32, header: Segment) -> (Unit, Unit) {
     let first_root = 3 + anchor_gap + root_gap;
     let digit_count = digit_count(tailoff - 1);
     let (mut stack, root_idx) = {

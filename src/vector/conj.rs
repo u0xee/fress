@@ -31,14 +31,37 @@ fn conj_untailed_complete(prism: Line, x: Unit, guide: Guide, count: u32) -> Uni
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
 
-    let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
     let mut s = if segment.is_aliased() {
         unalias_root(segment, anchor_gap, root_gap, count, guide)
     } else { segment };
-    let first_root_element = 3 + anchor_gap + root_gap;
-    s[first_root_element - 1] = tail.into();
-    s[2 + anchor_gap] = guide.inc().into();
-    Unit::from(s)
+
+    if !has_tail_space(guide) {
+        let used_units = anchor_gap + root_gap + TAIL_CAP + 3 /*anchor, prism, guide*/;
+        let mut t = if s.capacity() == used_units {
+            let mut t = Segment::with_capacity(used_units + 1);
+            for i in 1..used_units {
+                t[i] = s[i];
+            }
+            Segment::free(s);
+            t
+        } else { s };
+        let first_root_element = 3 + anchor_gap + root_gap;
+        for i in (0..TAIL_CAP).rev() {
+            let index_to_move = first_root_element + i;
+            t[index_to_move + 1] = t[index_to_move];
+        }
+        let g = with_tail_space(guide.inc_guide_to_root_gap());
+        let first_root_element = 3 + anchor_gap + root_gap + 1; // since we just inc'd root_gap
+        t[first_root_element - 1] = tail.into();
+        t[2 + anchor_gap] = g.inc().into();
+        Unit::from(t)
+    } else {
+        let first_root_element = 3 + anchor_gap + root_gap;
+        s[first_root_element - 1] = tail.into();
+        s[2 + anchor_gap] = guide.inc().into();
+        Unit::from(s)
+    }
 }
 
 pub fn unalias_root(mut segment: Segment, anchor_gap: u32, root_gap: u32, root_count: u32, guide: Guide) -> Segment {
@@ -89,8 +112,9 @@ fn conj_untailed_incomplete_aliased(prism: Line, x: Unit, guide: Guide, count: u
 
     let new_count = (count + 1).next_power_of_two();
     let new_cap = used_units + (new_count - count);
-    let (shift, guide) = if new_count == TAIL_CAP
-        { (1, guide.inc_guide_to_root_gap()) } else { (0, guide) };
+
+    let (shift, guide) = if (new_count == TAIL_CAP) && !has_tail_space(guide)
+        { (1, with_tail_space(guide.inc_guide_to_root_gap())) } else { (0, guide) };
     let mut s = Segment::with_capacity(new_cap + shift);
 
     for i in 1..(used_units - count) {
@@ -131,8 +155,9 @@ fn conj_untailed_incomplete_unaliased(prism: Line, x: Unit, guide: Guide, count:
     if used_units == cap {
         let new_count = (count + 1).next_power_of_two();
         let new_cap = used_units + (new_count - count);
-        let (shift, guide) = if new_count == TAIL_CAP
-            { (1, guide.inc_guide_to_root_gap()) } else { (0, guide) };
+
+        let (shift, guide) = if (new_count == TAIL_CAP) && !has_tail_space(guide)
+            { (1, with_tail_space(guide.inc_guide_to_root_gap())) } else { (0, guide) };
         let mut s = Segment::with_capacity(new_cap + shift);
 
         for i in 1..(used_units - count) {
@@ -165,6 +190,7 @@ fn conj_tailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
         } else { segment };
         let first_root_element = 3 + anchor_gap + guide.guide_to_root_gap();
         let mut tail = Segment::from(s[first_root_element - 1]);
+        // TODO unalias tail helper
         let mut t = if tail.is_aliased() {
             let mut t = Segment::new(TAIL_CAP);
             for i in 1..(tail_count + 1) {
@@ -193,8 +219,8 @@ fn conj_tailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
 fn conj_tailed_complete(prism: Line, x: Unit, guide: Guide, count: u32,
                         tailoff: u32, tail_count: u32) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
-    let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-    let mut s = if segment.is_aliased() {
+    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    let s = if segment.is_aliased() {
         unalias_root(segment, guide.prism_to_anchor_gap(),
                      guide.guide_to_root_gap(), root_content_count(tailoff), guide)
     } else { segment };
@@ -239,7 +265,7 @@ fn growing_height(prism: Line, x: Unit, guide: Guide, count: u32,
 }
 
 fn growing_root(prism: Line, x: Unit, guide: Guide, count: u32,
-                tailoff: u32, tail_count: u32, mut header: Segment) -> Unit {
+                tailoff: u32, tail_count: u32, header: Segment) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
     let root_count = root_content_count(tailoff);
@@ -295,7 +321,7 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
     let first_root = anchor_gap + root_gap + 3 /*anchor, prism, guide*/;
 
     let mut child = {
-        let mut child = Line::from(header).offset((first_root + root_idx) as isize);
+        let mut child = header.line_with_offset(first_root + root_idx);
 
         for _ in 0..stack_digit_count {
             let mut s = Segment::from(child[0]);
@@ -303,7 +329,7 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
             stack = stack >> BITS;
 
             if !s.is_aliased() {
-                child = Line::from(s).offset((1 + digit) as isize);
+                child = s.line_with_offset(1 + digit);
             } else {
                 let unit_count = (digit + 1).next_power_of_two();
                 let mut c = Segment::new(unit_count);
@@ -318,7 +344,7 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
                         Segment::from(c[i]).unalias();
                     }
                 }
-                let next_child = Line::from(c).offset((1 + digit) as isize);
+                let next_child = c.line_with_offset(1 + digit);
                 child[0] = c.into();
                 child = next_child;
             }

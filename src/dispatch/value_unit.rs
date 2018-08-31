@@ -32,7 +32,7 @@ impl ValueUnit {
 
     pub fn hash(&self) -> u32 {
         if self.unit.is_even() {
-            let mut s = Segment::from(self.unit);
+            let s = Segment::from(self.unit);
             s.hash()
         } else {
             // hash immediate value

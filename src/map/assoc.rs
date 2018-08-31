@@ -13,8 +13,8 @@ pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
     let root_gap = guide.guide_to_root_gap();
     let pop: Pop = prism[2 + root_gap as usize].into();
 
-    let mut s = {
-        let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    let s = {
+        let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
         if segment.is_aliased() {
             unalias_root(segment, pop, anchor_gap, root_gap, guide)
         } else { segment }
@@ -32,7 +32,7 @@ pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
         let used_units = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/ +
             (child_count << 1) + (key_count << unset);
         let free_units = s.capacity() - used_units;
-        let mut s = if free_units >= (1 << unset) {
+        let s = if free_units >= (1 << unset) {
             s
         } else {
             let total_count = child_count + key_count;

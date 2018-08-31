@@ -9,6 +9,8 @@ mod mechanism;
 pub use self::mechanism::prism;
 mod value_unit;
 pub use self::value_unit::ValueUnit;
+mod shim;
+pub use self::shim::Shim;
 use memory::unit::Unit;
 use std::fmt::Display;
 use std::cmp::Ordering;
@@ -24,6 +26,12 @@ Reversible +
 Sorted +
 Named {
     fn tear_down(&self) {
+        unimplemented!()
+    }
+    fn anchor_gap_change(&self, delta: i32) {
+        unimplemented!()
+    }
+    fn unaliased(&self) -> Unit {
         unimplemented!()
     }
 }

@@ -12,7 +12,7 @@ pub fn meta(prism: Line) -> Unit {
     if guide.has_meta() {
         let anchor_gap = guide.prism_to_anchor_gap();
         let root_gap = guide.guide_to_root_gap();
-        let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+        let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
         segment[3 /*anchor, prism, guide*/ + anchor_gap + guide.meta_gap()]
     } else {
         Value::NIL
@@ -27,7 +27,7 @@ pub fn with_meta(prism: Line, m: Unit) -> Unit {
     let tailoff = (count - 1) & !MASK;
     let root_count = if count <= TAIL_CAP { count } else { root_content_count(tailoff) };
 
-    let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
     let mut s = if segment.is_aliased() {
         unalias_root(segment, anchor_gap, root_gap, root_count, guide)
     } else { segment };

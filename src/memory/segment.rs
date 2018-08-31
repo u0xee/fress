@@ -34,7 +34,7 @@ impl Segment {
         Segment::with_capacity(1 + after_anchor_unit_count)
     }
 
-    pub fn with_capacity(capacity: u32) -> Segment {
+    fn with_capacity_internal(capacity: u32) -> Segment {
         let mut unanchored: Segment = {
             let v: Vec<Unit> = Vec::with_capacity(capacity as usize);
             let ptr = v.as_ptr();
@@ -47,7 +47,18 @@ impl Segment {
         anchored
     }
 
-    pub fn free(s: Segment) {
+    #[cfg(not(test))]
+    pub fn with_capacity(capacity: u32) -> Segment {
+        Segment::with_capacity_internal(capacity)
+    }
+
+    #[cfg(test)]
+    pub fn with_capacity(capacity: u32) -> Segment {
+        // instrument
+        Segment::with_capacity_internal(capacity)
+    }
+
+    fn free_internal(s: Segment) {
         unsafe {
             let cap = s.capacity();
             let v: Vec<Unit> =
@@ -57,25 +68,92 @@ impl Segment {
         }
     }
 
+    #[cfg(not(test))]
+    pub fn free(s: Segment) {
+        Segment::free_internal(s)
+    }
+
+    #[cfg(test)]
+    pub fn free(s: Segment) {
+        // instrument
+        Segment::free_internal(s)
+    }
+
     pub fn capacity(&self) -> u32 {
         Anchor::from(self.line[0]).capacity()
     }
 
-    pub fn is_aliased(&self) -> bool {
+    fn is_aliased_internal(&self) -> bool {
         Anchor::from(self.line[0]).is_aliased()
     }
 
-    pub fn alias(&mut self) {
+    #[cfg(not(test))]
+    pub fn is_aliased(&self) -> bool {
+        self.is_aliased_internal()
+    }
+
+    #[cfg(test)]
+    pub fn is_aliased(&self) -> bool {
+        // spurious true returns
+        self.is_aliased_internal()
+    }
+
+    fn alias_internal(&mut self) {
         // TODO CAS
         let a: usize = self.line[0].into();
         self.line[0] = (a + 1).into();
     }
 
-    pub fn unalias(&mut self) -> u32 {
+    #[cfg(not(test))]
+    pub fn alias(&mut self) {
+        self.alias_internal()
+    }
+
+    #[cfg(test)]
+    pub fn alias(&mut self) {
+        // log
+        self.alias_internal()
+    }
+
+    fn unalias_internal(&mut self) -> u32 {
         // TODO CAS
         let a: usize = self.line[0].into();
         self.line[0] = (a - 1).into();
         Anchor::from(self.line[0]).aliases()
+    }
+
+    #[cfg(not(test))]
+    pub fn unalias(&mut self) -> u32 {
+        self.unalias_internal()
+    }
+
+    #[cfg(test)]
+    pub fn unalias(&mut self) -> u32 {
+        // log
+        self.unalias_internal()
+    }
+
+    pub fn line_with_offset(&self, offset: u32) -> AnchoredLine {
+        AnchoredLine { base: *self, offset: offset as usize }
+    }
+}
+
+pub struct AnchoredLine {
+    pub base: Segment,
+    pub offset: usize,
+}
+
+impl Index<usize> for AnchoredLine {
+    type Output = Unit;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        Index::index(&self.base, self.offset + index)
+    }
+}
+
+impl IndexMut<usize> for AnchoredLine {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        IndexMut::index_mut(&mut self.base, self.offset + index)
     }
 }
 
@@ -94,12 +172,33 @@ impl From<Line> for Segment {
 impl Index<usize> for Segment {
     type Output = Unit;
 
+    #[cfg(test)]
+    fn index(&self, index: usize) -> &Self::Output {
+        let cap = self.capacity() as usize;
+        if index >= cap {
+            panic!("Indexing {} outside Segment of capacity {}!", index, cap);
+        }
+        &self.line[index]
+    }
+    #[cfg(not(test))]
     fn index(&self, index: usize) -> &Self::Output {
         &self.line[index]
     }
 }
 
 impl IndexMut<usize> for Segment {
+    #[cfg(test)]
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        let cap = self.capacity() as usize;
+        if index >= cap || index == 0 {
+            panic!("Indexing {} outside Segment of capacity {}.", index, cap);
+        }
+        if Anchor::from(self.line[0]).is_aliased() {
+            panic!("Mut indexing {} in aliased Segment.", index);
+        }
+        &mut self.line[index]
+    }
+    #[cfg(not(test))]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.line[index]
     }
@@ -109,13 +208,13 @@ impl Index<u32> for Segment {
     type Output = Unit;
 
     fn index(&self, index: u32) -> &Self::Output {
-        &self.line[index as usize]
+        Index::index(self, index as usize)
     }
 }
 
 impl IndexMut<u32> for Segment {
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
-        &mut self.line[index as usize]
+        IndexMut::index_mut(self, index as usize)
     }
 }
 
@@ -123,12 +222,18 @@ impl Index<i32> for Segment {
     type Output = Unit;
 
     fn index(&self, index: i32) -> &Self::Output {
-        &self.line[index as usize]
+        Index::index(self, index as usize)
     }
 }
 
 impl IndexMut<i32> for Segment {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
-        &mut self.line[index as usize]
+        IndexMut::index_mut(self, index as usize)
     }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
 }

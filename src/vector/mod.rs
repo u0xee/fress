@@ -18,6 +18,7 @@ mod pop;
 mod nth;
 mod meta;
 mod assoc;
+mod tear_down;
 mod util;
 use self::util::*;
 
@@ -88,6 +89,15 @@ pub fn count(prism: Line) -> u32 {
     count
 }
 
+pub fn has_tail_space(guide: Guide) -> bool {
+    let x: u64 = guide.post.into();
+    ((x >> 52) & 1) == 1
+}
+
+pub fn with_tail_space(guide: Guide) -> Guide {
+    let x: u64 = guide.post.into();
+    Unit::from(x | (1 << 52)).into()
+}
 
 #[cfg(test)]
 mod tests {

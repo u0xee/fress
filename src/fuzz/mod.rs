@@ -4,7 +4,7 @@
 // which can be found in the file epl-v10.html at the root of this distribution.
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 
 
 // From George Marsaglia's "Xorshift RNGs"
@@ -19,12 +19,15 @@ thread_local! {
     pub static PRN: Cell<u64> = Cell::new(0);
 }
 
-pub fn next_random() -> u64 {
-    PRN.with(|y| {
+pub fn next_random() -> (u64, String) {
+    // could consult previous run data, return a target number (rather than from below)
+
+    let x = PRN.with(|y| {
         let ret = y.get();
         y.set(cycle(ret));
         ret
-    })
+    });
+    (x, "]".to_string())
 }
 
 
@@ -68,13 +71,23 @@ pub mod dummy {
     impl Named for DummyValue {}
 }
 
+
+thread_local! {
+    pub static LOG: RefCell<Vec<String>> = RefCell::new(Vec::new());
+}
+
+pub fn log(m: String) {
+    LOG.with(|v_cell| {
+        let mut v = v_cell.borrow_mut();
+        v.push(m);
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     #[test]
     fn works() {
-        assert_eq!(next_random(), 0);
-        assert_eq!(next_random(), 0);
     }
     #[test]
     fn try_dummy() {

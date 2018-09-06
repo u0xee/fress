@@ -14,6 +14,7 @@ pub mod anchor;
 pub use self::unit::Unit;
 pub use self::line::Line;
 pub use self::segment::Segment;
+pub use self::segment::AnchoredLine;
 pub use self::anchor::Anchor;
 
 /*

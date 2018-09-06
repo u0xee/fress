@@ -95,7 +95,7 @@ impl Aggregate for Line {
         as_dispatch(self).peek()
     }
 
-    fn pop(&self) -> Unit {
+    fn pop(&self) -> (Unit, Unit) {
         as_dispatch(self).pop()
     }
 
@@ -115,7 +115,7 @@ impl Associative for Line {
         as_dispatch(self).contains(x)
     }
 
-    fn assoc(&self, k: Unit, v: Unit) -> Unit {
+    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
         as_dispatch(self).assoc(k, v)
     }
 
@@ -215,7 +215,7 @@ impl Aggregate for Segment {
         self.line.offset(1).peek()
     }
 
-    fn pop(&self) -> Unit {
+    fn pop(&self) -> (Unit, Unit) {
         self.line.offset(1).pop()
     }
 
@@ -235,7 +235,7 @@ impl Associative for Segment {
         self.line.offset(1).contains(x)
     }
 
-    fn assoc(&self, k: Unit, v: Unit) -> Unit {
+    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
         self.line.offset(1).assoc(k, v)
     }
 

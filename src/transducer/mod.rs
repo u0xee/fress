@@ -19,7 +19,7 @@ pub trait Process {
         let (next, rest) = process_stack.split_last_mut().unwrap();
         next.ingest_kv(rest, k, v)
     }
-    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {{}
+    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
         let (next, rest) = process_stack.split_last_mut().unwrap();
         next.last_call(rest)
     }

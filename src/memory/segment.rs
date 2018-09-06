@@ -23,6 +23,8 @@ use memory::anchor::Anchor;
 use memory::line::Line;
 use std::mem;
 use std::ops::{Index, IndexMut};
+#[cfg(test)]
+use fuzz;
 
 #[derive(Copy, Clone)]
 pub struct Segment {
@@ -54,8 +56,15 @@ impl Segment {
 
     #[cfg(test)]
     pub fn with_capacity(capacity: u32) -> Segment {
-        // instrument
-        Segment::with_capacity_internal(capacity)
+        let (x, log_tail) = fuzz::next_random();
+        // TODO random capacity increase
+        // TODO random zeroing, randomizing memory
+
+        let s = Segment::with_capacity_internal(capacity);
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}]",
+                          n = "memory::segment::Segment", e = "create",
+                          s = s.line.line as usize, c = capacity));
+        s
     }
 
     fn free_internal(s: Segment) {
@@ -75,7 +84,9 @@ impl Segment {
 
     #[cfg(test)]
     pub fn free(s: Segment) {
-        // instrument
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}]",
+                          n = "memory::segment::Segment", e = "free",
+                          s = s.line.line as usize, c = s.capacity()));
         Segment::free_internal(s)
     }
 
@@ -95,24 +106,40 @@ impl Segment {
     #[cfg(test)]
     pub fn is_aliased(&self) -> bool {
         // spurious true returns
-        self.is_aliased_internal()
+        let (x, log_tail) = fuzz::next_random();
+        let should_true= (x & 0x7) == 0x7;
+        let real_ret = self.is_aliased_internal();
+        let intended_ret = real_ret || should_true;
+        let return_description = if should_true && !real_ret { "spurious_true" }
+        else {
+            if real_ret { "true" } else { "false" }
+        };
+
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}, 'return': {r}{tail}",
+                          n = "memory::segment::Segment", e = "is_aliased",
+                          s = self.line.line as usize, c = self.capacity(),
+                          r = return_description, tail = log_tail));
+        intended_ret
     }
 
-    fn alias_internal(&mut self) {
+    fn alias_internal(&mut self) -> Anchor {
         // TODO CAS
         let a: usize = self.line[0].into();
         self.line[0] = (a + 1).into();
+        Unit::from(a).into()
     }
 
     #[cfg(not(test))]
     pub fn alias(&mut self) {
-        self.alias_internal()
+        self.alias_internal();
     }
 
     #[cfg(test)]
     pub fn alias(&mut self) {
-        // log
-        self.alias_internal()
+        let a = self.alias_internal();
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}, 'alias_count': {ac}]",
+                          n = "memory::segment::Segment", e = "alias",
+                          s = self.line.line as usize, c = self.capacity(), ac = a.aliases()));
     }
 
     fn unalias_internal(&mut self) -> u32 {
@@ -129,8 +156,11 @@ impl Segment {
 
     #[cfg(test)]
     pub fn unalias(&mut self) -> u32 {
-        // log
-        self.unalias_internal()
+        let alias_count = self.unalias_internal();
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}, 'alias_count': {ac}]",
+                          n = "memory::segment::Segment", e = "unalias",
+                          s = self.line.line as usize, c = self.capacity(), ac = alias_count));
+        alias_count
     }
 
     pub fn line_with_offset(&self, offset: u32) -> AnchoredLine {
@@ -138,6 +168,7 @@ impl Segment {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct AnchoredLine {
     pub base: Segment,
     pub offset: usize,
@@ -175,6 +206,9 @@ impl Index<usize> for Segment {
     #[cfg(test)]
     fn index(&self, index: usize) -> &Self::Output {
         let cap = self.capacity() as usize;
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}, 'index': {i}]",
+                          n = "memory::segment::Segment", e = "index",
+                          s = self.line.line as usize, c = cap, i = index));
         if index >= cap {
             panic!("Indexing {} outside Segment of capacity {}!", index, cap);
         }
@@ -190,6 +224,9 @@ impl IndexMut<usize> for Segment {
     #[cfg(test)]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         let cap = self.capacity() as usize;
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}, 'index': {i}]",
+                          n = "memory::segment::Segment", e = "index_mut",
+                          s = self.line.line as usize, c = cap, i = index));
         if index >= cap || index == 0 {
             panic!("Indexing {} outside Segment of capacity {}.", index, cap);
         }

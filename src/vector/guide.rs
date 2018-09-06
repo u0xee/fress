@@ -91,6 +91,15 @@ impl Guide {
         (x >> 56) as u32
     }
 
+    pub fn with_anchor_gap_change(&self, delta: i32) -> Guide {
+        let x: u64 = self.post;
+        let anchor_gap = self.prism_to_anchor_gap();
+        let new_gap = ((anchor_gap as i32) + delta) as u64;
+        let mask = (1u64 << 56) - 1;
+        let new_x = (x & mask) | (new_gap << 56);
+        Unit::from(new_x).into()
+    }
+
     pub fn guide_to_root_gap(&self) -> u32 {
         let x: u64 = self.post;
         ((x >> 48) & 0b111) as u32

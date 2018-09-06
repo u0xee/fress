@@ -10,7 +10,7 @@ pub use self::mechanism::prism;
 mod value_unit;
 pub use self::value_unit::ValueUnit;
 mod shim;
-pub use self::shim::Shim;
+pub use self::shim::BlankShim;
 use memory::unit::Unit;
 use std::fmt::Display;
 use std::cmp::Ordering;
@@ -76,7 +76,7 @@ pub trait Aggregate {
     fn peek(&self) -> Unit {
         unimplemented!()
     }
-    fn pop(&self) -> Unit {
+    fn pop(&self) -> (Unit, Unit) {
         unimplemented!()
     }
     fn get(&self, k: Unit) -> Unit {
@@ -94,7 +94,7 @@ pub trait Associative {
     fn contains(&self, x: Unit) -> bool {
         unimplemented!()
     }
-    fn assoc(&self, k: Unit, v: Unit) -> Unit {
+    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
         unimplemented!()
     }
     fn dissoc(&self, k: Unit) -> Unit {

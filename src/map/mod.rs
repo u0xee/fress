@@ -74,7 +74,7 @@ impl Aggregate for Map {
 }
 impl Sequential for Map {}
 impl Associative for Map {
-    fn assoc(&self, k: Unit, v: Unit) -> Unit {
+    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
         unimplemented!()
     }
 }

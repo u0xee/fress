@@ -5,29 +5,21 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-//! A cohesive fressian library for rust
+extern crate fress_rust;
 
-mod bit;
-mod dispatch;
-pub mod fuzz;
-mod keyword;
-mod list;
-mod map;
-mod memory;
-mod rational;
-mod set;
-mod sorted_map;
-mod sorted_set;
-mod string;
-mod transducer;
-mod symbol;
-mod value;
-mod vector;
+use fress_rust::fuzz::{cycle, cycle_n};
 
-pub use value::Value;
+fn main() {
+    print_ten_from(1u64);
+    println!();
+    print_ten_from(!1u64);
+    println!();
+    print_ten_from(!cycle(1u64));
+}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
+fn print_ten_from(mut x: u64) {
+    for i in 0..10 {
+        println!("{}th -> {:16X}", i, x);
+        x = cycle(x);
+    }
 }

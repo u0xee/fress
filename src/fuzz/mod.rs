@@ -15,6 +15,13 @@ pub fn cycle(mut y: u64) -> u64 {
     y
 }
 
+pub fn cycle_n(mut y: u64, n: u32) -> u64 {
+    for _ in 0..n {
+        y = cycle(y);
+    }
+    y
+}
+
 thread_local! {
     pub static PRN: Cell<u64> = Cell::new(0);
 }
@@ -30,6 +37,9 @@ pub fn next_random() -> (u64, String) {
     (x, "]".to_string())
 }
 
+// http://www.wolframalpha.com/input/?i=N%5B2*(2*pi)%5E(-1%2F2)+*+(integrate+e%5E(-0.5+*+x%5E2)+from+3+to+infinity),+20%5D
+// 0.00269979606326019
+// 0.0228002039367398
 
 pub mod dummy {
     use std::fmt;

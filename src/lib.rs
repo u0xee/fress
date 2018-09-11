@@ -7,22 +7,21 @@
 
 //! A cohesive fressian library for rust
 
-mod bit;
-mod dispatch;
+pub mod dispatch;
 pub mod fuzz;
-mod keyword;
-mod list;
-mod map;
-mod memory;
-mod rational;
-mod set;
-mod sorted_map;
-mod sorted_set;
-mod string;
-mod transducer;
-mod symbol;
-mod value;
-mod vector;
+pub mod keyword;
+pub mod list;
+pub mod map;
+pub mod memory;
+pub mod rational;
+pub mod set;
+pub mod sorted_map;
+pub mod sorted_set;
+pub mod string;
+pub mod transducer;
+pub mod symbol;
+pub mod value;
+pub mod vector;
 
 pub use value::Value;
 

@@ -20,6 +20,7 @@
 //! They point to segments that have a distributor as the first unit.
 //!
 
+/*
 pub mod associative;
 pub mod boolean;
 pub mod character;
@@ -40,8 +41,8 @@ pub mod sorted_set;
 pub mod string;
 pub mod symbol;
 pub mod vector;
+*/
 
-pub use self::vector::VectorValue;
 use Value;
 
 

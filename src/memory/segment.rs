@@ -36,7 +36,7 @@ impl Segment {
         Segment::with_capacity(1 + after_anchor_unit_count)
     }
 
-    fn with_capacity_internal(capacity: u32) -> Segment {
+    pub fn with_capacity_internal(capacity: u32) -> Segment {
         let mut unanchored: Segment = {
             let v: Vec<Unit> = Vec::with_capacity(capacity as usize);
             let ptr = v.as_ptr();
@@ -56,14 +56,33 @@ impl Segment {
 
     #[cfg(test)]
     pub fn with_capacity(capacity: u32) -> Segment {
-        let (x, log_tail) = fuzz::next_random();
-        // TODO random capacity increase
-        // TODO random zeroing, randomizing memory
+        let (seed, log_tail) = fuzz::next_random();
+        let p = fuzz::uniform_f64(seed, fuzz::cycle(seed));
+        let extra_cap = if p < 0.67 {
+            (fuzz::normal_f64(fuzz::cycle_n(seed, 2)).abs() * 4.0) as u32
+        } else {
+            let seed2 = fuzz::cycle_n(seed, 2);
+            (fuzz::uniform_f64(seed2, fuzz::cycle(seed2)) * 30.0) as u32 + 10
+        };
+        let cap = capacity + extra_cap;
+        let mut s = Segment::with_capacity_internal(cap);
+        let mut seed = fuzz::cycle_n(seed, 4);
+        let should_zero = (seed.count_ones() & 1) == 0;
+        let fill_description = if should_zero { "zero" } else { "random" };
+        if should_zero {
+            for i in 1..cap {
+                s.line[i as usize] = 0.into();
+            }
+        } else {
+            for i in 1..cap {
+                s.line[i as usize] = seed.into();
+                seed = fuzz::cycle(seed);
+            }
+        }
 
-        let s = Segment::with_capacity_internal(capacity);
-        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'capacity': {c}]",
-                          n = "memory::segment::Segment", e = "create",
-                          s = s.line.line as usize, c = capacity));
+        fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'requested_capacity': {c}, 'given_capacity': {g}, 'filled_with': {f}{tail}",
+                          n = "memory::segment::Segment", e = "create", s = s.line.line as usize,
+                          c = capacity, g = cap, f = fill_description, tail = log_tail));
         s
     }
 
@@ -107,7 +126,7 @@ impl Segment {
     pub fn is_aliased(&self) -> bool {
         // spurious true returns
         let (x, log_tail) = fuzz::next_random();
-        let should_true= (x & 0x7) == 0x7;
+        let should_true= ((x ^ (x >> 32)) & 0x7) == 0x7;
         let real_ret = self.is_aliased_internal();
         let intended_ret = real_ret || should_true;
         let return_description = if should_true && !real_ret { "spurious_true" }

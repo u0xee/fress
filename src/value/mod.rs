@@ -32,6 +32,11 @@ impl Value {
     pub const NIL: Unit = Unit { word: 0x07 };
     pub const TRUE: Unit = Unit { word: std::usize::MAX };
     pub const FALSE: Unit = Unit { word: !0x08usize };
+
+    pub fn add_one_test(&self) -> Value {
+        let x: u64 = self.handle.into();
+        Value { handle: (x + 1).into() }
+    }
 }
 
 #[cfg(test)]

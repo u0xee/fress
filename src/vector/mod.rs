@@ -21,6 +21,8 @@ mod assoc;
 mod tear_down;
 mod util;
 use self::util::*;
+#[cfg(test)]
+use fuzz;
 
 pub const BITS: u32 = 5; // one of 4, 5, 6
 pub const ARITY: u32 = 1 << BITS;
@@ -29,13 +31,28 @@ pub const MASK: u32 = ARITY - 1;
 
 pub static VECTOR_SENTINEL: u8 = 0;
 
+/// Represents a Vector
 pub struct Vector {
     prism: Unit,
 }
 
 impl Vector {
+    #[cfg(not(test))]
     pub fn new() -> Unit {
-        // TODO randomize root_gap and anchor_gap under test build
+        let mut s = Segment::new(6);
+        s[1] = prism::<Vector>();
+        s[2] = Guide::new().into();
+        Unit::from(s)
+    }
+
+    #[cfg(test)]
+    pub fn new() -> Unit {
+        let (seed, log_tail) = fuzz::next_random();
+        let anchor_gap = (fuzz::uniform_f64(seed, fuzz::cycle(seed)) * 200.0) as u32;
+        let seed2 = fuzz::cycle_n(seed, 2);
+        let root_gap = (fuzz::uniform_f64(seed2, fuzz::cycle(seed2)) * 4.0) as u32;
+
+        // TODO setup vector segment with appropriate dimensions
         let mut s = Segment::new(6);
         s[1] = prism::<Vector>();
         s[2] = Guide::new().into();

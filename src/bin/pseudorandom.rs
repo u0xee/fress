@@ -7,7 +7,7 @@
 
 extern crate fress_rust;
 
-use fress_rust::fuzz::{cycle, cycle_n, exponent_offset, uniform_f64, normal_f64};
+use fress_rust::fuzz::{cycle, cycle_n, uniform_f64, normal_f64};
 
 fn main() {
     /*
@@ -33,7 +33,7 @@ fn main() {
 
 fn normal_stats(mut seed: u64) {
     let mut counts = [0; 3];
-    let samples = 10000000;
+    let samples = 1000;
     for _ in 0..samples {
         let f = normal_f64(seed);
         let abs_f = f.abs();
@@ -54,7 +54,7 @@ fn normal_stats(mut seed: u64) {
 
 fn fstats(mut seed: u64) {
     let mut counts = [0; 100];
-    let samples = 1000000;
+    let samples = 1000;
     for i in 0..samples {
         let f = uniform_f64(seed, cycle(seed));
         let x = f * 100f64; // percentile
@@ -67,20 +67,6 @@ fn fstats(mut seed: u64) {
     for i in 0..100 {
         let x = counts[i as usize];
         println!("[{}] => {} ({:.6} percent)", i, x, (x as f64 * 10000f64) / (samples as f64));
-    }
-}
-
-fn stats(mut seed: u64) {
-    let mut counts = [0; 30];
-    let samples = 1000000;
-    for i in 0..samples {
-        let x = exponent_offset(seed);
-        counts[x as usize] += 1;
-        seed = cycle(seed);
-    }
-    for i in 0..30 {
-        let x = counts[i as usize];
-        println!("[{}] => {} ({:.6} percent)", i, x, (x as f64 * 100f64) / (samples as f64));
     }
 }
 

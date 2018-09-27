@@ -109,6 +109,12 @@ impl Guide {
         let x: u64 = self.post;
         Unit::from(x + (1u64 << 48)).into()
     }
+
+    pub fn with_root_gap_change(&self, delta: i32) -> Guide {
+        let x: u64 = self.post;
+        // TODO verify works
+        Unit::from(x + ((delta as u64) << 48)).into()
+    }
 }
 
 impl From<u64> for Guide {

@@ -77,7 +77,7 @@ pub mod dummy {
     }
     impl fmt::Display for DummyValue {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            unimplemented!()
+            write!(f, "Dummy")
         }
     }
     impl Identification for DummyValue {}

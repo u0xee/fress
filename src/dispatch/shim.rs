@@ -34,17 +34,29 @@ impl BlankShim {
     fn line(&self) -> Line {
         Unit::from(&self.prism as *const Unit).into()
     }
+
+    fn gap(&self) -> u32 {
+        self.line()[1].into()
+    }
+
+    fn next_prism(&self) -> Line {
+        self.line().offset((2 + self.gap()) as isize)
+    }
 }
 
 impl Dispatch for BlankShim {
     fn tear_down(&self) {
-        unimplemented!()
+        self.next_prism().tear_down()
+    }
+
+    fn unaliased(&self) -> Unit {
+        self.next_prism().unaliased()
     }
 }
 
 impl fmt::Display for BlankShim {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        unimplemented!()
+        self.next_prism().fmt(f)
     }
 }
 
@@ -59,9 +71,34 @@ impl Identification for BlankShim {
 }
 
 impl Distinguish for BlankShim {}
-impl Aggregate for BlankShim {}
-impl Sequential for BlankShim {}
-impl Associative for BlankShim {}
+impl Aggregate for BlankShim {
+    fn count(&self) -> u32 {
+        self.next_prism().count()
+    }
+    fn conj(&self, x: Unit) -> Unit {
+        self.next_prism().conj(x)
+    }
+    fn meta(&self) -> Unit {
+        self.next_prism().meta()
+    }
+    fn with_meta(&self, m: Unit) -> Unit {
+        self.next_prism().with_meta(m)
+    }
+    fn pop(&self) -> (Unit, Unit) {
+        self.next_prism().pop()
+    }
+}
+impl Sequential for BlankShim {
+    fn nth(&self, idx: u32) -> Unit {
+        self.next_prism().nth(idx)
+    }
+}
+impl Associative for BlankShim {
+    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
+        self.next_prism().assoc(k, v)
+    }
+}
 impl Reversible for BlankShim {}
 impl Sorted for BlankShim {}
 impl Named for BlankShim {}
+

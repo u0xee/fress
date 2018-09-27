@@ -31,6 +31,16 @@ pub const MASK: u32 = ARITY - 1;
 
 pub static VECTOR_SENTINEL: u8 = 0;
 
+pub struct VectorValue {
+    anchor_line: Line,
+}
+
+impl VectorValue {
+    pub fn new() -> Self {
+        VectorValue { anchor_line: Vector::new().into() }
+    }
+}
+
 /// Represents a Vector
 pub struct Vector {
     prism: Unit,
@@ -52,10 +62,11 @@ impl Vector {
         let seed2 = fuzz::cycle_n(seed, 2);
         let root_gap = (fuzz::uniform_f64(seed2, fuzz::cycle(seed2)) * 4.0) as u32;
 
-        // TODO setup vector segment with appropriate dimensions
-        let mut s = Segment::new(6);
+        let mut s = Segment::new(6 + root_gap);
         s[1] = prism::<Vector>();
-        s[2] = Guide::new().into();
+        s[2] = Guide::new().with_root_gap_change(root_gap as i32).into();
+        // TODO understand unaliased semantics and how to construct shim
+        //BlankShim::on_top_of()
         Unit::from(s)
     }
 

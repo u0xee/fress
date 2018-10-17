@@ -10,6 +10,7 @@ use std::mem;
 pub mod unit;
 pub mod line;
 pub mod segment;
+pub mod segmen; //temp
 pub mod anchor;
 pub use self::unit::Unit;
 pub use self::line::Line;

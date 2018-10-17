@@ -22,8 +22,8 @@ use memory::unit::Unit;
 use memory::anchor::Anchor;
 use memory::line::Line;
 use std::mem;
+use std::fmt;
 use std::ops::{Index, IndexMut};
-#[cfg(test)]
 use fuzz;
 
 #[derive(Copy, Clone)]
@@ -31,8 +31,31 @@ pub struct Segment {
     pub line: Line,
 }
 
+impl fmt::Debug for Segment {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut string = String::new();
+        string.push_str("[");
+        string.push_str(&format!("{:?}", self[1]));
+        for i in 2..self.capacity() {
+            string.push_str(", ");
+            string.push_str(&format!("{:?}", self[i]));
+        }
+        string.push_str("]");
+        write!(f, "Segment {:p}, {:?}\n    {}",
+               self.line.line, Anchor::from(self.line[0]),
+               string)
+    }
+}
+
 impl Segment {
     pub fn new(after_anchor_unit_count: u32) -> Segment {
+        #[cfg(any(test, feature = "segment_clear"))]
+            println!("clearing segments...");
+        if cfg!(any(test, feature = "segment_clear")) {
+            println!("with clearing!!!!")
+        } else {
+            println!("without clearing")
+        }
         Segment::with_capacity(1 + after_anchor_unit_count)
     }
 

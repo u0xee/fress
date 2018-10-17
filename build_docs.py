@@ -32,6 +32,7 @@ def generate_html_from_asciidoc(dir, out_dir):
 
 def build_project(args):
     print('==== Creating rustdoc pages')
+    subprocess.run(["cargo", "doc"])
     generate_html_from_asciidoc(doc_dir, target_dir)
 
 

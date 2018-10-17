@@ -5,11 +5,11 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-mod mechanism;
+pub mod mechanism;
 pub use self::mechanism::prism;
-mod value_unit;
+pub mod value_unit;
 pub use self::value_unit::ValueUnit;
-mod shim;
+pub mod shim;
 pub use self::shim::BlankShim;
 use memory::unit::Unit;
 use std::fmt::Display;

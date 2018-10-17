@@ -97,7 +97,9 @@ pub fn unalias_root(mut segment: Segment, anchor_gap: u32, root_gap: u32, root_c
 
 fn conj_untailed_incomplete(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
+    println!("anchor_gap = {}", anchor_gap);
     let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
+    println!("conj_untailed = {:?}", segment);
     if segment.is_aliased() {
         conj_untailed_incomplete_aliased(prism, x, guide, count, anchor_gap, segment)
     } else {
@@ -173,6 +175,7 @@ fn conj_untailed_incomplete_unaliased(prism: Line, x: Unit, guide: Guide, count:
     } else {
         segment[used_units] = x;
         segment[2 + anchor_gap] = guide.inc().into();
+        println!("conj_untailed_incomplete = {:?}", segment);
         Unit::from(segment)
     }
 }
@@ -343,6 +346,7 @@ fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
                     for i in 1..(digit + 1 + 1) {
                         Segment::from(c[i]).unalias();
                     }
+                    // free s, ?
                 }
                 let next_child = c.line_with_offset(1 + digit);
                 child[0] = c.into();

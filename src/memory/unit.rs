@@ -6,25 +6,24 @@
 // You must not remove this notice, or any other, from this software.
 
 //! A unit of memory.
-
+use std::fmt;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
 
 /// A Unit is one processor word. Here, 64 or 32 bits.
 
 #[cfg(any(target_pointer_width = "64", target_pointer_width = "32"))]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Unit {
     pub word: usize,
 }
 
-use super::segment::Segment;
-use super::anchor::Anchor;
-
-impl From<Anchor> for Unit {
-    fn from(a: Anchor) -> Self {
-        a.unit
+impl fmt::Debug for Unit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#X} }}", self.word)
     }
 }
+
+use super::segment::Segment;
 
 impl From<Segment> for Unit {
     fn from(s: Segment) -> Self {

@@ -5,10 +5,18 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+use std::fmt;
 use memory::unit::Unit;
 
 pub struct Anchor {
     pub unit: Unit,
+}
+
+impl fmt::Debug for Anchor {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Anchor {{ capacity: {}, aliases: {} }}",
+               self.capacity(), self.aliases())
+    }
 }
 
 impl Anchor {
@@ -35,5 +43,11 @@ impl Anchor {
 impl From<Unit> for Anchor {
     fn from(u: Unit) -> Self {
         Anchor { unit: u }
+    }
+}
+
+impl Into<Unit> for Anchor {
+    fn into(self) -> Unit {
+        self.unit
     }
 }

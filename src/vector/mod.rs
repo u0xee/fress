@@ -70,6 +70,10 @@ impl Vector {
         Unit::from(s)
     }
 
+    pub fn new_value() -> Value {
+        Value { handle: Vector::new() }
+    }
+
     fn line(&self) -> Line {
         Unit::from(&self.prism as *const Unit).into()
     }
@@ -77,7 +81,7 @@ impl Vector {
 
 impl Dispatch for Vector {
     fn tear_down(&self) {
-        tear_down::tear_down(self.line())
+        tear_down::tear_down(self.line());
     }
     fn anchor_gap_change(&self, delta: i32) {
         let mut prism = self.line();

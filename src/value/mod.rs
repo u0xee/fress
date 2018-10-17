@@ -17,8 +17,11 @@ Value is the main library API:
 - Special high level operations like split
 */
 
-use memory::unit::Unit;
-use memory::segment::Segment;
+use memory::Unit;
+use memory::Segment;
+use vector::Vector;
+use dispatch::*;
+
 
 #[derive(Debug)]
 pub struct Value {
@@ -37,6 +40,46 @@ impl Value {
         let x: u64 = self.handle.into();
         Value { handle: (x + 1).into() }
     }
+
+    pub fn conj(self, x: Value) -> Value {
+        if self.is_immediate() {
+            unimplemented!()
+        } else {
+            let s = Segment::from(self.handle);
+            let next_seg = s.conj(x.handle);
+            println!("value::conj = {:?}", Segment::from(next_seg));
+            use std::mem::forget;
+            forget(self);
+            Value { handle: next_seg }
+            // TODO dropping self here?
+        }
+    }
+
+    pub fn pop(self) -> (Value, Value) {
+        if self.is_immediate() {
+            unimplemented!()
+        } else {
+            let s = Segment::from(self.handle);
+            let (a, b) = s.pop();
+            (Value { handle: a }, Value { handle: b })
+        }
+    }
+}
+
+impl Drop for Value {
+    fn drop(&mut self) {
+        if !self.is_immediate() {
+            let s = Segment::from(self.handle);
+            s.tear_down()
+        }
+    }
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Value) -> bool {
+        // TODO expand to non-immediates
+        self.handle == other.handle
+    }
 }
 
 #[cfg(test)]
@@ -47,6 +90,23 @@ mod test {
     fn passes() {
         assert!(true)
     }
+
+    #[test]
+    fn first() {
+        let v = Vector::new_value();
+        let v1 = v.conj(1.into());
+        let v2 = v1.conj(2.into());
+        unimplemented!();
+        let w = v2.conj(3.into());
+
+        let (w_, three) = w.pop();
+        let (w__, two) = w_.pop();
+        let (w___, one) = w__.pop();
+        assert_eq!(three, 3.into());
+        assert_eq!(two, 2.into());
+        assert_eq!(one, 1.into());
+    }
+
     /*
     #[test]
     fn testbed() {

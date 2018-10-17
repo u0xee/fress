@@ -15,6 +15,13 @@ pub struct Line {
 }
 
 impl Line {
+    pub fn unit(self) -> Unit {
+        Unit::from(self.line)
+    }
+
+    pub fn segment(self) -> Segment {
+        Segment { line: self }
+    }
     pub fn offset(&self, x: isize) -> Line {
         Line { line: unsafe { self.line.offset(x) } }
     }

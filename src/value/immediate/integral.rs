@@ -61,6 +61,6 @@ mod test {
     fn from_u64() {
         let y: Value = 17u64.into();
         let z: u64 = y.into();
-        assert_eq!(17, z)
+        assert_eq!(17u64, z)
     }
 }

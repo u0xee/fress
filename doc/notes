@@ -1,0 +1,64 @@
+Notes
+Tue Aug 21 14:22:13 MDT 2018
+Sun Aug 26 01:30:27 MDT 2018
+In the middle of:
+- bit in map guide to differentiate set from map
+
+working on parity between growing to support a tail and shrinking during pop
+- resolved, used a spare bit in Guide to indicate space for tail
+- added logic to conj. Semantics of tail growth optimization are clear, not tied (only) to segment capacity
+
+Wed Oct 10 16:43:51 MDT 2018
+Placing the test compile checks into the segment code
+- and fuzz functionality in segment code
+
+Considering whether Segment::with_capacity should be cut,
+in favor of only Segment::new(content_unit_count)
+- implies indexing contents from 1..end => 0..end
+-- implies rewrite of significant vector code.
+
+Thu Oct 11 23:04:11 MDT 2018
+
+* Shape Segment..
+  * to index starting in contents (not anchor)
+  * to use capacity to mean content capacity
+  * to allocate in terms of content capacity (ie nix with_capacity)
+  * Segment::new_power_of_two(content_count)
+  * to use flag-compiled features in the algorithms for new/free
+
+* Shape Vector..
+  * to allocate segments without regard for anchor space
+  * to index segments without regard for anchor (zero indexed)
+  * to reduce redundancy and encapsulate common patterns
+
+* Shape Guide..
+  * to store only a bit for anchor gap (being over zero)
+  * usage points to encapsulate paths for getting to anchor
+
+Pain points and how to solve them:
+* Conversions are common, yet intrusive
+ * Instead, dedicated methods: s.unit(), u.segment(), a.unit().u64(), u.value_unit(), s.line()
+* mut semantics on Segment are obtrusive, don't encourage them
+ * no custom methods accepting mut segments (they're just pointers!)
+* segment range copy, either with spiffy index support, or just custom method
+ * segment (un)alias range, retire range, s[1..].to(t[1..])
+ * method for range [copy, alias, unalias(from) -> unalias and free]
+ * method for range [copy, split, unalias(from) -> retire and free]
+* Bundled env struct, with slots for each different common vector variable (now being passed as args)
+ * methods for access and setting. methods on flag compile to check for reading only previously set vars
+ * without flag, compile to just access slots in struct
+ * anchor_gap root_gap root_count used_units first_root tail_idx count tailoff tail_count
+ * guide guide_idx header(Segment) prism(Line) prism_idx
+* Digit stack struct
+* See if NodeRecordStack from tear_down can be abstracted
+
+* Separate polymorphic interface from Segment, too much going on already.
+ * Layer on a polymorphic mask on top of Segment, then do polymorphic calls
+ * Dispatch
+ValueUnit ValueRef ValueImm
+
+
+
+
+
+

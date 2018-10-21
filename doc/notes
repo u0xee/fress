@@ -58,6 +58,19 @@ Pain points and how to solve them:
 ValueUnit ValueRef ValueImm
 
 
+Types in play:
+Value
+ValueUnit
+ValueRef
+ValueImm
+
+Unit -> line, anchor, segment, value_unit, value_ref, value_imm
+Line -> unit, segment
+Anchor -> unit,
+Segment -> unit, line, value_ref, value_unit,
+
+Guide
+
 
 
 

@@ -38,6 +38,20 @@ impl Anchor {
     pub fn is_aliased(&self) -> bool {
         self.aliases() != 1
     }
+
+    pub fn aliased(&self) -> Anchor {
+        let x: usize = self.unit.into();
+        Anchor { unit: Unit::from(x + 1) }
+    }
+
+    pub fn unaliased(&self) -> Anchor {
+        let x: usize = self.unit.into();
+        Anchor { unit: Unit::from(x - 1) }
+    }
+
+    pub fn unit(&self) -> Unit {
+        self.unit
+    }
 }
 
 impl From<Unit> for Anchor {

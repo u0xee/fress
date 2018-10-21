@@ -7,11 +7,15 @@
 
 use memory::unit::Unit;
 
-// TODO store and read guide in 32-bit environment
-
 #[derive(Copy, Clone)]
 pub struct Guide {
-    pub post: u64,
+    pub count: u32,
+    pub hash: u32,
+    pub prism_idx: u32,
+    pub root_idx: u32,
+    pub has_meta: bool,
+    pub has_tail_space: bool,
+    pub is_set: bool,
 }
 
 // Layout of guide unit, 64bits in bytes:
@@ -40,22 +44,25 @@ pub struct Guide {
 
 impl Guide {
     pub fn new() -> Guide {
-        Guide { post: 0u64 }
+        Guide {
+            count: 0, hash: 0, prism_idx: 0,
+            root_idx: 2 + if cfg!(target_pointer_width = "32") { 1 } else { 0 },
+            has_meta: false, has_tail_space: false, is_set: false }
     }
 
     pub fn count(&self) -> u32 {
-        let x: u64 = self.post;
-        let large_count = (x >> 53) & 1;
-        let field_width = (1u64 << large_count) << 4;
-        let mask = !(!0u64 << field_width);
-        (x & mask) as u32
+        self.count
+    }
+
+    pub fn hash(&self) -> u32 {
+        self.hash
     }
 
     pub fn has_meta(&self) -> bool {
-        let x: u64 = self.post;
-        let meta_bit = (x >> 54) & 1;
-        meta_bit == 1
+        self.has_meta
     }
+
+    // TODO
 
     pub fn with_meta(&self) -> Guide {
         let x: u64 = self.post;

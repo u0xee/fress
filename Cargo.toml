@@ -7,6 +7,10 @@ description = "A cohesive fressian library for rust"
 [dependencies]
 
 [features]
+default = ["anchor_non_atomic"]
+
+anchor_non_atomic = []
+
 segment_clear = []
 segment_erase = []
 segment_bounds = []

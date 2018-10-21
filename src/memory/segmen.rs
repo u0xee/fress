@@ -64,7 +64,7 @@ impl Segment {
     }
 
     pub fn capacity(&self) -> u32 {
-        Anchor::from(self.anchor_line[0]).capacity()
+        self.anchor_line[0].anchor().capacity()
     }
 
     pub fn is_aliased(&self) -> bool {
@@ -76,19 +76,37 @@ impl Segment {
     }
 
     pub fn alias(&mut self) {
-        // TODO CAS
-        let a: usize = self.anchor_line[0].into();
-        self.anchor_line[0] = (a + 1).into();
+        if cfg!(feature = "anchor_non_atomic") {
+            let a: Anchor = self.anchor_line[0].into();
+            let new_a = a.aliased();
+            self.anchor_line[0] = new_a.into();
+        } else {
+            unimplemented!()
+        }
     }
 
     pub fn unalias(&mut self) -> u32 {
-        // TODO CAS
-        let a: usize = self.anchor_line[0].into();
-        self.anchor_line[0] = (a - 1).into();
-        Anchor::from(self.anchor_line[0]).aliases()
+        if cfg!(feature = "anchor_non_atomic") {
+            let a: Anchor = self.anchor_line[0].into();
+            let new_a = a.unaliased();
+            self.anchor_line[0] = new_a.into();
+            new_a.aliases()
+        } else {
+            unimplemented!()
+        }
     }
 
-    // TODO
+    pub fn anchor(&self) -> Anchor {
+        self.anchor_line[0].anchor()
+    }
+
+    pub fn unit(&self) -> Unit {
+        self.anchor_line.unit()
+    }
+
+    pub fn line_at(&self, base: u32) -> AnchoredLine {
+        AnchoredLine { seg: self, offset: base }
+    }
 }
 
 
@@ -144,6 +162,68 @@ pub fn random_content(mut s: Segment, cap: u32) {
         seed = fuzz::cycle(seed);
     }
     // fuzz::log
+}
+
+impl Index<u32> for Segment {
+    type Output = Unit;
+
+    fn index(&self, index: u32) -> &Self::Output {
+        #[cfg(any(test, feature = "segment_bounds"))]
+            {
+                if index >= self.capacity() {
+                    panic!("Indexing {} outside Segment of capacity {}.", index, self.capacity());
+                }
+            }
+        &self.anchor_line[(1 + index) as usize]
+    }
+}
+
+impl IndexMut<u32> for Segment {
+    fn index_mut(&mut self, index: u32) -> &mut Self::Output {
+        #[cfg(any(test, feature = "segment_bounds"))]
+            {
+                if index >= self.capacity() {
+                    panic!("Indexing {} outside Segment of capacity {}.", index, self.capacity());
+                }
+            }
+        #[cfg(any(test, feature = "segment_mut"))]
+            {
+                if self.anchor().is_aliased() {
+                    panic!("Mut indexing {} in aliased Segment.", index);
+                }
+            }
+        &mut self.anchor_line[(1 + index) as usize]
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct AnchoredLine {
+    pub seg: Segment,
+    pub offset: u32,
+}
+
+impl AnchoredLine {
+    pub fn segment(&self) -> Segment {
+        self.seg
+    }
+
+    pub fn offset(&self) -> u32 {
+        self.offset
+    }
+}
+
+impl Index<i32> for AnchoredLine {
+    type Output = Unit;
+
+    fn index(&self, index: i32) -> &Self::Output {
+        Index::index(&self.seg, ((self.offset as i32) + index) as u32)
+    }
+}
+
+impl IndexMut<i32> for AnchoredLine {
+    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
+        IndexMut::index_mut(&mut self.seg, ((self.offset as i32) + index) as u32)
+    }
 }
 
 pub mod trace {

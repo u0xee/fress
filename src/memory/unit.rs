@@ -8,6 +8,7 @@
 //! A unit of memory.
 use std::fmt;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
+use memory::*;
 
 /// A Unit is one processor word. Here, 64 or 32 bits.
 
@@ -50,6 +51,10 @@ impl Unit {
     // high zeros?
     // break into fields
     // bit manipulation needed to decode vector header
+
+    pub fn anchor(self) -> Anchor {
+        Anchor::from(self)
+    }
 }
 
 

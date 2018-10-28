@@ -5,18 +5,7 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use memory::unit::Unit;
-
-#[derive(Copy, Clone)]
-pub struct Guide {
-    pub count: u32,
-    pub hash: u32,
-    pub prism_idx: u32,
-    pub root_idx: u32,
-    pub has_meta: bool,
-    pub has_tail_space: bool,
-    pub is_set: bool,
-}
+use memory::*;
 
 // Layout of guide unit, 64bits in bytes:
 // A B H H | H H C C
@@ -42,12 +31,83 @@ pub struct Guide {
 
 // fields: count, anchor_distance, hash?, hash, meta?, root_offset
 
+/// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
+/// The top 32 bits contain the hash, the bottom contain the collection's count.
+/// Also in the top, two booleans represent the presence of meta, and the prism's index.
+/// The two lowest order bits are not part of the hash, they are the booleans.
+/// So a collection's hash will always end in two zero bits.
+/// The highest order two bits of the bottom 32 bits also represent two booleans:
+/// is the collection a set, and does the collection have a unit of information besides
+/// its root elements?
+/// So a collection's count resides in the 30 lowest order bits.
+
+/// ```
+/// Top 32 bits  [    Hash (30)   | Prism Index | Meta? ]
+/// Bottom bits  [ Set? | No unit? |     Count (30)     ]
+/// ```
+///
+
+#[derive(Copy, Clone)]
+pub struct Guide {
+    pub count: u32,
+    pub hash: u32,
+    pub prism_idx: u32,
+    pub root_idx: u32,
+    pub has_meta: bool,
+    pub pre_root_unit: bool,
+    pub is_set: bool, // u32
+}
+
 impl Guide {
+    pub fn hydrate(prism: Line) -> Guide {
+        if cfg!(target_pointer_width = "32") {
+            Guide::hydrate_top_bot(prism, prism[1].into(), prism[2].into())
+        } else {
+            let g: u64 = prism[1].into();
+            Guide::hydrate_top_bot(prism, (g >> 32).into(), g.into())
+        }
+    }
+
+    pub fn hydrate_top_bot(prism: Line, top: u32, bot: u32) -> Guide {
+        let hash = top & !0x3;
+        let prism_zero = (top & 0x2) == 0;
+        let has_meta_bit = (top & 0x1);
+
+        let count = bot & !(0x3 << 30);
+        let is_set = ((bot >> 30) & 0x2) != 0;
+        let pre_root_unit_bit = ((bot >> 30) & 0x1);
+
+        let prism_idx: u32 = if prism_zero { 0 } else {
+            prism.offset(-1)[0].into()
+        };
+        let root_gap = has_meta_bit + pre_root_unit_bit;
+        let root_idx = prism_idx + 2 + root_gap +
+            if cfg!(target_pointer_width = "32") { 1 } else { 0 };
+        Guide {
+            count, hash, prism_idx, root_idx, is_set,
+            has_meta: has_meta_bit != 0,
+            pre_root_unit: pre_root_unit_bit != 0,
+        }
+    }
+
+    pub fn store(&self, prism: AnchoredLine) {
+        let top: u32 = 0;
+        let bot: u32 = 0;
+        if cfg!(target_pointer_width = "32") {
+            prism[1] = top.into();
+            prism[2] = bot.into();
+        } else {
+            let g: u64 = ((top as u64) << 32) | (bot as u64);
+            prism[1] = g.into();
+        }
+    }
+
     pub fn new() -> Guide {
         Guide {
             count: 0, hash: 0, prism_idx: 0,
             root_idx: 2 + if cfg!(target_pointer_width = "32") { 1 } else { 0 },
-            has_meta: false, has_tail_space: false, is_set: false }
+            has_meta: false, pre_root_unit: false, is_set: false
+        }
     }
 
     pub fn count(&self) -> u32 {
@@ -121,29 +181,5 @@ impl Guide {
         let x: u64 = self.post;
         // TODO verify works
         Unit::from(x + ((delta as u64) << 48)).into()
-    }
-}
-
-impl From<u64> for Guide {
-    fn from(x: u64) -> Self {
-        Guide { post: x }
-    }
-}
-
-impl Into<u64> for Guide {
-    fn into(self) -> u64 {
-        self.post
-    }
-}
-
-impl From<Unit> for Guide {
-    fn from(u: Unit) -> Self {
-        Guide { post: u.into() }
-    }
-}
-
-impl Into<Unit> for Guide {
-    fn into(self) -> Unit {
-        Unit::from(self.post)
     }
 }

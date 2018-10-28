@@ -24,13 +24,6 @@ impl fmt::Debug for Unit {
     }
 }
 
-use super::segment::Segment;
-
-impl From<Segment> for Unit {
-    fn from(s: Segment) -> Self {
-        s.line.into()
-    }
-}
 
 impl Unit {
     pub fn is_even(&self) -> bool {
@@ -46,14 +39,23 @@ impl Unit {
     }
 
     pub fn u64(&self) -> u64 {
-        self.word as u64
+        self.into()
     }
-    // high zeros?
-    // break into fields
-    // bit manipulation needed to decode vector header
+
+    pub fn u32(&self) -> u32 {
+        self.into()
+    }
 
     pub fn anchor(self) -> Anchor {
         Anchor::from(self)
+    }
+
+    pub fn line(self) -> Line {
+        Line::from(self)
+    }
+
+    pub fn segment(self) -> Segment {
+        Segment::from(self)
     }
 }
 

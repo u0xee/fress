@@ -6,7 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::unit::Unit;
-use memory::segment::Segment;
+use memory::segment::{Segment, AnchoredLine};
 use std::ops::{Index, IndexMut};
 
 #[derive(Copy, Clone)]
@@ -18,12 +18,15 @@ impl Line {
     pub fn unit(self) -> Unit {
         Unit::from(self.line)
     }
-
     pub fn segment(self) -> Segment {
-        Segment { line: self }
+        Segment::from(self)
     }
     pub fn offset(&self, x: isize) -> Line {
         Line { line: unsafe { self.line.offset(x) } }
+    }
+    pub fn anchor(self, index: u32) -> AnchoredLine {
+        let diff_to_anchor = (index + 1) as isize;
+        AnchoredLine::new(self.offset(-diff_to_anchor).segment(), index)
     }
 }
 
@@ -33,30 +36,18 @@ impl From<Unit> for Line {
     }
 }
 
-impl Into<Unit> for Line {
-    fn into(self) -> Unit {
-        Unit::from(self.line)
-    }
-}
-
-impl From<Segment> for Line {
-    fn from(seg: Segment) -> Self {
-        seg.line
-    }
-}
-
-impl Index<usize> for Line {
+impl Index<u32> for Line {
     type Output = Unit;
 
-    fn index(&self, index: usize) -> &Self::Output {
+    fn index(&self, index: u32) -> &Self::Output {
         unsafe {
             &*self.line.offset(index as isize)
         }
     }
 }
 
-impl IndexMut<usize> for Line {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+impl IndexMut<u32> for Line {
+    fn index_mut(&mut self, index: u32) -> &mut Self::Output {
         unsafe {
             &mut *(self.line as *mut Unit).offset(index as isize)
         }

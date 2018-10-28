@@ -10,29 +10,11 @@ use std::mem;
 pub mod unit;
 pub mod line;
 pub mod segment;
-pub mod segmen; //temp
 pub mod anchor;
 pub use self::unit::Unit;
 pub use self::line::Line;
-pub use self::segment::Segment;
-pub use self::segment::AnchoredLine;
+pub use self::segment::{Segment, AnchoredLine};
 pub use self::anchor::Anchor;
-
-/*
-Memory System API
-- Request memory
-- Register interest in memory (during setup of new memory or update of old mem)
-- Deregister interest in memory (during Drop of memory or update of old mem)
-- During "update", determine when memory is not shared
- - Determine capacity, then:
-  - Can be destructively updated
-  - Can have its parts "moved" into larger (or smaller) capacity memory
-
-Local Memory Interest Table
-Thread local associative structure. Capacity, no dispatch, meta, or hash.
-K - Pointer to memory
-V - Shared? and Local Count
-*/
 
 
 #[cfg(test)]

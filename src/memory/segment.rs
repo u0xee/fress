@@ -68,32 +68,47 @@ impl Segment {
     }
 
     pub fn is_aliased(&self) -> bool {
-        use fuzz;
-        let (seed, log_tail) = fuzz::next_random();
-        Anchor::from(self.line[0]).is_aliased();
-        // TODO
-        unimplemented!()
+        let real_ret = self.line[0].anchor().is_aliased();
+        if cfg!(any(test, feature = "fuzz_segment_spurious_aliased")) {
+            use fuzz;
+            let (seed, log_tail) = fuzz::next_random();
+            let spurious = (seed ^ (seed >> 32) & 0x7) == 0x7;
+            real_ret || spurious
+        } else {
+            real_ret
+        }
     }
 
-    pub fn alias(&mut self) {
+    pub fn alias(&self) {
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.aliased();
-            self.anchor_line[0] = new_a.into();
+            let mut  x = self;
+            x.anchor_line[0] = new_a.into();
         } else {
             unimplemented!()
         }
     }
 
-    pub fn unalias(&mut self) -> u32 {
+    pub fn unalias(&self) -> u32 {
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.unaliased();
-            self.anchor_line[0] = new_a.into();
+            let mut x = self;
+            x.anchor_line[0] = new_a.into();
             new_a.aliases()
         } else {
             unimplemented!()
         }
+    }
+
+    pub fn get(&self, index: u32) -> Unit {
+        self[index]
+    }
+
+    pub fn set(&self, index: u32, x: Unit) {
+        let mut m = self;
+        m[index] = x;
     }
 
     pub fn anchor(&self) -> Anchor {
@@ -105,10 +120,32 @@ impl Segment {
     }
 
     pub fn line_at(&self, base: u32) -> AnchoredLine {
-        AnchoredLine { seg: self, offset: base }
+        AnchoredLine::new(self, base)
+    }
+
+    pub fn line(&self) -> Line {
+        self.anchor_line
     }
 }
 
+impl From<Unit> for Segment {
+    fn from(unit: Unit) -> Self {
+        Segment::from(unit.line())
+    }
+}
+
+impl From<Line> for Segment {
+    fn from(line: Line) -> Self {
+        if cfg!(any(test, feature = "segment_magic")) {
+            if line.offset(-1)[0] != 0xCAFEBABE.into() {
+                panic!("Casting to Segment failed, magic not found")
+            }
+            Segment { anchor_line: line }
+        } else {
+            Segment { anchor_line: line }
+        }
+    }
+}
 
 pub fn unanchored_new(cap: u32) -> Segment {
     if cfg!(any(test, feature = "segment_magic")) {
@@ -158,7 +195,7 @@ pub fn random_content(mut s: Segment, cap: u32) {
     use fuzz;
     let (mut seed, log_tail) = fuzz::next_random();
     for i in 0..cap {
-        s.anchor_line[1 + i as usize] = seed.into();
+        s.anchor_line[1 + i] = seed.into();
         seed = fuzz::cycle(seed);
     }
     // fuzz::log
@@ -174,7 +211,7 @@ impl Index<u32> for Segment {
                     panic!("Indexing {} outside Segment of capacity {}.", index, self.capacity());
                 }
             }
-        &self.anchor_line[(1 + index) as usize]
+        &self.anchor_line[1 + index]
     }
 }
 
@@ -192,23 +229,44 @@ impl IndexMut<u32> for Segment {
                     panic!("Mut indexing {} in aliased Segment.", index);
                 }
             }
-        &mut self.anchor_line[(1 + index) as usize]
+        &mut self.anchor_line[1 + index]
     }
 }
 
 #[derive(Copy, Clone)]
 pub struct AnchoredLine {
     pub seg: Segment,
-    pub offset: u32,
+    pub index: u32,
 }
 
 impl AnchoredLine {
+    pub fn new(seg: Segment, index: u32) -> AnchoredLine {
+        AnchoredLine { seg, index }
+    }
+
+    pub fn get(&self, index: i32) -> Unit {
+        self[index]
+    }
+
+    pub fn set(&self, index: i32, x: Unit) {
+        let mut m = self;
+        m[index] = x;
+    }
+
     pub fn segment(&self) -> Segment {
         self.seg
     }
 
-    pub fn offset(&self) -> u32 {
-        self.offset
+    pub fn index(&self) -> u32 {
+        self.index
+    }
+
+    pub fn offset(&self, offset: i32) -> AnchoredLine {
+        AnchoredLine { seg: self.seg, index: ((self.index as i32) + offset) as u32 }
+    }
+
+    pub fn line(&self) -> Line {
+        self.seg.anchor_line.offset(self.index as isize + 1)
     }
 }
 
@@ -216,13 +274,13 @@ impl Index<i32> for AnchoredLine {
     type Output = Unit;
 
     fn index(&self, index: i32) -> &Self::Output {
-        Index::index(&self.seg, ((self.offset as i32) + index) as u32)
+        Index::index(&self.seg, ((self.index as i32) + index) as u32)
     }
 }
 
 impl IndexMut<i32> for AnchoredLine {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
-        IndexMut::index_mut(&mut self.seg, ((self.offset as i32) + index) as u32)
+        IndexMut::index_mut(&mut self.seg, ((self.index as i32) + index) as u32)
     }
 }
 

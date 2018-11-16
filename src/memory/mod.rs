@@ -13,7 +13,7 @@ pub mod segment;
 pub mod anchor;
 pub use self::unit::Unit;
 pub use self::line::Line;
-pub use self::segment::{Segment, AnchoredLine};
+pub use self::segment::{Segment, AnchoredLine, AnchoredRange};
 pub use self::anchor::Anchor;
 
 

@@ -5,8 +5,7 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use memory::unit::Unit;
-use memory::segment::Segment;
+use memory::*;
 use dispatch::*;
 
 #[derive(Copy, Clone)]
@@ -14,29 +13,44 @@ pub struct ValueUnit {
     pub unit: Unit,
 }
 
+#[derive(Copy, Clone)]
+pub struct ValueRef {
+    pub seg: Segment,
+}
+
+#[derive(Copy, Clone)]
+pub struct ValueImm {
+    pub unit: Unit,
+}
+
 impl ValueUnit {
-    pub fn split(&self) {
+    pub fn as_ref(&self) -> Option<ValueRef> {
         if self.unit.is_even() {
-            Segment::from(self.unit).alias()
+            Some(ValueRef { seg: self.unit.segment() })
+        } else {
+            None
+        }
+    }
+
+    pub fn split(&self) {
+        if let Some(r) = self.as_ref() {
+            r.seg.alias()
         }
     }
 
     pub fn retire(&self) {
-        if self.unit.is_even() {
-            let mut s = Segment::from(self.unit);
-            if s.unalias() == 0 {
-                s.tear_down()
+        if let Some(r) = self.as_ref() {
+            if r.seg.unalias() == 0 {
+                r.tear_down()
             }
         }
     }
 
     pub fn hash(&self) -> u32 {
-        if self.unit.is_even() {
-            let s = Segment::from(self.unit);
-            s.hash()
+        if let Some(r) = self.as_ref() {
+            r.hash()
         } else {
-            // hash immediate value
-            // TODO
+            // TODO hash immediate value
             self.unit.into()
         }
     }

@@ -7,13 +7,12 @@
 
 use super::*;
 
-pub fn conj(prism: Line, x: Unit) -> Unit {
-    let guide: Guide = prism[1].into();
-    let count = guide.count();
-    if count <= TAIL_CAP {
-        conj_untailed(prism, x, guide, count)
+pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
+    let guide= Guide::hydrate(prism);
+    if guide.count <= TAIL_CAP {
+        conj_untailed(guide, x)
     } else {
-        conj_tailed(prism, x, guide, count)
+        conj_tailed(guide, x)
     }
 }
 
@@ -180,7 +179,7 @@ fn conj_untailed_incomplete_unaliased(prism: Line, x: Unit, guide: Guide, count:
     }
 }
 
-// TODO handle growing into large count territory
+
 fn conj_tailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
     let tailoff = (count - 1) & !MASK;
     let tail_count = count - tailoff;

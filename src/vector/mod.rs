@@ -83,11 +83,7 @@ impl Dispatch for Vector {
     fn tear_down(&self) {
         tear_down::tear_down(self.line());
     }
-    fn anchor_gap_change(&self, delta: i32) {
-        let mut prism = self.line();
-        let guide: Guide = prism[1].into();
-        prism[1] = guide.with_anchor_gap_change(delta).into();
-    }
+
     fn unaliased(&self) -> Unit {
         let prism = self.line();
         let guide: Guide = prism[1].into();

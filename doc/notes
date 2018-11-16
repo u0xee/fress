@@ -8,8 +8,7 @@ working on parity between growing to support a tail and shrinking during pop
 - resolved, used a spare bit in Guide to indicate space for tail
 - added logic to conj. Semantics of tail growth optimization are clear, not tied (only) to segment capacity
 
-Wed Oct 10 16:43:51 MDT 2018
-Placing the test compile checks into the segment code
+doc/notesPlacing the test compile checks into the segment code
 - and fuzz functionality in segment code
 
 Considering whether Segment::with_capacity should be cut,
@@ -57,19 +56,17 @@ Pain points and how to solve them:
  * Dispatch
 ValueUnit ValueRef ValueImm
 
-
-Types in play:
-Value
-ValueUnit
-ValueRef
-ValueImm
-
-Unit -> line, anchor, segment, value_unit, value_ref, value_imm
-Line -> unit, segment
-Anchor -> unit,
-Segment -> unit, line, value_ref, value_unit,
-
+TODO:
+AnchoredRange
+[x] Copy
+[x] Alias, split
+[x] Unalias, retire
+Segment
+[] Unalias, and if aliases is 0 then unalias/retire contents and free
 Guide
+[x] Excise prism_idx
+[x] Shape layout code
+
 
 
 

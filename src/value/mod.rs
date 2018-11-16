@@ -5,10 +5,9 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-mod aggregate;
-mod arithmetic;
-pub mod distinguish;
-mod immediate;
+pub mod value_unit;
+pub use self::value_unit::{ValueUnit, ValueImm, ValueRef};
+
 
 /*
 Value is the main library API:
@@ -17,19 +16,15 @@ Value is the main library API:
 - Special high level operations like split
 */
 
-use memory::Unit;
-use memory::Segment;
-use vector::Vector;
+use memory::*;
 use dispatch::*;
+use vector::Vector;
 
 
 #[derive(Debug)]
 pub struct Value {
     pub handle: Unit,
 }
-
-use std;
-use dispatch::Dispatch;
 
 impl Value {
     pub const NIL: Unit = Unit { word: 0x07 };

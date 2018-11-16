@@ -22,9 +22,10 @@
 
 use std::mem;
 use std::fmt;
-use std::ops::{Index, IndexMut};
+use std::ops::{Index, IndexMut, Range};
 use fuzz;
 use memory::*;
+use value::*;
 
 #[derive(Copy, Clone)]
 pub struct Segment {
@@ -72,7 +73,7 @@ impl Segment {
         if cfg!(any(test, feature = "fuzz_segment_spurious_aliased")) {
             use fuzz;
             let (seed, log_tail) = fuzz::next_random();
-            let spurious = (seed ^ (seed >> 32) & 0x7) == 0x7;
+            let spurious = ((seed ^ (seed >> 32)) & 0x7) == 0x7;
             real_ret || spurious
         } else {
             real_ret
@@ -123,6 +124,10 @@ impl Segment {
         AnchoredLine::new(self, base)
     }
 
+    pub fn at(&self, range: Range<u32>) -> AnchoredRange {
+        AnchoredRange::new(self, range)
+    }
+
     pub fn line(&self) -> Line {
         self.anchor_line
     }
@@ -170,8 +175,7 @@ pub fn dealloc(mut line: Line, raw_cap: u32) {
             line[i as usize] = 0.into();
         }
     unsafe {
-        let v: Vec<Unit> = Vec::from_raw_parts(line.line as *mut Unit,
-                                               0, raw_cap as usize);
+        let v: Vec<Unit> = Vec::from_raw_parts(line.line as *mut Unit, 0, raw_cap as usize);
         mem::drop(v);
     }
 }
@@ -265,6 +269,10 @@ impl AnchoredLine {
         AnchoredLine { seg: self.seg, index: ((self.index as i32) + offset) as u32 }
     }
 
+    pub fn range(&self, length: u32) -> AnchoredRange {
+        AnchoredRange::new(self.seg, self.index..(self.index + length))
+    }
+
     pub fn line(&self) -> Line {
         self.seg.anchor_line.offset(self.index as isize + 1)
     }
@@ -281,6 +289,80 @@ impl Index<i32> for AnchoredLine {
 impl IndexMut<i32> for AnchoredLine {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         IndexMut::index_mut(&mut self.seg, ((self.index as i32) + index) as u32)
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct AnchoredRange {
+    pub seg: Segment,
+    pub start: u32,
+    pub end: u32,
+}
+
+impl AnchoredRange {
+    pub fn new(seg: Segment, range: Range<u32>) {
+        AnchoredRange { seg, start: range.start, end: range.end }
+    }
+
+    pub fn to(&self, target: Segment) {
+        self.to_offset(target, self.start)
+    }
+
+    pub fn to_offset(&self, target: Segment, offset: u32) {
+        // TODO make efficient aggregate operation, will bounds and mut check in loop
+        let mut t = target;
+        let length = self.end - self.start;
+        for i in 0..length {
+            t[offset + i] = self.seg[self.start + i];
+        }
+    }
+
+    pub fn shift_up(&self, shift: u32) {
+        let mut t = self.seg;
+        for i in (self.start..self.end).rev() {
+            t[i + shift] = t[i];
+        }
+    }
+
+    pub fn shift_down(&self, shift: u32) {
+        let mut t = self.seg;
+        for i in self.start..self.end {
+            t[i - shift] = t[i];
+        }
+    }
+
+    pub fn alias(&self) {
+        let mut t = self.seg;
+        for i in self.start..self.end {
+            t[i].segment().alias();
+        }
+    }
+
+    pub fn unalias(&self) {
+        let mut t = self.seg;
+        for i in self.start..self.end {
+            if t[i].segment().unalias() == 0 {
+                panic!("Unalias of segment w/o policy to free!")
+            }
+        }
+    }
+
+    pub fn split(&self) {
+        let mut t = self.seg;
+        for i in self.start..self.end {
+            t[i].value_unit().split();
+        }
+    }
+
+    pub fn retire(&self) {
+        let mut t = self.seg;
+        for i in self.start..self.end {
+            t[i].value_unit().retire();
+        }
+    }
+
+    pub fn segment(&self) -> Segment {
+        self.seg
     }
 }
 

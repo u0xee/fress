@@ -269,12 +269,25 @@ impl AnchoredLine {
         AnchoredLine { seg: self.seg, index: ((self.index as i32) + offset) as u32 }
     }
 
+    pub fn has_index(&self, index: i32) -> bool {
+        let i = ((self.index as i32) + index) as u32;
+        i < self.seg.capacity()
+    }
+
+    pub fn with_seg(&self, seg: Segment) -> AnchoredLine {
+        AnchoredLine { seg, index: self.index }
+    }
+
     pub fn range(&self, length: u32) -> AnchoredRange {
         AnchoredRange::new(self.seg, self.index..(self.index + length))
     }
 
     pub fn line(&self) -> Line {
         self.seg.anchor_line.offset(self.index as isize + 1)
+    }
+
+    pub fn span(&self, width: u32) -> AnchoredRange {
+        AnchoredRange::new(self.seg, self.index..(self.index + width))
     }
 }
 

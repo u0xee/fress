@@ -8,7 +8,7 @@
 use super::*;
 
 pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
-    let guide= Guide::hydrate(prism);
+    let guide= unaliased_root(Guide::hydrate(prism));
     if guide.count <= TAIL_CAP {
         conj_untailed(guide, x)
     } else {
@@ -16,7 +16,201 @@ pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
     }
 }
 
-fn conj_untailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
+
+pub fn is_arity_bit(power: u32) -> u32 {
+    power >> BITS
+}
+
+pub fn is_double_arity_bit(power: u32) -> u32 {
+    power >> (BITS + 1)
+}
+
+pub fn cap_at_arity(power: u32) -> u32 {
+    power >> is_double_arity_bit(power)
+}
+
+/// Sizes a unit count to a power of two. Calculates storage sizes.
+/// Returns 4, 8, 16, 32
+pub fn size(unit_count: u32) -> u32 {
+    cap_at_arity(next_power(unit_count | 0x2))
+}
+
+
+pub fn unalias_root(guide: Guide) -> Guide {
+    if guide.count <= TAIL_CAP { // untailed
+        let width = size(guide.count);
+        let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
+        let g = {
+            let s = Segment::new(guide.root.index + (width | grew_tail_bit));
+            let g = guide;
+            g.prism = guide.prism.with_seg(s);
+            g.is_compact_bit = g.is_compact_bit & !grew_tail_bit;
+            g.reroot()
+        };
+        guide.segment().at(0..guide.root.index).to(g.segment());
+        let roots = guide.root.span(guide.count);
+        roots.to_offset(g.segment(), g.root.index);
+        guide.split_meta();
+        roots.split();
+        if guide.segment().unalias() == 0 {
+            guide.retire_meta();
+            roots.retire();
+            Segment::free(guide.segment());
+        }
+        g
+    } else { // tailed
+        let root_count = root_content_count(tailoff(guide.count));
+        let width = size(root_count + 1 /*tail*/);
+        let g = {
+            let cap = guide.root.index - 1 /*tail*/ + (width | is_arity_bit(width));
+            let s = Segment::new(cap);
+            let g = guide;
+            g.prism = guide.prism.with_seg(s);
+            g.reroot()
+        };
+        guide.segment().at(0..(guide.root.index + root_count)).to(g.segment());
+        guide.split_meta();
+        let tail_and_roots = guide.root.offset(-1).span(root_count + 1);
+        tail_and_roots.alias();
+        if guide.segment().unalias() == 0 {
+            guide.retire_meta();
+            tail_and_roots.unalias();
+            Segment::free(guide.segment());
+        }
+        g
+    }
+}
+
+pub fn unaliased_root(guide: Guide) -> Guide {
+    if guide.segment().is_aliased() {
+        unalias_root(guide)
+    } else {
+        guide
+    }
+}
+
+
+pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
+    if guide.count == TAIL_CAP { // complete
+        let tail = {
+            let tail = Segment::new(TAIL_CAP);
+            tail.set(0, x);
+            tail
+        };
+        guide.root.set(-1, tail.unit());
+        guide.inc_count().store().segment().unit()
+    } else { // incomplete
+        if guide.root.has_index(guide.count) {
+            guide.root.set(guide.count, x);
+            guide.inc_count().store().segment().unit()
+        } else {
+            let width = size(guide.count);
+            let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
+            let g = {
+                let s = Segment::new(guide.root.index + (width | grew_tail_bit));
+                let g = guide;
+                g.prism = guide.prism.with_seg(s);
+                g.is_compact_bit = g.is_compact_bit & !grew_tail_bit;
+                g.reroot()
+            };
+            guide.segment().at(0..guide.root.index).to(g.segment());
+            guide.root.span(guide.count).to_offset(g.segment(), g.root.index);
+            Segment::free(guide.segment());
+            g.root.set(g.count, x);
+            g.inc_count().store().segment().unit()
+        }
+    }
+}
+
+pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
+    let tail_count = tail_count(guide.count);
+    if tail_count != TAIL_CAP {
+        let tail = guide.root[-1].segment();
+        if tail.is_aliased() {
+            let s = Segment::new(TAIL_CAP);
+            let tails = tail.at(0..tail_count);
+            tails.to(s);
+            tails.split();
+            if tail.unalias() == 0 {
+                tails.retire();
+                Segment::free(tail);
+            }
+            s.set(tail_count, x);
+            guide.root.set(-1, s.unit());
+            guide.inc_count().store().segment().unit()
+        } else {
+            tail.set(tail_count, x);
+            guide.inc_count().store().segment().unit()
+        }
+    } else {
+        conj_tailed_complete(guide, x)
+    }
+}
+
+pub fn conj_tailed_complete(guide: Guide, x: Unit) -> Unit {
+    let tailoff = guide.count - TAIL_CAP;
+    let last_index = tailoff - 1;
+    let path_diff = tailoff ^ last_index;
+    use std::cmp::Ordering;
+    match digit_count(last_index).cmp(&digit_count(path_diff)) {
+        Ordering::Less    => { growing_height(guide, x, tailoff) },
+        Ordering::Equal   => { growing_root(guide, x, tailoff) },
+        Ordering::Greater => { growing_child(guide, x, tailoff) },
+    }
+}
+
+pub fn path_of_height(height: u32, mut end: Unit) -> Unit {
+    for _ in 0..height {
+        let c = Segment::new(size(1) /*4*/);
+        c.set(0, end);
+        end = c.unit();
+    }
+    end
+}
+
+pub fn growing_height(guide: Guide, x: Unit, tailoff: u32) -> Unit {
+    let g = {
+        let s = {
+            let s = Segment::new(guide.root.index + size(3) /*4*/);
+            guide.segment().at(0..guide.root.index).to(s);
+            let child = {
+                let c = Segment::new(ARITY);
+                guide.root.span(ARITY).to_offset(c, 0);
+                c
+            };
+            s.set(guide.root.index, child.unit());
+            s
+        };
+        let g = guide;
+        g.prism = guide.prism.with_seg(s);
+        Segment::free(guide.segment());
+        g.reroot()
+    };
+    let path = path_of_height(trailing_zero_digit_count(tailoff >> BITS), g.root[-1]);
+    g.root.set(1, path);
+    let tail = {
+        let t = Segment::new(TAIL_CAP);
+        t.set(0, x);
+        t
+    };
+    g.root.set(-1, tail.unit());
+    g.inc_count().store().segment().unit()
+}
+
+pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
+    let root_count = root_content_count(tailoff);
+    if guide.root.has_index(root_count) {
+
+    } else {
+
+    }
+}
+
+pub fn growing_child(guide: Guide, x: Unit, tailoff: u32) -> Unit {
+
+}
+
+fn conj_untailed2(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
     if count == TAIL_CAP {
         conj_untailed_complete(prism, x, guide, count)
     } else {
@@ -63,7 +257,7 @@ fn conj_untailed_complete(prism: Line, x: Unit, guide: Guide, count: u32) -> Uni
     }
 }
 
-pub fn unalias_root(mut segment: Segment, anchor_gap: u32, root_gap: u32, root_count: u32, guide: Guide) -> Segment {
+pub fn unalias_root2(mut segment: Segment, anchor_gap: u32, root_gap: u32, root_count: u32, guide: Guide) -> Segment {
     let used_units = anchor_gap + root_gap + root_count + 3 /*anchor, prism, guide*/;
     let cap = used_units - root_count + root_count.next_power_of_two();
     let mut s = Segment::with_capacity(cap);
@@ -180,7 +374,7 @@ fn conj_untailed_incomplete_unaliased(prism: Line, x: Unit, guide: Guide, count:
 }
 
 
-fn conj_tailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
+fn conj_tailed2(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
     let tailoff = (count - 1) & !MASK;
     let tail_count = count - tailoff;
     if tail_count != TAIL_CAP {
@@ -218,7 +412,7 @@ fn conj_tailed(prism: Line, x: Unit, guide: Guide, count: u32) -> Unit {
     }
 }
 
-fn conj_tailed_complete(prism: Line, x: Unit, guide: Guide, count: u32,
+fn conj_tailed_complete2(prism: Line, x: Unit, guide: Guide, count: u32,
                         tailoff: u32, tail_count: u32) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
     let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
@@ -236,7 +430,7 @@ fn conj_tailed_complete(prism: Line, x: Unit, guide: Guide, count: u32,
     }
 }
 
-fn growing_height(prism: Line, x: Unit, guide: Guide, count: u32,
+fn growing_height2(prism: Line, x: Unit, guide: Guide, count: u32,
                   tailoff: u32, tail_count: u32, mut header: Segment) -> Unit {
     let mut child = Segment::new(ARITY);
     let anchor_gap = guide.prism_to_anchor_gap();
@@ -266,7 +460,7 @@ fn growing_height(prism: Line, x: Unit, guide: Guide, count: u32,
     Unit::from(h)
 }
 
-fn growing_root(prism: Line, x: Unit, guide: Guide, count: u32,
+fn growing_root2(prism: Line, x: Unit, guide: Guide, count: u32,
                 tailoff: u32, tail_count: u32, header: Segment) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
@@ -301,7 +495,7 @@ fn growing_root(prism: Line, x: Unit, guide: Guide, count: u32,
     Unit::from(h)
 }
 
-fn growing_child(prism: Line, x: Unit, guide: Guide, count: u32,
+fn growing_child2(prism: Line, x: Unit, guide: Guide, count: u32,
                  tailoff: u32, tail_count: u32, mut header: Segment) -> Unit {
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();

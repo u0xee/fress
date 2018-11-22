@@ -7,6 +7,10 @@
 
 use super::*;
 
+pub fn next_power(x: u32) -> u32 {
+    (x + 1).next_power_of_two()
+}
+
 pub fn reverse_digits(mut x: u32, digit_count: u32) -> u32 {
     let mut ret = 0u32;
     for i in 0..digit_count {
@@ -26,6 +30,14 @@ pub fn digit_count(x: u32) -> u32 {
 
 pub fn trailing_zero_digit_count(x: u32) -> u32 {
     x.trailing_zeros() / BITS
+}
+
+pub fn tailoff(count: u32) -> u32 {
+    (count - 1) & !MASK
+}
+
+pub fn tail_count(count: u32) -> u32 {
+    count - tailoff(count)
 }
 
 pub fn root_content_count(tailoff: u32) -> u32 {
@@ -50,3 +62,8 @@ pub fn path_width_stack(tailoff: u32, path: u32) -> u32 {
     reverse_digits(path_widths, height)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+}

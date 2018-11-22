@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::*;
+use value::ValueUnit;
 
 /// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
 /// The top 32 bits contain the hash, the bottom 32 bits contain the collection's count.
@@ -37,6 +38,10 @@ pub struct Guide {
 }
 
 impl Guide {
+    pub fn segment(&self) -> Segment {
+        self.prism.segment()
+    }
+
     pub fn set_hash(self, hash: u32) -> Guide {
         self.hash = hash & !0x3;
         self.has_hash_bit = 1;
@@ -69,6 +74,18 @@ impl Guide {
 
     pub fn meta_line(&self) -> AnchoredLine {
         self.prism.offset(if cfg!(target_pointer_width = "32") { 3 } else { 2 })
+    }
+
+    pub fn split_meta(&self) {
+        if self.has_meta() {
+            self.meta_line()[0].value_unit().split();
+        }
+    }
+
+    pub fn retire_meta(&self) {
+        if self.has_meta() {
+            self.meta_line()[0].value_unit().retire();
+        }
     }
 
     pub fn clear_compact(self) -> Guide {
@@ -120,7 +137,7 @@ impl Guide {
         Guide { hash, has_hash_bit, has_meta_bit, count, is_set_bit, is_compact_bit, prism, root }
     }
 
-    pub fn store(&self, prism: AnchoredLine) {
+    pub fn store_at(&self, prism: AnchoredLine) {
         let top: u32 = self.hash | (self.has_hash_bit << 1) | self.has_meta_bit;
         let bot: u32 = (self.is_set_bit << 31) | (self.is_compact_bit << 30) | self.count;
         if cfg!(target_pointer_width = "32") {
@@ -130,5 +147,10 @@ impl Guide {
             let g: u64 = ((top as u64) << 32) | (bot as u64);
             prism[1] = g.into();
         }
+    }
+
+    pub fn store(self) -> Guide {
+        self.store_at(self.prism);
+        self
     }
 }

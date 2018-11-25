@@ -112,6 +112,10 @@ impl Segment {
         m[index] = x;
     }
 
+    pub fn has_index(&self, index: u32) -> bool {
+        index < self.capacity()
+    }
+
     pub fn anchor(&self) -> Anchor {
         self.anchor_line[0].anchor()
     }
@@ -271,7 +275,7 @@ impl AnchoredLine {
 
     pub fn has_index(&self, index: i32) -> bool {
         let i = ((self.index as i32) + index) as u32;
-        i < self.seg.capacity()
+        self.seg.has_index(i)
     }
 
     pub fn with_seg(&self, seg: Segment) -> AnchoredLine {

@@ -47,6 +47,28 @@ pub fn root_content_count(tailoff: u32) -> u32 {
     last_root_index + 1
 }
 
+pub fn last_digit(x: u32) -> u32 {
+    x & MASK
+}
+
+pub fn is_arity_bit(power: u32) -> u32 {
+    power >> BITS
+}
+
+pub fn is_double_arity_bit(power: u32) -> u32 {
+    power >> (BITS + 1)
+}
+
+pub fn cap_at_arity(power: u32) -> u32 {
+    power >> is_double_arity_bit(power)
+}
+
+/// Sizes a unit count to a power of two. Calculates storage sizes.
+/// Returns 4, 8, 16, 32
+pub fn size(unit_count: u32) -> u32 {
+    cap_at_arity(next_power(unit_count | 0x2))
+}
+
 pub fn path_width_stack(tailoff: u32, path: u32) -> u32 {
     let path = path & (!1u32); // makes bottom digit differ
     let last_index = tailoff - 1;

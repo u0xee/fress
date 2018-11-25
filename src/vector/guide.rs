@@ -95,12 +95,12 @@ impl Guide {
 
     pub fn inc_count(self) -> Guide {
         self.count = self.count + 1;
-        self
+        self.clear_hash()
     }
 
     pub fn dec_count(self) -> Guide {
         self.count = self.count - 1;
-        self
+        self.clear_hash()
     }
 
     pub fn reroot(self) -> Guide {

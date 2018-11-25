@@ -160,22 +160,7 @@ impl Reversible for Vector {}
 impl Sorted for Vector {}
 impl Named for Vector {}
 
-
-pub fn count(prism: Line) -> u32 {
-    let guide: Guide = prism[1].into();
-    let count = guide.count();
-    count
-}
-
-pub fn has_tail_space(guide: Guide) -> bool {
-    let x: u64 = guide.post.into();
-    ((x >> 52) & 1) == 1
-}
-
-pub fn with_tail_space(guide: Guide) -> Guide {
-    let x: u64 = guide.post.into();
-    Unit::from(x | (1 << 52)).into()
-}
+// pub fn count
 
 #[cfg(test)]
 mod tests {

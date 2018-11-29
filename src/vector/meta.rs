@@ -31,7 +31,7 @@ pub fn with_meta(prism: AnchoredLine, m: Unit) -> Unit {
         guide.segment().at(mi..cap).to_offset(s, mi + 1);
         s.set(mi, m);
         Segment::free(guide.segment());
-        let g = guide;
+        let mut g = guide;
         g.prism = guide.prism.with_seg(s);
         g.set_meta().reroot().store().segment().unit()
     }

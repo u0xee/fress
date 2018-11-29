@@ -6,7 +6,6 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::*;
-use value::ValueUnit;
 
 /// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
 /// The top 32 bits contain the hash, the bottom 32 bits contain the collection's count.
@@ -42,13 +41,13 @@ impl Guide {
         self.prism.segment()
     }
 
-    pub fn set_hash(self, hash: u32) -> Guide {
+    pub fn set_hash(mut self, hash: u32) -> Guide {
         self.hash = hash & !0x3;
         self.has_hash_bit = 1;
         self
     }
 
-    pub fn clear_hash(self) -> Guide {
+    pub fn clear_hash(mut self) -> Guide {
         self.hash = 0;
         self.has_hash_bit = 0;
         self
@@ -58,12 +57,12 @@ impl Guide {
         self.has_hash_bit == 1
     }
 
-    pub fn set_meta(self) -> Guide {
+    pub fn set_meta(mut self) -> Guide {
         self.has_meta_bit = 1;
         self
     }
 
-    pub fn clear_meta(self) -> Guide {
+    pub fn clear_meta(mut self) -> Guide {
         self.has_meta_bit = 0;
         self
     }
@@ -88,22 +87,22 @@ impl Guide {
         }
     }
 
-    pub fn clear_compact(self) -> Guide {
+    pub fn clear_compact(mut self) -> Guide {
         self.is_compact_bit = 0;
         self
     }
 
-    pub fn inc_count(self) -> Guide {
+    pub fn inc_count(mut self) -> Guide {
         self.count = self.count + 1;
         self.clear_hash()
     }
 
-    pub fn dec_count(self) -> Guide {
+    pub fn dec_count(mut self) -> Guide {
         self.count = self.count - 1;
         self.clear_hash()
     }
 
-    pub fn reroot(self) -> Guide {
+    pub fn reroot(mut self) -> Guide {
         let root_offset = 1 /*prism*/ +
             if cfg!(target_pointer_width = "32") { 2 } else { 1 } /*guide*/ +
             self.has_meta_bit + (!self.is_compact_bit & 0x1);
@@ -116,7 +115,7 @@ impl Guide {
             Guide::hydrate_top_bot(prism, prism[1].into(), prism[2].into())
         } else {
             let g: u64 = prism[1].into();
-            Guide::hydrate_top_bot(prism, (g >> 32).into(), g.into())
+            Guide::hydrate_top_bot(prism, (g >> 32) as u32, g as u32)
         }
     }
 
@@ -137,7 +136,7 @@ impl Guide {
         Guide { hash, has_hash_bit, has_meta_bit, count, is_set_bit, is_compact_bit, prism, root }
     }
 
-    pub fn store_at(&self, prism: AnchoredLine) {
+    pub fn store_at(&self, mut prism: AnchoredLine) {
         let top: u32 = self.hash | (self.has_hash_bit << 1) | self.has_meta_bit;
         let bot: u32 = (self.is_set_bit << 31) | (self.is_compact_bit << 30) | self.count;
         if cfg!(target_pointer_width = "32") {

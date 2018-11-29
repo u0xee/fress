@@ -8,6 +8,7 @@
 use std::fmt;
 use memory::unit::Unit;
 
+#[derive(Copy, Clone)]
 pub struct Anchor {
     pub unit: Unit,
 }

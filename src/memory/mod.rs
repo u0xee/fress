@@ -11,10 +11,14 @@ pub mod unit;
 pub mod line;
 pub mod segment;
 pub mod anchor;
+pub mod anchored_line;
+pub mod anchored_range;
 pub use self::unit::Unit;
 pub use self::line::Line;
-pub use self::segment::{Segment, AnchoredLine, AnchoredRange};
+pub use self::segment::Segment;
 pub use self::anchor::Anchor;
+pub use self::anchored_line::AnchoredLine;
+pub use self::anchored_range::AnchoredRange;
 
 
 #[cfg(test)]

@@ -7,7 +7,6 @@
 
 use memory::*;
 pub mod mechanism;
-pub use self::mechanism::{prism, as_dispatch};
 use std::fmt::Display;
 use std::cmp::Ordering;
 
@@ -21,98 +20,52 @@ Associative +
 Reversible +
 Sorted +
 Named {
-    fn tear_down(&self, prism: AnchoredLine) {
-        unimplemented!()
-    }
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
+    fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
+    fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 
 pub trait Identification : Display {
-    fn type_name(&self, prism: AnchoredLine) -> String {
-        unimplemented!()
-    }
-    fn type_sentinel(&self, prism: AnchoredLine) -> *const u8 {
-        unimplemented!()
-    }
+    fn type_name(&self) -> String { unimplemented!() }
+    fn type_sentinel(&self) -> *const u8 { unimplemented!() }
 }
 
 pub trait Distinguish {
-    fn hash(&self, prism: AnchoredLine) -> u32 {
-        unimplemented!()
-    }
-    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        unimplemented!()
-    }
-    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering {
-        unimplemented!()
-    }
+    fn hash(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool { unimplemented!() }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering { unimplemented!() }
 }
 
 pub trait Aggregate {
-    fn count(&self, prism: AnchoredLine) -> u32 {
-        unimplemented!()
-    }
-    fn empty(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn meta(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn peek(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
-        unimplemented!()
-    }
-    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn count(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
+    fn empty(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit { unimplemented!() }
+    fn meta(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { unimplemented!() }
+    fn peek(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { unimplemented!() }
+    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Sequential {
-    fn nth(&self, prism: AnchoredLine, idx: u32) -> Unit {
-        unimplemented!()
-    }
+    fn nth(&self, prism: AnchoredLine, idx: u32) -> Unit { unimplemented!() }
 }
 
 pub trait Associative {
-    fn contains(&self, prism: AnchoredLine, x: Unit) -> bool {
-        unimplemented!()
-    }
-    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
-        unimplemented!()
-    }
-    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn contains(&self, prism: AnchoredLine, x: Unit) -> bool { unimplemented!() }
+    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) { unimplemented!() }
+    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Reversible {
-    fn reverse(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
+    fn reverse(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 
 pub trait Sorted {
-    fn subrange(&self, prism: AnchoredLine, start: Unit, end: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn subrange(&self, prism: AnchoredLine, start: Unit, end: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Named {
-    fn name(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-    fn namespace(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
+    fn name(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn namespace(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 

@@ -7,56 +7,58 @@
 
 use memory::*;
 use dispatch::*;
+use value::*;
 
 #[derive(Copy, Clone)]
 pub struct ValueUnit {
     pub unit: Unit,
 }
 
-#[derive(Copy, Clone)]
-pub struct ValueRef {
-    pub seg: Segment,
-}
-
-#[derive(Copy, Clone)]
-pub struct ValueImm {
-    pub unit: Unit,
-}
-
 impl ValueUnit {
-    pub fn as_ref(&self) -> Option<ValueRef> {
-        if self.unit.is_even() {
-            Some(ValueRef { seg: self.unit.segment() })
-        } else {
-            None
+    pub fn value(self) -> Value {
+        Value::from(self)
+    }
+
+    pub fn segment(self) -> Segment {
+        self.unit.segment()
+    }
+
+    pub fn is_ref(self) -> bool {
+        self.unit.is_even()
+    }
+
+    pub fn split(self) {
+        if self.is_ref() {
+            self.segment().alias()
         }
     }
 
-    pub fn split(&self) {
-        if let Some(r) = self.as_ref() {
-            r.seg.alias()
-        }
-    }
-
-    pub fn retire(&self) {
-        if let Some(r) = self.as_ref() {
-            if r.seg.unalias() == 0 {
-                r.tear_down()
+    pub fn retire(self) {
+        if self.is_ref() {
+            if self.segment().unalias() == 0 {
+                self.tear_down()
             }
         }
     }
 
-    pub fn hash(&self) -> u32 {
-        if let Some(r) = self.as_ref() {
-            r.hash()
-        } else {
-            // TODO hash immediate value
-            self.unit.into()
-        }
+    pub fn prism(self) -> AnchoredLine {
+        self.segment().line_at(0)
     }
 
-    pub fn eq(&self, other: Unit) -> bool {
-        self.unit == other
+    pub fn tear_down(self) {
+        let prism = self.prism();
+        let p = prism[0];
+        mechanism::as_dispatch(&p).tear_down(prism);
+    }
+
+    pub fn conj(self, x: ValueUnit) -> ValueUnit {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).conj(prism, x.unit).value_unit()
+        } else {
+            unimplemented!()
+        }
     }
 }
 
@@ -66,9 +68,17 @@ impl From<Unit> for ValueUnit {
     }
 }
 
-impl Into<Unit> for ValueUnit {
-    fn into(self) -> Unit {
-        self.unit
+impl From<Value> for ValueUnit {
+    fn from(v: Value) -> Self {
+        let ret = ValueUnit { unit: v.handle };
+        use std::mem::forget;
+        forget(v);
+        ret
     }
 }
 
+impl ValueUnit {
+    pub fn eq(&self, other: Unit) -> bool {
+        self.unit == other
+    }
+}

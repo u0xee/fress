@@ -22,7 +22,7 @@ pub fn unalias_root(guide: Guide) -> Guide {
         let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
         let g = {
             let s = Segment::new(guide.root.index + (width | grew_tail_bit));
-            let g = guide;
+            let mut g = guide;
             g.prism = guide.prism.with_seg(s);
             g.is_compact_bit = g.is_compact_bit & !grew_tail_bit;
             g.reroot()
@@ -44,7 +44,7 @@ pub fn unalias_root(guide: Guide) -> Guide {
         let g = {
             let cap = guide.root.index - 1 /*tail*/ + (width | is_arity_bit(width));
             let s = Segment::new(cap);
-            let g = guide;
+            let mut g = guide;
             g.prism = guide.prism.with_seg(s);
             g.reroot()
         };
@@ -79,15 +79,15 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
         guide.root.set(-1, tail.unit());
         guide.inc_count().store().segment().unit()
     } else { // incomplete
-        if guide.root.has_index(guide.count) {
-            guide.root.set(guide.count, x);
+        if guide.root.has_index(guide.count as i32) {
+            guide.root.set(guide.count as i32, x);
             guide.inc_count().store().segment().unit()
         } else {
             let width = size(guide.count);
             let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
             let g = {
                 let s = Segment::new(guide.root.index + (width | grew_tail_bit));
-                let g = guide;
+                let mut g = guide;
                 g.prism = guide.prism.with_seg(s);
                 g.is_compact_bit = g.is_compact_bit & !grew_tail_bit;
                 g.reroot()
@@ -95,7 +95,7 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
             guide.segment().at(0..guide.root.index).to(g.segment());
             guide.root.span(guide.count).to_offset(g.segment(), g.root.index);
             Segment::free(guide.segment());
-            g.root.set(g.count, x);
+            g.root.set(g.count as i32, x);
             g.inc_count().store().segment().unit()
         }
     }
@@ -160,7 +160,7 @@ pub fn growing_height(guide: Guide, x: Unit, tailoff: u32) -> Unit {
             s.set(guide.root.index, child.unit());
             s
         };
-        let g = guide;
+        let mut g = guide;
         g.prism = guide.prism.with_seg(s);
         Segment::free(guide.segment());
         g.reroot()
@@ -178,7 +178,7 @@ pub fn growing_height(guide: Guide, x: Unit, tailoff: u32) -> Unit {
 
 pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     let root_count = root_content_count(tailoff);
-    let g = if guide.root.has_index(root_count) {
+    let g = if guide.root.has_index(root_count as i32) {
         guide
     } else {
         let g = {
@@ -186,7 +186,7 @@ pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
             let width = size(grown_root_count + 1 /*tail*/);
             let cap = guide.root.index - 1 /*tail*/ + (width | is_arity_bit(width));
             let s = Segment::new(cap);
-            let g = guide;
+            let mut g = guide;
             g.prism = guide.prism.with_seg(s);
             g.reroot()
         };
@@ -195,7 +195,7 @@ pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
         g
     };
     let path = path_of_height(trailing_zero_digit_count(tailoff >> BITS), g.root[-1]);
-    g.root.set(root_count, path);
+    g.root.set(root_count as i32, path);
     let tail = {
         let t = Segment::new(TAIL_CAP);
         t.set(0, x);
@@ -261,5 +261,5 @@ pub fn growing_child(guide: Guide, x: Unit, tailoff: u32) -> Unit {
         t
     };
     guide.root.set(-1, tail.unit());
-    g.inc_count().store().segment().unit()
+    guide.inc_count().store().segment().unit()
 }

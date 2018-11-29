@@ -87,5 +87,4 @@ pub fn path_widths(tailoff: u32, path: u32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-
 }

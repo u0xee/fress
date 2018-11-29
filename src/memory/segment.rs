@@ -25,7 +25,6 @@ use std::fmt;
 use std::ops::{Index, IndexMut, Range};
 use fuzz;
 use memory::*;
-use value::*;
 
 #[derive(Copy, Clone)]
 pub struct Segment {
@@ -45,7 +44,7 @@ impl Segment {
             for i in 0..cap {
                 anchored.anchor_line[1 + i as usize] = 0.into();
             }
-        #[cfg(any(test, feature = "fuzz_segment_random_content"))]
+        #[cfg(feature = "fuzz_segment_random_content")]
             random_content(anchored, cap);
         trace::new_END(anchored, cap);
         anchored
@@ -69,7 +68,7 @@ impl Segment {
     }
 
     pub fn is_aliased(&self) -> bool {
-        let real_ret = self.line[0].anchor().is_aliased();
+        let real_ret = self.anchor_line[0].anchor().is_aliased();
         if cfg!(any(test, feature = "fuzz_segment_spurious_aliased")) {
             use fuzz;
             let (seed, log_tail) = fuzz::next_random();
@@ -84,7 +83,7 @@ impl Segment {
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.aliased();
-            let mut  x = self;
+            let mut  x = *self;
             x.anchor_line[0] = new_a.into();
         } else {
             unimplemented!()
@@ -95,7 +94,7 @@ impl Segment {
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.unaliased();
-            let mut x = self;
+            let mut x = *self;
             x.anchor_line[0] = new_a.into();
             new_a.aliases()
         } else {
@@ -108,7 +107,7 @@ impl Segment {
     }
 
     pub fn set(&self, index: u32, x: Unit) {
-        let mut m = self;
+        let mut m = *self;
         m[index] = x;
     }
 
@@ -125,11 +124,11 @@ impl Segment {
     }
 
     pub fn line_at(&self, base: u32) -> AnchoredLine {
-        AnchoredLine::new(self, base)
+        AnchoredLine::new(*self, base)
     }
 
     pub fn at(&self, range: Range<u32>) -> AnchoredRange {
-        AnchoredRange::new(self, range)
+        AnchoredRange::new(*self, range)
     }
 
     pub fn line(&self) -> Line {
@@ -241,147 +240,6 @@ impl IndexMut<u32> for Segment {
     }
 }
 
-#[derive(Copy, Clone)]
-pub struct AnchoredLine {
-    pub seg: Segment,
-    pub index: u32,
-}
-
-impl AnchoredLine {
-    pub fn new(seg: Segment, index: u32) -> AnchoredLine {
-        AnchoredLine { seg, index }
-    }
-
-    pub fn get(&self, index: i32) -> Unit {
-        self[index]
-    }
-
-    pub fn set(&self, index: i32, x: Unit) {
-        let mut m = self;
-        m[index] = x;
-    }
-
-    pub fn segment(&self) -> Segment {
-        self.seg
-    }
-
-    pub fn index(&self) -> u32 {
-        self.index
-    }
-
-    pub fn offset(&self, offset: i32) -> AnchoredLine {
-        AnchoredLine { seg: self.seg, index: ((self.index as i32) + offset) as u32 }
-    }
-
-    pub fn has_index(&self, index: i32) -> bool {
-        let i = ((self.index as i32) + index) as u32;
-        self.seg.has_index(i)
-    }
-
-    pub fn with_seg(&self, seg: Segment) -> AnchoredLine {
-        AnchoredLine { seg, index: self.index }
-    }
-
-    pub fn range(&self, length: u32) -> AnchoredRange {
-        AnchoredRange::new(self.seg, self.index..(self.index + length))
-    }
-
-    pub fn line(&self) -> Line {
-        self.seg.anchor_line.offset(self.index as isize + 1)
-    }
-
-    pub fn span(&self, width: u32) -> AnchoredRange {
-        AnchoredRange::new(self.seg, self.index..(self.index + width))
-    }
-}
-
-impl Index<i32> for AnchoredLine {
-    type Output = Unit;
-
-    fn index(&self, index: i32) -> &Self::Output {
-        Index::index(&self.seg, ((self.index as i32) + index) as u32)
-    }
-}
-
-impl IndexMut<i32> for AnchoredLine {
-    fn index_mut(&mut self, index: i32) -> &mut Self::Output {
-        IndexMut::index_mut(&mut self.seg, ((self.index as i32) + index) as u32)
-    }
-}
-
-#[derive(Copy, Clone)]
-pub struct AnchoredRange {
-    pub seg: Segment,
-    pub start: u32,
-    pub end: u32,
-}
-
-impl AnchoredRange {
-    pub fn new(seg: Segment, range: Range<u32>) {
-        AnchoredRange { seg, start: range.start, end: range.end }
-    }
-
-    pub fn to(&self, target: Segment) {
-        self.to_offset(target, self.start)
-    }
-
-    pub fn to_offset(&self, target: Segment, offset: u32) {
-        // TODO make efficient aggregate operation, will bounds and mut check in loop
-        let mut t = target;
-        let length = self.end - self.start;
-        for i in 0..length {
-            t[offset + i] = self.seg[self.start + i];
-        }
-    }
-
-    pub fn shift_up(&self, shift: u32) {
-        let mut t = self.seg;
-        for i in (self.start..self.end).rev() {
-            t[i + shift] = t[i];
-        }
-    }
-
-    pub fn shift_down(&self, shift: u32) {
-        let mut t = self.seg;
-        for i in self.start..self.end {
-            t[i - shift] = t[i];
-        }
-    }
-
-    pub fn alias(&self) {
-        let mut t = self.seg;
-        for i in self.start..self.end {
-            t[i].segment().alias();
-        }
-    }
-
-    pub fn unalias(&self) {
-        let mut t = self.seg;
-        for i in self.start..self.end {
-            if t[i].segment().unalias() == 0 {
-                panic!("Unalias of segment w/o policy to free!")
-            }
-        }
-    }
-
-    pub fn split(&self) {
-        let mut t = self.seg;
-        for i in self.start..self.end {
-            t[i].value_unit().split();
-        }
-    }
-
-    pub fn retire(&self) {
-        let mut t = self.seg;
-        for i in self.start..self.end {
-            t[i].value_unit().retire();
-        }
-    }
-
-    pub fn segment(&self) -> Segment {
-        self.seg
-    }
-}
 
 pub mod trace {
     use super::*;
@@ -389,4 +247,15 @@ pub mod trace {
     pub fn new_END(s: Segment, content_cap: u32) { }
     pub fn free_BEGIN(s: Segment) { }
     pub fn free_END(s: Line) { }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    #[should_panic(expected = "")]
+    fn passes() {
+        assert!(true)
+    }
 }

@@ -6,20 +6,11 @@
 // You must not remove this notice, or any other, from this software.
 
 pub mod value_unit;
-pub use self::value_unit::{ValueUnit, ValueImm, ValueRef};
-
-
-/*
-Value is the main library API:
-- Static code dispatching based on union base, possibly to assembled trait object
-- &Value into another Value (during its scope)
-- Special high level operations like split
-*/
+pub use self::value_unit::ValueUnit;
 
 use memory::*;
 use dispatch::*;
 use vector::Vector;
-
 
 #[derive(Debug)]
 pub struct Value {
@@ -28,45 +19,43 @@ pub struct Value {
 
 impl Value {
     pub const NIL: Unit = Unit { word: 0x07 };
-    pub const TRUE: Unit = Unit { word: std::usize::MAX };
+    pub const TRUE: Unit = Unit { word: !0x00usize };
     pub const FALSE: Unit = Unit { word: !0x08usize };
 
-    pub fn add_one_test(&self) -> Value {
-        let x: u64 = self.handle.into();
-        Value { handle: (x + 1).into() }
+    fn consume(self) -> ValueUnit {
+        ValueUnit::from(self)
+    }
+
+    fn value_unit(&self) -> ValueUnit {
+        ValueUnit { unit: self.handle }
+    }
+
+    pub fn split(self) -> (Value, Value) {
+        let v = self.consume();
+        v.split();
+        (v.value(), v.value())
+    }
+
+    pub fn split_out(&self) -> Value {
+        let v = self.value_unit();
+        v.split();
+        v.value()
     }
 
     pub fn conj(self, x: Value) -> Value {
-        if self.is_immediate() {
-            unimplemented!()
-        } else {
-            let s = Segment::from(self.handle);
-            let next_seg = s.conj(x.handle);
-            println!("value::conj = {:?}", Segment::from(next_seg));
-            use std::mem::forget;
-            forget(self);
-            Value { handle: next_seg }
-            // TODO dropping self here?
-        }
+        self.consume().conj(x.consume()).value()
     }
+}
 
-    pub fn pop(self) -> (Value, Value) {
-        if self.is_immediate() {
-            unimplemented!()
-        } else {
-            let s = Segment::from(self.handle);
-            let (a, b) = s.pop();
-            (Value { handle: a }, Value { handle: b })
-        }
+impl From<ValueUnit> for Value {
+    fn from(vu: ValueUnit) -> Self {
+        Value { handle: vu.unit }
     }
 }
 
 impl Drop for Value {
     fn drop(&mut self) {
-        if !self.is_immediate() {
-            let s = Segment::from(self.handle);
-            s.tear_down()
-        }
+        self.value_unit().retire();
     }
 }
 

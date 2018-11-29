@@ -40,11 +40,11 @@ impl Unit {
     }
 
     pub fn u64(&self) -> u64 {
-        self.into()
+        self.word as u64
     }
 
     pub fn u32(&self) -> u32 {
-        self.into()
+        self.word as u32
     }
 
     pub fn anchor(self) -> Anchor {

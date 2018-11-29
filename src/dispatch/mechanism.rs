@@ -21,7 +21,7 @@ pub fn prism<T: Dispatch>() -> Unit {
 }
 
 pub fn as_dispatch<'a>(prism: &'a Unit) -> &'a Dispatch {
-    let ptr_and_table: [Unit; 2] = [Unit::from(0), prism];
+    let ptr_and_table: [Unit; 2] = [Unit::from(0), *prism];
     unsafe {
         transmute::<[Unit; 2], &Dispatch>(ptr_and_table)
     }

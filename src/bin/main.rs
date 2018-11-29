@@ -20,7 +20,6 @@ fn main() {
     println!("{:?}", s[3]);
     println!("{:?}", s);
     Segment::free(s);
-    */
 
 
     let v = Vector::new_value();
@@ -38,6 +37,6 @@ fn main() {
     assert_eq!(one, 1.into());
 
     println!("Goodbye, world!");
+    */
 }
-
 

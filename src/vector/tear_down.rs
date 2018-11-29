@@ -7,6 +7,13 @@
 
 use super::*;
 
+pub fn tear_down(prism: AnchoredLine) {
+    let guide = Guide::hydrate(prism);
+
+}
+
+/*
+
 #[derive(Copy, Clone)]
 struct NodeRecord {
     first_child: AnchoredLine,
@@ -16,7 +23,7 @@ struct NodeRecord {
     current_child: Option<u32>,
 }
 
-fn base_case(node: &NodeRecord) {
+pub fn base_case(node: &NodeRecord) {
     for i in 0..node.child_count {
         let mut a_tail: Segment = node.first_child[i as usize].into();
         if a_tail.unalias() == 0 {
@@ -57,7 +64,7 @@ impl NodeRecordStack {
     }
 }
 
-fn step(stack: &mut NodeRecordStack, last_tree_index: u32) {
+pub fn step(stack: &mut NodeRecordStack, last_tree_index: u32) {
     let top = stack.top();
     if top.height == 2 {
         base_case(top);
@@ -100,8 +107,11 @@ fn step(stack: &mut NodeRecordStack, last_tree_index: u32) {
     }
 }
 
-pub fn tear_down(prism: Line) {
-    let guide: Guide = prism[1].into();
+pub fn tear_down2(prism: AnchoredLine) {
+    let guide = Guide::hydrate(prism);
+
+
+
     let anchor_gap = guide.prism_to_anchor_gap();
     let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
     if segment.unalias() == 0 {
@@ -160,3 +170,4 @@ pub fn tear_down(prism: Line) {
     }
 }
 
+*/

@@ -8,18 +8,18 @@
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use Value;
+use value::*;
 
 pub mod guide;
 use self::guide::Guide;
-mod conj;
-use self::conj::unalias_root;
-mod pop;
-mod nth;
-mod meta;
-mod assoc;
-mod tear_down;
-mod util;
+pub mod conj;
+use self::conj::unaliased_root;
+pub mod pop;
+pub mod nth;
+pub mod meta;
+pub mod assoc;
+pub mod tear_down;
+pub mod util;
 use self::util::*;
 #[cfg(test)]
 use fuzz;
@@ -31,73 +31,35 @@ pub const MASK: u32 = ARITY - 1;
 
 pub static VECTOR_SENTINEL: u8 = 0;
 
-pub struct VectorValue {
-    anchor_line: Line,
-}
-
-impl VectorValue {
-    pub fn new() -> Self {
-        VectorValue { anchor_line: Vector::new().into() }
-    }
-}
-
-/// Represents a Vector
 pub struct Vector {
     prism: Unit,
 }
 
 impl Vector {
-    #[cfg(not(test))]
     pub fn new() -> Unit {
-        let mut s = Segment::new(6);
-        s[1] = prism::<Vector>();
-        s[2] = Guide::new().into();
-        Unit::from(s)
-    }
-
-    #[cfg(test)]
-    pub fn new() -> Unit {
-        let (seed, log_tail) = fuzz::next_random();
-        let anchor_gap = (fuzz::uniform_f64(seed, fuzz::cycle(seed)) * 200.0) as u32;
-        let seed2 = fuzz::cycle_n(seed, 2);
-        let root_gap = (fuzz::uniform_f64(seed2, fuzz::cycle(seed2)) * 4.0) as u32;
-
-        let mut s = Segment::new(6 + root_gap);
-        s[1] = prism::<Vector>();
-        s[2] = Guide::new().with_root_gap_change(root_gap as i32).into();
-        // TODO understand unaliased semantics and how to construct shim
-        //BlankShim::on_top_of()
-        Unit::from(s)
+        let guide = {
+            let s = Segment::new(6);
+            let prism = s.line_at(0);
+            prism.set(0, mechanism::prism::<Vector>());
+            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+            g.is_compact_bit = 0x1;
+            g
+        };
+        guide.store().segment().unit()
     }
 
     pub fn new_value() -> Value {
-        Value { handle: Vector::new() }
-    }
-
-    fn line(&self) -> Line {
-        Unit::from(&self.prism as *const Unit).into()
+        Vector::new().value_unit().value()
     }
 }
 
 impl Dispatch for Vector {
-    fn tear_down(&self) {
-        tear_down::tear_down(self.line());
+    fn tear_down(&self, prism: AnchoredLine) {
+        tear_down::tear_down(prism);
     }
 
-    fn unaliased(&self) -> Unit {
-        let prism = self.line();
-        let guide: Guide = prism[1].into();
-        let anchor_gap = guide.prism_to_anchor_gap();
-        let root_gap = guide.guide_to_root_gap();
-        let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-        if !segment.is_aliased() {
-            Unit::from(segment)
-        } else {
-            let tailoff = (guide.count() - 1) & !MASK;
-            let t = unalias_root(segment, anchor_gap,
-                                 root_gap,root_content_count(tailoff), guide);
-            Unit::from(t)
-        }
+    fn unaliased(&self, prism: AnchoredLine) -> Unit {
+        unaliased_root(Guide::hydrate(prism)).segment().unit()
     }
 }
 
@@ -120,26 +82,27 @@ impl Identification for Vector {
 impl Distinguish for Vector {}
 
 impl Aggregate for Vector {
-    fn count(&self) -> u32 {
-        count(self.line())
+    fn count(&self, prism: AnchoredLine) -> u32 {
+        let guide = Guide::hydrate(prism);
+        guide.count
     }
-    fn conj(&self, x: Unit) -> Unit {
-        conj::conj(self.line(), x)
+    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
+        conj::conj(prism, x)
     }
-    fn meta(&self) -> Unit {
-        meta::meta(self.line())
+    fn meta(&self, prism: AnchoredLine) -> Unit {
+        meta::meta(prism)
     }
-    fn with_meta(&self, m: Unit) -> Unit {
-        meta::with_meta(self.line(), m)
+    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
+        meta::with_meta(prism, m)
     }
-    fn pop(&self) -> (Unit, Unit) {
-        pop::pop(self.line())
+    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
+        pop::pop(prism)
     }
 }
 
 impl Sequential for Vector {
-    fn nth(&self, idx: u32) -> Unit {
-        nth::nth(self.line(), idx)
+    fn nth(&self, prism: AnchoredLine, idx: u32) -> Unit {
+        nth::nth(prism, idx)
     }
 }
 
@@ -150,17 +113,15 @@ fn key_into_idx(k: Unit) -> u32 {
 }
 
 impl Associative for Vector {
-    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
+    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let idx: u32 = key_into_idx(k);
-        assoc::assoc(self.line(), idx, v)
+        assoc::assoc(prism, idx, v)
     }
 }
 
 impl Reversible for Vector {}
 impl Sorted for Vector {}
 impl Named for Vector {}
-
-// pub fn count
 
 #[cfg(test)]
 mod tests {

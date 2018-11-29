@@ -5,9 +5,8 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use memory::unit::Unit;
-use memory::segment::{Segment, AnchoredLine};
 use std::ops::{Index, IndexMut};
+use memory::*;
 
 #[derive(Copy, Clone)]
 pub struct Line {
@@ -23,10 +22,6 @@ impl Line {
     }
     pub fn offset(&self, x: isize) -> Line {
         Line { line: unsafe { self.line.offset(x) } }
-    }
-    pub fn anchor(self, index: u32) -> AnchoredLine {
-        let diff_to_anchor = (index + 1) as isize;
-        AnchoredLine::new(self.offset(-diff_to_anchor).segment(), index)
     }
 }
 

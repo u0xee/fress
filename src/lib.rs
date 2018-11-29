@@ -11,7 +11,7 @@ pub mod dispatch;
 pub mod fuzz;
 pub mod keyword;
 pub mod list;
-pub mod map;
+//pub mod map;
 pub mod memory;
 pub mod rational;
 pub mod set;

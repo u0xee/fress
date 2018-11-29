@@ -13,7 +13,7 @@ pub fn nth(prism: AnchoredLine, idx: u32) -> Unit {
         panic!("Index out of bounds: {} in vector of count {}", idx, guide.count);
     }
     if guide.count <= TAIL_CAP {
-        guide.root[idx]
+        guide.root[idx as i32]
     } else {
         nth_tailed(guide, idx)
     }
@@ -33,7 +33,7 @@ fn nth_tailed(guide: Guide, idx: u32) -> Unit {
         };
         for _ in 0..(digit_count - 1) {
             let digit = {
-                let ret = last_digit(path >> shift);
+                let ret = last_digit(idx >> shift);
                 shift -= BITS;
                 ret
             };

@@ -17,16 +17,16 @@ pub fn pop(prism: AnchoredLine) -> (Unit, Unit) {
     }
 }
 
-fn pop_untailed(guide: Guide) -> (Unit, Unit) {
+pub fn pop_untailed(guide: Guide) -> (Unit, Unit) {
     if guide.count == 0 {
         (guide.segment().unit(), Unit::from(0))
     } else {
-        let popped = guide.root[guide.count - 1];
+        let popped = guide.root[(guide.count - 1) as i32];
         (guide.dec_count().store().segment().unit(), popped)
     }
 }
 
-fn pop_tailed(guide: Guide) -> (Unit, Unit) {
+pub fn pop_tailed(guide: Guide) -> (Unit, Unit) {
     let tail_count = tail_count(guide.count);
     if tail_count != 1 {
         let tail = {
@@ -53,7 +53,7 @@ fn pop_tailed(guide: Guide) -> (Unit, Unit) {
     }
 }
 
-fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
+pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
     let tail = guide.root[-1].segment();
     let popped = tail[0];
     if tail.is_aliased() {
@@ -82,7 +82,7 @@ fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
     }
 }
 
-fn unlink_tail(mut s: Segment, height: u32) -> Segment {
+pub fn unlink_tail(mut s: Segment, height: u32) -> Segment {
     for i in 0..height {
         if !s.is_aliased() {
             let t = s[0].segment();
@@ -95,7 +95,7 @@ fn unlink_tail(mut s: Segment, height: u32) -> Segment {
     s
 }
 
-fn unlink_tail_aliased(mut s: Segment, height: u32) -> Segment {
+pub fn unlink_tail_aliased(mut s: Segment, height: u32) -> Segment {
     let mut tail = {
         let mut t = s;
         for i in 0..height {
@@ -116,17 +116,17 @@ fn unlink_tail_aliased(mut s: Segment, height: u32) -> Segment {
     tail
 }
 
-fn shrink_height(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
+pub fn shrink_height(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
     let tail_path_head = guide.root[1].segment();
     let path_height = trailing_zero_digit_count(last_index >> BITS);
     let tail = unlink_tail(tail_path_head, path_height);
     guide.root.set(-1, tail.unit());
-    let g = if guide.root.has_index(TAIL_CAP - 1) {
+    let g = if guide.root.has_index(TAIL_CAP as i32 - 1) {
         guide
     } else {
         let s = Segment::new(guide.root.index + TAIL_CAP);
         guide.segment().at(0..(guide.root.index + 1)).to(s);
-        let g = guide;
+        let mut g = guide;
         g.prism = guide.prism.with_seg(s);
         Segment::free(guide.segment());
         g.reroot()
@@ -146,21 +146,21 @@ fn shrink_height(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
     g.dec_count().store().segment().unit()
 }
 
-fn shrink_root(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
+pub fn shrink_root(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
     let root_count = root_content_count(tailoff);
-    let tail_path_head = guide.root[root_count - 1].segment();
+    let tail_path_head = guide.root[(root_count - 1) as i32].segment();
     let path_height = trailing_zero_digit_count(last_index >> BITS);
     let tail = unlink_tail(tail_path_head, path_height);
-    g.root.set(-1, tail.unit());
-    g.dec_count().store().segment().unit()
+    guide.root.set(-1, tail.unit());
+    guide.dec_count().store().segment().unit()
 }
 
-fn shrink_child(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
+pub fn shrink_child(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
     let zero_count = trailing_zero_digit_count(last_index);
     let root_count = root_content_count(tailoff);
     let digit_count = digit_count(last_index);
     let c = create_path(guide.root, last_index, digit_count, digit_count - zero_count);
     let tail = unlink_tail(c[0].segment(), zero_count - 1);
     guide.root.set(-1, tail.unit());
-    g.dec_count().store().segment().unit()
+    guide.dec_count().store().segment().unit()
 }

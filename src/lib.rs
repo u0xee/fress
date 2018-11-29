@@ -18,7 +18,7 @@ pub mod set;
 pub mod sorted_map;
 pub mod sorted_set;
 pub mod string;
-pub mod transducer;
+//pub mod transducer;
 pub mod symbol;
 pub mod value;
 pub mod vector;

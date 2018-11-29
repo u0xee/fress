@@ -55,7 +55,7 @@ fn normal_stats(mut seed: u64) {
 fn fstats(mut seed: u64) {
     let mut counts = [0; 100];
     let samples = 1000;
-    for i in 0..samples {
+    for _ in 0..samples {
         let f = uniform_f64(seed, cycle(seed));
         let x = f * 100f64; // percentile
         if x < 1.0f64 {

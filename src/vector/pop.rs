@@ -74,7 +74,7 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
         let path_diff = tail_path ^ last_index;
         use std::cmp::Ordering;
         let ret = match digit_count(last_index).cmp(&digit_count(path_diff)) {
-            Ordering::Less    => { shrink_height(guide, tailoff, last_index) },
+            Ordering::Less    => { shrink_height(guide, last_index) },
             Ordering::Equal   => { shrink_root(guide, tailoff, last_index) },
             Ordering::Greater => { shrink_child(guide, tailoff, last_index) },
         };
@@ -96,15 +96,15 @@ pub fn unlink_tail(mut s: Segment, height: u32) -> Segment {
 }
 
 pub fn unlink_tail_aliased(mut s: Segment, height: u32) -> Segment {
-    let mut tail = {
+    let tail = {
         let mut t = s;
-        for i in 0..height {
+        for _ in 0..height {
             t = t[0].segment();
         }
         t
     };
     tail.alias();
-    for i in 0..(height + 1) {
+    for _ in 0..(height + 1) {
         if s.unalias() == 0 {
             let t = s[0].segment();
             Segment::free(s);
@@ -116,7 +116,7 @@ pub fn unlink_tail_aliased(mut s: Segment, height: u32) -> Segment {
     tail
 }
 
-pub fn shrink_height(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
+pub fn shrink_height(guide: Guide, last_index: u32) -> Unit {
     let tail_path_head = guide.root[1].segment();
     let path_height = trailing_zero_digit_count(last_index >> BITS);
     let tail = unlink_tail(tail_path_head, path_height);
@@ -157,7 +157,6 @@ pub fn shrink_root(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
 
 pub fn shrink_child(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
     let zero_count = trailing_zero_digit_count(last_index);
-    let root_count = root_content_count(tailoff);
     let digit_count = digit_count(last_index);
     let c = create_path(guide.root, last_index, digit_count, digit_count - zero_count);
     let tail = unlink_tail(c[0].segment(), zero_count - 1);

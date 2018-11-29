@@ -21,7 +21,6 @@
 //! The anchor supports this by counting the number of aliases to its segment.
 
 use std::mem;
-use std::fmt;
 use std::ops::{Index, IndexMut, Range};
 use fuzz;
 use memory::*;
@@ -39,10 +38,13 @@ impl Segment {
             { cap += extra_cap(); }
         let mut unanchored = unanchored_new(cap);
         unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
-        let mut anchored = unanchored;
+        let anchored = unanchored;
         #[cfg(any(test, feature = "segment_clear"))]
-            for i in 0..cap {
-                anchored.anchor_line[1 + i as usize] = 0.into();
+            {
+                let mut anchored = anchored;
+                for i in 0..cap {
+                    anchored.anchor_line[1 + i] = 0.into();
+                }
             }
         #[cfg(feature = "fuzz_segment_random_content")]
             random_content(anchored, cap);
@@ -145,7 +147,7 @@ impl From<Unit> for Segment {
 impl From<Line> for Segment {
     fn from(line: Line) -> Self {
         if cfg!(any(test, feature = "segment_magic")) {
-            if line.offset(-1)[0] != 0xCAFEBABE.into() {
+            if line.offset(-1)[0] != 0xCAFEBABEu32.into() {
                 panic!("Casting to Segment failed, magic not found")
             }
             Segment { anchor_line: line }
@@ -158,7 +160,7 @@ impl From<Line> for Segment {
 pub fn unanchored_new(cap: u32) -> Segment {
     if cfg!(any(test, feature = "segment_magic")) {
         let mut line = alloc(cap + 2);
-        line[0] = 0xCAFEBABE.into();
+        line[0] = 0xCAFEBABEu32.into();
         Segment { anchor_line: line.offset(1 as isize) }
     } else {
         Segment { anchor_line: alloc(cap + 1) }
@@ -172,10 +174,13 @@ pub fn alloc(raw_cap: u32) -> Line {
     Unit::from(ptr).into()
 }
 
-pub fn dealloc(mut line: Line, raw_cap: u32) {
+pub fn dealloc(line: Line, raw_cap: u32) {
     #[cfg(any(test, feature = "segment_clear"))]
-        for i in 0..raw_cap {
-            line[i as usize] = 0.into();
+        {
+            let mut line = line;
+            for i in 0..raw_cap {
+                line[i] = 0.into();
+            }
         }
     unsafe {
         let v: Vec<Unit> = Vec::from_raw_parts(line.line as *mut Unit, 0, raw_cap as usize);
@@ -254,7 +259,7 @@ mod test {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "")]
+    //#[should_panic(expected = "")]
     fn passes() {
         assert!(true)
     }

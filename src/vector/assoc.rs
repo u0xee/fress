@@ -6,7 +6,6 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
-use super::conj::*;
 
 pub fn assoc(prism: AnchoredLine, idx: u32, x: Unit) -> (Unit, Unit) {
     let guide = unaliased_root(Guide::hydrate(prism));

@@ -44,7 +44,7 @@ pub fn log(m: String) {
 
 pub fn log_copy() -> Vec<String> {
     LOG.with(|v_cell| {
-        let mut v = v_cell.borrow_mut();
+        let v = v_cell.borrow_mut();
         v.clone()
     })
 }

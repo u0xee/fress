@@ -6,13 +6,11 @@
 // You must not remove this notice, or any other, from this software.
 
 extern crate fress_rust;
-use fress_rust::Value;
-use fress_rust::vector::Vector;
-use fress_rust::memory::Segment;
+//use fress_rust::Value;
 
 fn main() {
-    /*
     println!("Hello, world!");
+    /*
     let mut s = Segment::new(5);
     println!("{:?}", s);
     println!("{:?}", s[3]);
@@ -38,5 +36,6 @@ fn main() {
 
     println!("Goodbye, world!");
     */
+
 }
 

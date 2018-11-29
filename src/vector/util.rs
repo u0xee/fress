@@ -13,7 +13,7 @@ pub fn next_power(x: u32) -> u32 {
 
 pub fn reverse_digits(mut x: u32, digit_count: u32) -> u32 {
     let mut ret = 0u32;
-    for i in 0..digit_count {
+    for _ in 0..digit_count {
         ret = (ret << BITS) | (x & MASK);
         x = x >> BITS;
     }

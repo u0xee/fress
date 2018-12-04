@@ -230,7 +230,8 @@ pub fn create_path(root: AnchoredLine, path: u32, height: u32, path_length: u32)
                 curr = s.line_at(digit);
             } else {
                 let t = Segment::new(size(digit + 1));
-                s.at(0..(digit + 1)).to(t);
+                s.at(0..digit).to(t);
+                s.unalias();
                 Segment::free(s);
                 curr.set(0, t.unit());
                 curr = t.line_at(digit);

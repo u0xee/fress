@@ -13,16 +13,18 @@ fn main() {
     println!("Hello, world!");
     let mut v = Vector::new().value_unit();
     println!("{:?}", v);
-    for i in 1..100_000 {
+    let count = 10_000_000;
+    for i in 0..count {
         v = v.conj(ValueUnit::num(i));
         //println!("{:?}", v);
     }
-
-    println!("{}", v.nth(99_000));
-    for i in 1..100_000 {
+    println!("{:?}", v.nth(count - 10));
+    /*
+    for i in 0..count {
         v = v.pop();
     }
     println!("{:?}", v);
+    */
     /*
     v.split();
     let w = v;

@@ -264,12 +264,14 @@ mod test {
         let s = Segment::new(5);
         s[5];
     }
+
     #[test]
     #[should_panic(expected = "segment_bounds")]
     fn bounds_write() {
         let mut s = Segment::new(5);
         s[5] = 0.into();
     }
+
     #[test]
     #[should_panic(expected = "segment_mut")]
     fn aliased_write() {
@@ -277,6 +279,7 @@ mod test {
         s.alias();
         s[4] = 0.into()
     }
+
     #[test]
     #[should_panic(expected = "segment_magic")]
     fn magic_missing() {
@@ -284,6 +287,7 @@ mod test {
         let off = s.line().offset(1);
         let r = off.segment();
     }
+
     #[test]
     #[should_panic(expected = "segment_free")]
     fn aliased_free() {

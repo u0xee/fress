@@ -63,6 +63,7 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
             Segment::free(tail);
         }
     } else {
+        tail.unalias();
         Segment::free(tail);
     }
     let tailoff = tailoff(guide.count);

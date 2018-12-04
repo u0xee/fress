@@ -8,7 +8,7 @@
 use std::ops::{Index, IndexMut};
 use memory::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct AnchoredLine {
     pub seg: Segment,
     pub index: u32,

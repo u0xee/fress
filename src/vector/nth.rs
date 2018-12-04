@@ -25,20 +25,19 @@ fn nth_tailed(guide: Guide, idx: u32) -> Unit {
         guide.root[-1].segment()[idx - tailoff]
     } else {
         let digit_count = digit_count(tailoff - 1);
-        let mut shift = (digit_count - 1) * BITS;
+        let mut shift = digit_count * BITS;
         let mut curr = {
-            let ret = guide.root.offset(last_digit(idx >> shift) as i32);
             shift -= BITS;
-            ret
+            guide.root.offset(last_digit(idx >> shift) as i32)
         };
         for _ in 0..(digit_count - 1) {
             let digit = {
-                let ret = last_digit(idx >> shift);
                 shift -= BITS;
-                ret
+                last_digit(idx >> shift)
             };
             curr = curr[0].segment().line_at(digit);
         }
+        assert_eq!(shift, 0);
         curr[0]
     }
 }

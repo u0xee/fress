@@ -25,7 +25,7 @@ use std::ops::{Index, IndexMut, Range};
 use fuzz;
 use memory::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Segment {
     pub anchor_line: Line,
 }
@@ -34,7 +34,7 @@ impl Segment {
     pub fn new(content_cap: u32) -> Segment {
         trace::new_BEGIN(content_cap);
         let mut cap = content_cap;
-        #[cfg(any(test, feature = "fuzz_segment_extra_cap"))]
+        #[cfg(feature = "fuzz_segment_extra_cap")]
             { cap += extra_cap(); }
         let mut unanchored = unanchored_new(cap);
         unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
@@ -56,7 +56,7 @@ impl Segment {
         trace::free_BEGIN(s);
         let a = Anchor::from(s.anchor_line[0]);
         #[cfg(any(test, feature = "segment_free"))]
-            assert_eq!(a.aliases(), 0);
+            assert_eq!(a.aliases(), 0, "segment_free: freeing segment with aliases = {}", a.aliases());
         if cfg!(any(test, feature = "segment_magic")) {
             dealloc(s.anchor_line.offset(-1 as isize), a.capacity() + 2);
         } else {
@@ -71,7 +71,7 @@ impl Segment {
 
     pub fn is_aliased(&self) -> bool {
         let real_ret = self.anchor_line[0].anchor().is_aliased();
-        if cfg!(any(test, feature = "fuzz_segment_spurious_aliased")) {
+        if cfg!(feature = "fuzz_segment_spurious_aliased") {
             use fuzz;
             let (seed, log_tail) = fuzz::next_random();
             let spurious = ((seed ^ (seed >> 32)) & 0x7) == 0x7;
@@ -148,7 +148,7 @@ impl From<Line> for Segment {
     fn from(line: Line) -> Self {
         if cfg!(any(test, feature = "segment_magic")) {
             if line.offset(-1)[0] != 0xCAFEBABEu32.into() {
-                panic!("Casting to Segment failed, magic not found")
+                panic!("segment_magic: casting to Segment failed, magic not found")
             }
             Segment { anchor_line: line }
         } else {
@@ -220,7 +220,7 @@ impl Index<u32> for Segment {
         #[cfg(any(test, feature = "segment_bounds"))]
             {
                 if index >= self.capacity() {
-                    panic!("Indexing {} outside Segment of capacity {}.", index, self.capacity());
+                    panic!("segment_bounds: accessing index = {}, segment capacity = {}.", index, self.capacity());
                 }
             }
         &self.anchor_line[1 + index]
@@ -232,13 +232,13 @@ impl IndexMut<u32> for Segment {
         #[cfg(any(test, feature = "segment_bounds"))]
             {
                 if index >= self.capacity() {
-                    panic!("Indexing {} outside Segment of capacity {}.", index, self.capacity());
+                    panic!("segment_bounds: writing index = {}, segment capacity = {}.", index, self.capacity());
                 }
             }
         #[cfg(any(test, feature = "segment_mut"))]
             {
                 if self.anchor().is_aliased() {
-                    panic!("Mut indexing {} in aliased Segment.", index);
+                    panic!("segment_mut: writing index = {}, segment aliases = {}.", index, self.anchor().aliases());
                 }
             }
         &mut self.anchor_line[1 + index]
@@ -259,8 +259,35 @@ mod test {
     use super::*;
 
     #[test]
-    //#[should_panic(expected = "")]
-    fn passes() {
-        assert!(true)
+    #[should_panic(expected = "segment_bounds")]
+    fn bounds_read() {
+        let s = Segment::new(5);
+        s[5];
+    }
+    #[test]
+    #[should_panic(expected = "segment_bounds")]
+    fn bounds_write() {
+        let mut s = Segment::new(5);
+        s[5] = 0.into();
+    }
+    #[test]
+    #[should_panic(expected = "segment_mut")]
+    fn aliased_write() {
+        let mut s = Segment::new(5);
+        s.alias();
+        s[4] = 0.into()
+    }
+    #[test]
+    #[should_panic(expected = "segment_magic")]
+    fn magic_missing() {
+        let s = Segment::new(5);
+        let off = s.line().offset(1);
+        let r = off.segment();
+    }
+    #[test]
+    #[should_panic(expected = "segment_free")]
+    fn aliased_free() {
+        let s = Segment::new(5);
+        Segment::free(s);
     }
 }

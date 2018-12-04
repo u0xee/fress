@@ -6,11 +6,55 @@
 // You must not remove this notice, or any other, from this software.
 
 extern crate fress_rust;
-//use fress_rust::Value;
+use fress_rust::value::{Value, ValueUnit};
+use fress_rust::vector::Vector;
 
 fn main() {
     println!("Hello, world!");
+    let mut v = Vector::new().value_unit();
+    println!("{:?}", v);
+    for i in 1..100_000 {
+        v = v.conj(ValueUnit::num(i));
+        //println!("{:?}", v);
+    }
+
+    println!("{}", v.nth(99_000));
+    for i in 1..100_000 {
+        v = v.pop();
+    }
+    println!("{:?}", v);
     /*
+    v.split();
+    let w = v;
+    println!("E{:?}", w);
+    v = v.assoc(ValueUnit::num(3), ValueUnit::num(1));
+    println!("{:?}", w);
+    println!("{:?}", v);
+    for i in 1..20 {
+        println!("{}: {:?}", i, v.nth(i));
+    }
+
+    v.split();
+    let w = v;
+    println!("{:?}", w);
+    v = v.conj(ValueUnit::num(7));
+    println!("{:?}", v);
+    println!("{:?}", w);
+
+    for i in 1..10 {
+        v = v.pop();
+        println!("{:?}", v);
+    }
+    v.split();
+    let mut y = v;
+    println!("{:?}", v);
+    y = y.conj(ValueUnit::num(3));
+    println!("{:?}", y);
+    y = y.conj(ValueUnit::num(4));
+    y = y.conj(ValueUnit::num(5));
+    println!("{:?}", y);
+    println!("{:?}", v);
+
     let mut s = Segment::new(5);
     println!("{:?}", s);
     println!("{:?}", s[3]);

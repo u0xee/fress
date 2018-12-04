@@ -24,7 +24,7 @@ use self::util::*;
 #[cfg(test)]
 use fuzz;
 
-pub const BITS: u32 = 5; // one of 4, 5, 6
+pub const BITS: u32 = 4; // one of 4, 5, 6
 pub const ARITY: u32 = 1 << BITS;
 pub const TAIL_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
@@ -61,11 +61,38 @@ impl Dispatch for Vector {
     fn unaliased(&self, prism: AnchoredLine) -> Unit {
         unaliased_root(Guide::hydrate(prism)).segment().unit()
     }
-}
 
-impl fmt::Display for Vector {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        unimplemented!()
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let guide= Guide::hydrate(prism);
+        let hash = if !guide.has_hash() { "".to_string() } else {
+            format!(" #x{:X}", guide.hash)
+        };
+        let meta = if !guide.has_meta() { "".to_string() } else {
+            format!(" ^{:?}", guide.meta_line()[0].value_unit())
+        };
+        write!(f, "{aliases}->[Vector{hash}{meta} {count}ct ",
+               aliases = guide.segment().anchor().aliases(),
+               hash = hash, meta = meta, count = guide.count);
+        if guide.count <= TAIL_CAP {
+            if guide.is_compact_bit == 0 { write!(f, "_ "); }
+            guide.root.span(guide.count).debug(f);
+            let used = guide.root.index + guide.count;
+            let empty = guide.segment().capacity() - used;
+            if empty != 0 { write!(f, " _{}", empty); }
+            write!(f, "]")
+        } else {
+            let tail = guide.root[-1].segment();
+            write!(f, "tail {}->[", tail.anchor().aliases());
+            tail.at(0..tail_count(guide.count)).debug(f);
+            write!(f, "]\n    ");
+            let rc = root_content_count(tailoff(guide.count));
+            let last_index = tailoff(guide.count) - 1;
+            // root elems are value units
+            // root elems are nodes
+            //
+            guide.root.span(rc).debug(f);
+            write!(f, "]")
+        }
     }
 }
 
@@ -122,6 +149,12 @@ impl Associative for Vector {
 impl Reversible for Vector {}
 impl Sorted for Vector {}
 impl Named for Vector {}
+
+impl Notation for Vector {
+    fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        unimplemented!()
+    }
+}
 
 #[cfg(test)]
 mod tests {

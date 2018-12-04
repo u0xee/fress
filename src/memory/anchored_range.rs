@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use std::ops::Range;
+use std::fmt;
 use memory::*;
 use value::*;
 
@@ -23,6 +24,10 @@ impl AnchoredRange {
 
     pub fn segment(&self) -> Segment {
         self.seg
+    }
+
+    pub fn span(&self) -> u32 {
+        self.end - self.start
     }
 
     pub fn to(&self, target: Segment) {
@@ -52,7 +57,7 @@ impl AnchoredRange {
         }
     }
 
-    pub fn each_unit<F: Fn(Unit)>(&self, f: F) {
+    pub fn each_unit<F: FnMut(Unit)>(&self, mut f: F) {
         for i in self.start..self.end {
             f(self.seg[i])
         }
@@ -76,5 +81,16 @@ impl AnchoredRange {
 
     pub fn retire(&self) {
         self.each_unit(|u| u.value_unit().retire());
+    }
+
+    pub fn debug(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.span() == 0 {
+            write!(f, "")
+        } else {
+            let mut short = *self;
+            short.end -= 1;
+            short.each_unit(|u| { write!(f, "{:?} ", u.value_unit()); });
+            write!(f, "{:?}", self.seg[self.end - 1].value_unit())
+        }
     }
 }

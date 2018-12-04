@@ -7,7 +7,7 @@ description = "A cohesive fressian library for rust"
 [dependencies]
 
 [features]
-default = ["anchor_non_atomic"]
+default = ["anchor_non_atomic", "segment"]
 
 anchor_non_atomic = []
 

@@ -22,7 +22,7 @@ use memory::*;
 /// ```
 ///
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Guide {
     pub hash: u32,
     pub has_hash_bit: u32,
@@ -153,3 +153,4 @@ impl Guide {
         self
     }
 }
+

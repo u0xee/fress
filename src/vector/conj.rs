@@ -51,7 +51,11 @@ pub fn unalias_root(guide: Guide) -> Guide {
         guide.segment().at(0..(guide.root.index + root_count)).to(g.segment());
         guide.split_meta();
         let tail_and_roots = guide.root.offset(-1).span(root_count + 1);
-        tail_and_roots.alias();
+        if guide.count <= (TAIL_CAP << 1) {
+            tail_and_roots.split();
+        } else {
+            tail_and_roots.alias();
+        }
         if guide.segment().unalias() == 0 {
             guide.retire_meta();
             tail_and_roots.unalias();
@@ -94,6 +98,7 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
             };
             guide.segment().at(0..guide.root.index).to(g.segment());
             guide.root.span(guide.count).to_offset(g.segment(), g.root.index);
+            guide.segment().unalias();
             Segment::free(guide.segment());
             g.root.set(g.count as i32, x);
             g.inc_count().store().segment().unit()
@@ -162,6 +167,7 @@ pub fn growing_height(guide: Guide, x: Unit, tailoff: u32) -> Unit {
         };
         let mut g = guide;
         g.prism = guide.prism.with_seg(s);
+        guide.segment().unalias();
         Segment::free(guide.segment());
         g.reroot()
     };
@@ -191,6 +197,7 @@ pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
             g.reroot()
         };
         guide.segment().at(0..(guide.root.index + root_count)).to(g.segment());
+        guide.segment().unalias();
         Segment::free(guide.segment());
         g
     };
@@ -207,18 +214,16 @@ pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
 
 
 pub fn create_path(root: AnchoredLine, path: u32, height: u32, path_length: u32) -> AnchoredLine {
-    let mut shift = (height - 1) * BITS;
+    let mut shift = height * BITS;
     let mut curr = {
-        let ret = root.offset(last_digit(path >> shift) as i32);
         shift -= BITS;
-        ret
+        root.offset(last_digit(path >> shift) as i32)
     };
     for _ in 1..path_length {
         let s = curr[0].segment();
         let digit = {
-            let ret = last_digit(path >> shift);
             shift -= BITS;
-            ret
+            last_digit(path >> shift)
         };
         if !s.is_aliased() {
             if s.has_index(digit) {

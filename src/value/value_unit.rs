@@ -5,6 +5,7 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+use std::fmt;
 use memory::*;
 use dispatch::*;
 use value::*;
@@ -58,6 +59,68 @@ impl ValueUnit {
             mechanism::as_dispatch(&p).conj(prism, x.unit).value_unit()
         } else {
             unimplemented!()
+        }
+    }
+
+    pub fn pop(self) -> ValueUnit {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let (v, _) = mechanism::as_dispatch(&p).pop(prism);
+            v.value_unit()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn assoc(self, k: ValueUnit, v: ValueUnit) -> ValueUnit {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let (v, _) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
+            v.value_unit()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn nth(self, idx: u32) -> ValueUnit {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let elem = mechanism::as_dispatch(&p).nth(prism, idx);
+            elem.value_unit()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn num(x: u32) -> ValueUnit {
+        let y = x << 4;
+        Unit::from(y | 1).value_unit()
+    }
+}
+
+impl fmt::Display for ValueUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).edn(prism, f)
+        } else {
+            write!(f, "{}", self.unit.u32() >> 4)
+        }
+    }
+}
+
+impl fmt::Debug for ValueUnit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).debug(prism, f)
+        } else {
+            write!(f, "{}", self.unit.u32() >> 4)
         }
     }
 }

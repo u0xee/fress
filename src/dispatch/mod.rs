@@ -7,12 +7,14 @@
 
 use memory::*;
 pub mod mechanism;
-use std::fmt::Display;
+use std::fmt;
+use std::io;
 use std::cmp::Ordering;
 
 /// A trait to dynamically dispatch methods on heap values
 pub trait Dispatch :
 Identification +
+Notation +
 Distinguish +
 Aggregate +
 Sequential +
@@ -22,11 +24,17 @@ Sorted +
 Named {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
     fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
 }
 
-pub trait Identification : Display {
+pub trait Identification {
     fn type_name(&self) -> String { unimplemented!() }
     fn type_sentinel(&self) -> *const u8 { unimplemented!() }
+}
+
+pub trait Notation {
+    fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
+    fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> { unimplemented!() }
 }
 
 pub trait Distinguish {

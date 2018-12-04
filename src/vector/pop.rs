@@ -156,10 +156,13 @@ pub fn shrink_root(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
 }
 
 pub fn shrink_child(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
-    let zero_count = trailing_zero_digit_count(last_index);
+    let zero_count = trailing_zero_digit_count(last_index >> BITS);
     let digit_count = digit_count(last_index);
     let c = create_path(guide.root, last_index, digit_count, digit_count - zero_count);
-    let tail = unlink_tail(c[0].segment(), zero_count - 1);
+    if zero_count == 0 {
+        println!("{:?}", guide);
+    }
+    let tail = unlink_tail(c[0].segment(), zero_count);
     guide.root.set(-1, tail.unit());
     guide.dec_count().store().segment().unit()
 }

@@ -60,19 +60,16 @@ pub fn assoc_tailed(guide: Guide, idx: u32, x: Unit) -> (Unit, Unit) {
 }
 
 pub fn create_path_width(root: AnchoredLine, path: u32, path_widths: u32, height: u32) -> AnchoredLine {
-    let mut shift = (height - 1) * BITS;
+    let mut shift = height * BITS;
     let mut curr = {
-        let ret = root.offset(last_digit(path >> shift) as i32);
         shift -= BITS;
-        ret
+        root.offset(last_digit(path >> shift) as i32)
     };
     for _ in 0..(height - 1) {
         let s = curr[0].segment();
         let (digit, last_sibling_idx) = {
-            let dig = last_digit(path >> shift);
-            let sib = last_digit(path_widths >> shift);
             shift -= BITS;
-            (dig, sib)
+            (last_digit(path >> shift), last_digit(path_widths >> shift))
         };
         if !s.is_aliased() {
             curr = s.line_at(digit);
@@ -92,11 +89,13 @@ pub fn create_path_width(root: AnchoredLine, path: u32, path_widths: u32, height
             curr = t.line_at(digit);
         }
     }
+    assert_eq!(shift, 0);
     curr
 }
 
 pub fn assoc_tailed_tree(guide: Guide, idx: u32, x: Unit, tailoff: u32) -> (Unit, Unit) {
-    let digit_count = digit_count(tailoff);
+    let last_index = tailoff - 1;
+    let digit_count = digit_count(last_index);
     let path_widths = path_widths(tailoff, idx);
     let c = create_path_width(guide.root, idx, path_widths, digit_count);
     let popped = c[0];

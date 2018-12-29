@@ -61,6 +61,8 @@ pub fn unalias_root(guide: Guide) -> Guide {
             tail_and_roots.unalias();
             Segment::free(guide.segment());
         }
+        let mut g = g;
+        g.debug = true;
         g
     }
 }
@@ -107,6 +109,12 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
 }
 
 pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
+    /*if guide.debug {
+        println!("count: {}", guide.count);
+        println!("tail_count: {}", tail_count(guide.count));
+        guide.segment().print_bits();
+        guide.root[-1].segment().print_bits();
+    }*/
     let tail_count = tail_count(guide.count);
     if tail_count != TAIL_CAP {
         let tail = guide.root[-1].segment();
@@ -212,30 +220,39 @@ pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     g.inc_count().store().segment().unit()
 }
 
+#[derive(Copy, Clone)]
+pub struct Digits {
+    pub path: u32,
+    pub shift: u32,
+    pub count: i32,
+}
 
-pub fn create_path(root: AnchoredLine, path: u32, height: u32, path_length: u32) -> AnchoredLine {
-    let mut shift = height * BITS;
-    let mut curr = {
-        shift -= BITS;
-        root.offset(last_digit(path >> shift) as i32)
-    };
-    for _ in 1..path_length {
+use std::fmt;
+impl fmt::Debug for Digits {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Digits {{ path: {:X}, shift: {:X}, count: {:X} }}", self.path, self.shift, self.count)
+    }
+}
+
+impl Digits {
+    pub fn new(path: u32, height: u32, count: u32) -> Self {
+        Digits { path, count: count as i32, shift: height * BITS }
+    }
+
+    pub fn pop(&mut self) -> u32 {
+        self.shift -= BITS;
+        self.count -= 1;
+        last_digit(self.path >> self.shift)
+    }
+}
+
+pub fn unalias_edge_path(mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine {
+    let count = d.count as u32;
+    for _ in 0..count {
         let s = curr[0].segment();
-        let digit = {
-            shift -= BITS;
-            last_digit(path >> shift)
-        };
+        let digit = d.pop();
         if !s.is_aliased() {
-            if s.has_index(digit) {
-                curr = s.line_at(digit);
-            } else {
-                let t = Segment::new(size(digit + 1));
-                s.at(0..digit).to(t);
-                s.unalias();
-                Segment::free(s);
-                curr.set(0, t.unit());
-                curr = t.line_at(digit);
-            }
+            curr = s.line_at(digit);
         } else {
             let t = {
                 let t = Segment::new(size(digit + 1));
@@ -255,11 +272,47 @@ pub fn create_path(root: AnchoredLine, path: u32, height: u32, path_length: u32)
     curr
 }
 
+pub fn unalias_grown_index(curr: AnchoredLine, grown_digit: u32) -> AnchoredLine {
+    let s = curr[0].segment();
+    if !s.is_aliased() {
+        if s.has_index(grown_digit) {
+            s.line_at(grown_digit)
+        } else {
+            let t = Segment::new(size(grown_digit + 1));
+            s.at(0..grown_digit).to(t);
+            s.unalias();
+            Segment::free(s);
+            curr.set(0, t.unit());
+            t.line_at(grown_digit)
+        }
+    } else {
+        let t = Segment::new(size(grown_digit + 1));
+        let range = s.at(0..grown_digit);
+        range.to(t);
+        range.alias();
+        if s.unalias() == 0 {
+            range.unalias();
+            Segment::free(s);
+        }
+        curr.set(0, t.unit());
+        t.line_at(grown_digit)
+    }
+}
+
 pub fn growing_child(guide: Guide, x: Unit, tailoff: u32) -> Unit {
-    let zero_count = trailing_zero_digit_count(tailoff);
+    let zero_count = trailing_zero_digit_count(tailoff >> BITS);
     let digit_count = digit_count(tailoff);
-    let c = create_path(guide.root, tailoff, digit_count, digit_count - zero_count);
-    let path = path_of_height(zero_count - 1, guide.root[-1]);
+    let c = {
+        let mut d = Digits::new(tailoff, digit_count, digit_count - zero_count - 2);
+        let c = unalias_edge_path(guide.root.offset(d.pop() as i32), &mut d);
+        unalias_grown_index(c, d.pop())
+    };
+    let path = path_of_height(zero_count, guide.root[-1]);
+    /*if guide.debug {
+        println!("\nGrowing child");
+        guide.segment().print_bits();
+        guide.root[-1].segment().print_bits();
+    }*/
     c.set(0, path);
     let tail = {
         let t = Segment::new(TAIL_CAP);
@@ -269,3 +322,4 @@ pub fn growing_child(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     guide.root.set(-1, tail.unit());
     guide.inc_count().store().segment().unit()
 }
+

@@ -63,6 +63,8 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
             Segment::free(tail);
         }
     } else {
+        //println!("Printing tail bits:");
+        //tail.print_bits();
         tail.unalias();
         Segment::free(tail);
     }
@@ -75,9 +77,9 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
         let path_diff = tail_path ^ last_index;
         use std::cmp::Ordering;
         let ret = match digit_count(last_index).cmp(&digit_count(path_diff)) {
-            Ordering::Less    => { shrink_height(guide, last_index) },
-            Ordering::Equal   => { shrink_root(guide, tailoff, last_index) },
-            Ordering::Greater => { shrink_child(guide, tailoff, last_index) },
+            Ordering::Less    => { shrink_height(guide, tailoff) },
+            Ordering::Equal   => { shrink_root(guide, tailoff) },
+            Ordering::Greater => { shrink_child(guide, tailoff) },
         };
         (ret, popped)
     }
@@ -87,6 +89,7 @@ pub fn unlink_tail(mut s: Segment, height: u32) -> Segment {
     for i in 0..height {
         if !s.is_aliased() {
             let t = s[0].segment();
+            s.unalias();
             Segment::free(s);
             s = t;
         } else {
@@ -117,7 +120,8 @@ pub fn unlink_tail_aliased(mut s: Segment, height: u32) -> Segment {
     tail
 }
 
-pub fn shrink_height(guide: Guide, last_index: u32) -> Unit {
+pub fn shrink_height(guide: Guide, tailoff: u32) -> Unit {
+    let last_index = tailoff - 1;
     let tail_path_head = guide.root[1].segment();
     let path_height = trailing_zero_digit_count(last_index >> BITS);
     let tail = unlink_tail(tail_path_head, path_height);
@@ -129,10 +133,12 @@ pub fn shrink_height(guide: Guide, last_index: u32) -> Unit {
         guide.segment().at(0..(guide.root.index + 1)).to(s);
         let mut g = guide;
         g.prism = guide.prism.with_seg(s);
+        guide.segment().unalias();
         Segment::free(guide.segment());
         g.reroot()
     };
     let c = g.root[0].segment();
+
     c.at(0..TAIL_CAP).to_offset(g.segment(), g.root.index);
     if c.is_aliased() {
         let contents = c.at(0..TAIL_CAP);
@@ -142,12 +148,14 @@ pub fn shrink_height(guide: Guide, last_index: u32) -> Unit {
             Segment::free(c);
         }
     } else {
+        c.unalias();
         Segment::free(c);
     }
     g.dec_count().store().segment().unit()
 }
 
-pub fn shrink_root(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
+pub fn shrink_root(guide: Guide, tailoff: u32) -> Unit {
+    let last_index = tailoff - 1;
     let root_count = root_content_count(tailoff);
     let tail_path_head = guide.root[(root_count - 1) as i32].segment();
     let path_height = trailing_zero_digit_count(last_index >> BITS);
@@ -156,13 +164,50 @@ pub fn shrink_root(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
     guide.dec_count().store().segment().unit()
 }
 
-pub fn shrink_child(guide: Guide, tailoff: u32, last_index: u32) -> Unit {
+pub fn unalias_edge_path_pop(guide: Guide, mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine {
+    use std::panic::{catch_unwind, resume_unwind};
+
+    let count = d.count as u32;
+    for _i in 0..count {
+        let res = catch_unwind(|| curr[0].segment());
+        let s = if res.is_ok() { res.unwrap() } else {
+            println!("xyz _i = {}, count = {}, {:?}, {:?}, curr = {:?}, guide.count = {:X}",
+                     _i, count, d, guide, curr, guide.count);
+            guide.segment().print_bits();
+            resume_unwind(res.unwrap_err());
+        };
+        let digit = d.pop();
+        if !s.is_aliased() {
+            curr = s.line_at(digit);
+        } else {
+            let t = {
+                let t = Segment::new(size(digit + 1));
+                let range = s.at(0..(digit + 1));
+                range.to(t);
+                range.alias();
+                if s.unalias() == 0 {
+                    range.unalias();
+                    Segment::free(s);
+                }
+                t
+            };
+            curr.set(0, t.unit());
+            curr = t.line_at(digit);
+        }
+    }
+    curr
+}
+
+pub fn shrink_child(guide: Guide, tailoff: u32) -> Unit {
+    let last_index = tailoff - 1;
     let zero_count = trailing_zero_digit_count(last_index >> BITS);
     let digit_count = digit_count(last_index);
-    let c = create_path(guide.root, last_index, digit_count, digit_count - zero_count);
-    if zero_count == 0 {
-        println!("{:?}", guide);
-    }
+    //println!("count: {:X}, tailoff: {:X}, last_index: {:X}, zero_count: {}, digit_count: {}",
+    //        guide.count, tailoff, last_index, zero_count, digit_count);
+    let c = {
+        let mut d = Digits::new(last_index, digit_count, digit_count - zero_count - 1);
+        unalias_edge_path_pop(guide, guide.root.offset(d.pop() as i32), &mut d)
+    };
     let tail = unlink_tail(c[0].segment(), zero_count);
     guide.root.set(-1, tail.unit());
     guide.dec_count().store().segment().unit()

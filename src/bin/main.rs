@@ -10,21 +10,82 @@ use fress_rust::value::{Value, ValueUnit};
 use fress_rust::vector::Vector;
 
 fn main() {
-    println!("Hello, world!");
+    let count = 2000;
     let mut v = Vector::new().value_unit();
-    println!("{:?}", v);
-    let count = 10_000_000;
     for i in 0..count {
         v = v.conj(ValueUnit::num(i));
-        //println!("{:?}", v);
     }
-    println!("{:?}", v.nth(count - 10));
-    /*
     for i in 0..count {
+        print!("{} ", v.nth(i));
+    }
+
+    v.segment().interactive_print_bits("V before");
+
+    v.split();
+    let mut w = v;
+    w = w.conj(ValueUnit::num(5));
+    v = v.conj(ValueUnit::num(6));
+
+    v.segment().interactive_print_bits("V after split and conj");
+    w.segment().interactive_print_bits("W after split and conj");
+
+    for i in 0..(count - 5) {
+        v = v.assoc(ValueUnit::num(i), ValueUnit::num(i & !0x1))
+    }
+    for i in 0..(count - 5) {
+        print!("v{:?} ", v.nth(i));
+    }
+    for i in 0..(count - 5) {
+        print!("w{:?} ", w.nth(i));
+    }
+
+    println!("\nXXXXXXXXX0x{:X}", count - 1);
+    v = v.pop();
+    v.segment().print_bits();
+    let tail_seg = v.segment().get(2).segment();
+    tail_seg.print_bits();
+    use fress_rust::memory::segment;
+    //segment::please_save(tail_seg);
+    w.segment().print_bits();
+    for i in 0..(count - 3) {
+        w = w.pop();
+    }
+    use fress_rust::fuzz;
+    let freed = fuzz::log_copy();
+    let tail_name = format!("{:X}", v.segment().get(2).u());
+    for (i, s) in freed.iter().enumerate() {
+        if s.contains(&tail_name) {
+            println!("Did free {} as number {} in {} total",
+                     tail_name, i, freed.len());
+        }
+    }
+    println!("\nYYYYYYYYYYYY");
+    for i in 0..(count - 3) {
         v = v.pop();
     }
     println!("{:?}", v);
-    */
+    for round in 0..100 {
+        for i in 0..count {
+            v = v.conj(ValueUnit::num(i));
+        }
+        v.split();
+        let mut z = v;
+        z = z.conj(ValueUnit::num(5));
+        v = v.conj(ValueUnit::num(5));
+        for i in 0..(count/4) {
+            v = v.pop();
+        }
+        for i in 0..(count/100) {
+            z = z.assoc(ValueUnit::num(i * 100), ValueUnit::num(i))
+        }
+        while z.count() > 0 {
+            z = z.pop();
+        }
+        while v.count() > 0 {
+            v = v.pop();
+        }
+        println!("{:?}", v);
+    }
     /*
     v.split();
     let w = v;

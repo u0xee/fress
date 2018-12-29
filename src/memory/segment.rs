@@ -136,6 +136,61 @@ impl Segment {
     pub fn line(&self) -> Line {
         self.anchor_line
     }
+
+    pub fn print_bits(&self) {
+        let base = self.unit().u();
+        println!(" Segment {{ address: {:X}, aliases: {}, capacity: {},",
+                 base, self.anchor().aliases(), self.capacity());
+        let cap = self.capacity();
+        let rows_of_four = ((cap - 1) / 4) + 1;
+        for row in 0..rows_of_four {
+            print!("  ");
+            for i in 0..4 {
+                let index = 4 * row + i;
+                if index < cap {
+                    let x = self.get(index).u();
+                    let diff = base ^ x;
+                    if diff.leading_zeros() > base.leading_zeros() {
+                        let xx = (!0 >> diff.leading_zeros()) & x;
+                        print!("{:2}: {:.>12X}, ", index, xx);
+                    } else {
+                        print!("{:2}: {:_>12X}, ", index, x);
+                    }
+                }
+            }
+            println!();
+        }
+        println!(" }}");
+    }
+
+    pub fn interactive_print_bits(&self, context_description: &str) {
+        use std::io;
+        use std::io::Write;
+        use std::ascii::AsciiExt;
+        let mut stack = vec![*self];
+        let mut command = String::new();
+        println!("\n==================== Interactive [{}]", context_description);
+        loop {
+            println!("== Stack height: {}, top:", stack.len());
+            stack.last().unwrap().print_bits();
+            print!("== [P]op off the stack, Push [num] on the stack, [Q]uit: ");
+            io::stdout().flush().ok().expect("Get a plunger");
+            command.clear();
+            io::stdin().read_line(&mut command);
+            command.make_ascii_lowercase();
+            if command.contains("p") {
+                stack.pop();
+                continue;
+            }
+            if command.contains("q") {
+                return;
+            }
+            if let Ok(index) = command.trim().parse::<u32>() {
+                let curr = stack.last().unwrap().to_owned();
+                stack.push(curr.get(index).segment());
+            }
+        }
+    }
 }
 
 impl From<Unit> for Segment {
@@ -146,14 +201,17 @@ impl From<Unit> for Segment {
 
 impl From<Line> for Segment {
     fn from(line: Line) -> Self {
+        if cfg!(any(test, feature = "segment_null")) {
+            if line.unit() == Unit::from(0usize) {
+                panic!("segment_null: null can't be used as a segment")
+            }
+        }
         if cfg!(any(test, feature = "segment_magic")) {
             if line.offset(-1)[0] != 0xCAFEBABEu32.into() {
                 panic!("segment_magic: casting to Segment failed, magic not found")
             }
-            Segment { anchor_line: line }
-        } else {
-            Segment { anchor_line: line }
         }
+        Segment { anchor_line: line }
     }
 }
 
@@ -245,12 +303,29 @@ impl IndexMut<u32> for Segment {
     }
 }
 
+use std::cell::{Cell, RefCell};
+thread_local! {
+    pub static SAVE: Cell<usize> = Cell::new(0);
+}
+
+pub fn please_save(s: Segment) {
+    SAVE.with(|c| {
+        c.set(s.unit().u())
+    });
+}
 
 pub mod trace {
     use super::*;
     pub fn new_BEGIN(content_cap: u32) { }
     pub fn new_END(s: Segment, content_cap: u32) { }
-    pub fn free_BEGIN(s: Segment) { }
+    pub fn free_BEGIN(s: Segment) {
+        use fuzz;
+        let saved = SAVE.with(|c| c.get());
+        if s.unit().u() == saved {
+            panic!("Trying to free saved segment: {:X}", saved);
+        }
+        fuzz::log(format!("{:X}", s.unit().u()));
+    }
     pub fn free_END(s: Line) { }
 }
 

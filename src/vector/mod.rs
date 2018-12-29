@@ -84,14 +84,14 @@ impl Dispatch for Vector {
             let tail = guide.root[-1].segment();
             write!(f, "tail {}->[", tail.anchor().aliases());
             tail.at(0..tail_count(guide.count)).debug(f);
-            write!(f, "]\n    ");
-            let rc = root_content_count(tailoff(guide.count));
-            let last_index = tailoff(guide.count) - 1;
+            //let rc = root_content_count(tailoff(guide.count));
+            //let last_index = tailoff(guide.count) - 1;
             // root elems are value units
             // root elems are nodes
             //
-            guide.root.span(rc).debug(f);
-            write!(f, "]")
+            //guide.root.span(rc).debug(f);
+            //write!(f, "]")
+            write!(f, "]]\n")
         }
     }
 }

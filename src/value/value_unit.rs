@@ -52,6 +52,16 @@ impl ValueUnit {
         mechanism::as_dispatch(&p).tear_down(prism);
     }
 
+    pub fn count(self) -> u32 {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).count(prism)
+        } else {
+            unimplemented!()
+        }
+    }
+
     pub fn conj(self, x: ValueUnit) -> ValueUnit {
         if self.is_ref() {
             let prism = self.prism();

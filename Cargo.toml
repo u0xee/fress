@@ -17,7 +17,8 @@ segment_bounds = []
 segment_mut = []
 segment_free = []
 segment_magic = []
-segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut", "segment_free", "segment_magic"]
+segment_null = []
+segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut", "segment_free", "segment_magic", "segment_null"]
 
 
 fuzz_segment_extra_cap = []

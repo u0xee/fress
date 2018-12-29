@@ -34,6 +34,7 @@ pub struct Guide {
 
     pub prism: AnchoredLine,
     pub root: AnchoredLine,
+    pub debug: bool,
 }
 
 impl Guide {
@@ -133,7 +134,7 @@ impl Guide {
             has_meta_bit + (!is_compact_bit & 0x1);
         let root = prism.offset(root_offset as i32);
 
-        Guide { hash, has_hash_bit, has_meta_bit, count, is_set_bit, is_compact_bit, prism, root }
+        Guide { hash, has_hash_bit, has_meta_bit, count, is_set_bit, is_compact_bit, prism, root, debug: false }
     }
 
     pub fn store_at(&self, mut prism: AnchoredLine) {

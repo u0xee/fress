@@ -8,14 +8,19 @@
 use super::*;
 
 pub fn tear_down(prism: AnchoredLine) {
+    // segment has 0 aliases
     let guide = Guide::hydrate(prism);
-
+    guide.retire_meta();
+    if guide.count <= TAIL_CAP {
+        guide.root.span(guide.count).retire();
+        Segment::free(guide.segment());
+    } else {
+        tear_down_tailed(guide)
+    }
 }
 
-/*
-
-#[derive(Copy, Clone)]
-struct NodeRecord {
+#[derive(Copy, Clone, Debug)]
+pub struct NodeRecord {
     first_child: AnchoredLine,
     child_count: u32,
     height: u32,
@@ -23,43 +28,54 @@ struct NodeRecord {
     current_child: Option<u32>,
 }
 
+pub const BLANK: NodeRecord = NodeRecord {
+    first_child: AnchoredLine { seg: Segment { anchor_line: Line {
+        line: 0 as * const Unit } }, index: 0 },
+    child_count: 0,
+    height: 0,
+    on_boundary: false,
+    current_child: None,
+};
+
 pub fn base_case(node: &NodeRecord) {
-    for i in 0..node.child_count {
-        let mut a_tail: Segment = node.first_child[i as usize].into();
+    for i in 0..(node.child_count as i32) {
+        let a_tail = node.first_child[i].segment();
         if a_tail.unalias() == 0 {
-            for j in 0..TAIL_CAP {
-                ValueUnit::from(a_tail[1 + j]).retire();
-            }
+            a_tail.at(0..TAIL_CAP).retire();
             Segment::free(a_tail);
         }
     }
 }
 
-struct NodeRecordStack {
+pub struct NodeRecordStack {
     records: *const NodeRecord,
     count: u32,
 }
 
 impl NodeRecordStack {
-    fn new(records: *const NodeRecord) -> NodeRecordStack {
-        NodeRecordStack { records: records, count: 0 }
+    pub fn new(records: *const NodeRecord) -> NodeRecordStack {
+        NodeRecordStack { records, count: 0 }
     }
-    fn is_empty(&self) -> bool {
+
+    pub fn is_empty(&self) -> bool {
         self.count == 0
     }
-    fn top<'a>(&self) -> &'a mut NodeRecord {
+
+    pub fn top<'a>(&self) -> &'a mut NodeRecord {
         unsafe {
             &mut *(self.records as *mut NodeRecord).offset((self.count - 1) as isize)
         }
     }
-    fn push(&mut self, node: NodeRecord) {
+
+    pub fn push(&mut self, node: NodeRecord) {
         unsafe {
             let n = &mut *(self.records as *mut NodeRecord).offset(self.count as isize);
             *n = node;
             self.count = self.count + 1;
         }
     }
-    fn pop(&mut self) {
+
+    pub fn pop(&mut self) {
         self.count = self.count - 1;
     }
 }
@@ -69,105 +85,77 @@ pub fn step(stack: &mut NodeRecordStack, last_tree_index: u32) {
     if top.height == 2 {
         base_case(top);
         stack.pop();
+        return;
+    }
+    let search_from = match top.current_child {
+        Some(i) => {
+            let s = top.first_child[i as i32].segment();
+            Segment::free(s);
+            i + 1
+        },
+        None => { 0 },
+    };
+    let mut i = search_from;
+    let cap = top.child_count;
+    while i < cap {
+        let s = top.first_child[i as i32].segment();
+        if s.unalias() == 0 {
+            let r = child_record(top, last_tree_index, s, i == cap - 1);
+            top.current_child = Some(i);
+            stack.push(r);
+            return;
+        }
+        i = i + 1;
+    }
+    stack.pop();
+}
+
+pub fn child_record(top: &mut NodeRecord, last_tree_index: u32, s: Segment, last_child: bool)
+                    -> NodeRecord {
+    let mut r = NodeRecord {
+        first_child: s.line_at(0),
+        child_count: TAIL_CAP,
+        height: top.height - 1,
+        on_boundary: false,
+        current_child: None,
+    };
+    if top.on_boundary && last_child {
+        let child_idx = (last_tree_index >> (BITS * (r.height - 1))) & MASK;
+        r.child_count = child_idx + 1;
+        r.on_boundary = true;
+    }
+    r
+}
+
+pub fn tear_down_tree(guide: Guide, tailoff: u32) {
+    let last_tree_index = tailoff - 1;
+    let stack_space = [BLANK; 8];
+    let mut stack = NodeRecordStack::new(stack_space.as_ptr());
+    stack.push(NodeRecord {
+        first_child: guide.root,
+        child_count: root_content_count(tailoff),
+        height: digit_count(last_tree_index),
+        on_boundary: true,
+        current_child: None,
+    });
+    while !stack.is_empty() {
+        step(&mut stack, last_tree_index);
+    }
+    Segment::free(guide.segment());
+}
+
+pub fn tear_down_tailed(guide: Guide) {
+    let tail = guide.root[-1].segment();
+    if tail.unalias() == 0 {
+        tail.at(0..tail_count(guide.count)).retire();
+        Segment::free(tail);
+    }
+    let tailoff = tailoff(guide.count);
+    if tailoff == TAIL_CAP {
+        guide.root.span(TAIL_CAP).retire();
+        Segment::free(guide.segment());
     } else {
-        let search_from = match top.current_child {
-            Some(i) => {
-                let s: Segment = top.first_child[i as usize].into();
-                Segment::free(s);
-                i + 1
-            },
-            None => {
-                0
-            },
-        };
-        let mut i = search_from;
-        let cap = top.child_count;
-        while i < cap {
-            let mut s: Segment = top.first_child[i as usize].into();
-            if s.unalias() == 0 {
-                let mut r = NodeRecord {
-                    first_child: s.line_with_offset(1),
-                    child_count: TAIL_CAP,
-                    height: top.height - 1,
-                    on_boundary: false,
-                    current_child: None,
-                };
-                if (i == (cap - 1)) && top.on_boundary {
-                    r.on_boundary = true;
-                    let child_idx = (last_tree_index >> (BITS * (r.height - 1))) & MASK;
-                    r.child_count = child_idx + 1;
-                }
-                top.current_child = Some(i);
-                stack.push(r);
-                return;
-            }
-            i = i + 1;
-        }
-        stack.pop();
+        tear_down_tree(guide, tailoff);
     }
 }
 
-pub fn tear_down2(prism: AnchoredLine) {
-    let guide = Guide::hydrate(prism);
-
-
-
-    let anchor_gap = guide.prism_to_anchor_gap();
-    let mut segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-    if segment.unalias() == 0 {
-        let count = guide.count();
-        let root_gap = guide.guide_to_root_gap();
-        let first_root_element = 3 + anchor_gap + root_gap;
-
-        if guide.has_meta() {
-            ValueUnit::from(segment[3 /*anchor, prism, guide*/ + anchor_gap + guide.meta_gap()]).retire()
-        }
-        if count <= TAIL_CAP {
-            for i in 0..count {
-                ValueUnit::from(segment[first_root_element + i]).retire();
-            }
-            Segment::free(segment);
-        } else {
-            let tailoff = (count - 1) & !MASK;
-            let tail_count = count - tailoff;
-            let mut tail = Segment::from(segment[first_root_element - 1]);
-            if tail.unalias() == 0 {
-                for i in 0..tail_count {
-                    ValueUnit::from(tail[1 + i]).retire();
-                }
-                Segment::free(tail);
-            }
-            if tailoff == TAIL_CAP {
-                for i in 0..TAIL_CAP {
-                    ValueUnit::from(segment[first_root_element + i]).retire();
-                }
-                Segment::free(segment);
-            } else {
-                let root_count = root_content_count(tailoff);
-                let last_tree_index = tailoff - 1;
-                let blank = NodeRecord {
-                    first_child: Segment::from(Unit::from(0)).line_with_offset(0),
-                    child_count: 0,
-                    height: 0,
-                    on_boundary: false,
-                    current_child: None,
-                };
-                let stack_space = [blank; 8];
-                let mut stack = NodeRecordStack::new(stack_space.as_ptr());
-                stack.push(NodeRecord {
-                    first_child: segment.line_with_offset(first_root_element),
-                    child_count: root_count,
-                    height: digit_count(last_tree_index),
-                    on_boundary: true,
-                    current_child: None,
-                });
-                while !stack.is_empty() {
-                    step(&mut stack, last_tree_index);
-                }
-                Segment::free(segment);
-            }
-        }
-    }
-}
-
-*/

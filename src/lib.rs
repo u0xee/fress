@@ -9,6 +9,8 @@
 
 pub mod dispatch;
 pub mod fuzz;
+pub mod hash;
+pub mod integral;
 pub mod keyword;
 pub mod list;
 //pub mod map;

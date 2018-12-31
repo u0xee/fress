@@ -87,7 +87,8 @@ impl ValueUnit {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            let (v, _) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
+            let (v, replaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
+            replaced.value_unit().retire();
             v.value_unit()
         } else {
             unimplemented!()

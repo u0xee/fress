@@ -63,8 +63,6 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
             Segment::free(tail);
         }
     } else {
-        //println!("Printing tail bits:");
-        //tail.print_bits();
         tail.unalias();
         Segment::free(tail);
     }
@@ -165,17 +163,9 @@ pub fn shrink_root(guide: Guide, tailoff: u32) -> Unit {
 }
 
 pub fn unalias_edge_path_pop(guide: Guide, mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine {
-    use std::panic::{catch_unwind, resume_unwind};
-
     let count = d.count as u32;
     for _i in 0..count {
-        let res = catch_unwind(|| curr[0].segment());
-        let s = if res.is_ok() { res.unwrap() } else {
-            println!("xyz _i = {}, count = {}, {:?}, {:?}, curr = {:?}, guide.count = {:X}",
-                     _i, count, d, guide, curr, guide.count);
-            guide.segment().print_bits();
-            resume_unwind(res.unwrap_err());
-        };
+        let s = curr[0].segment();
         let digit = d.pop();
         if !s.is_aliased() {
             curr = s.line_at(digit);
@@ -202,8 +192,6 @@ pub fn shrink_child(guide: Guide, tailoff: u32) -> Unit {
     let last_index = tailoff - 1;
     let zero_count = trailing_zero_digit_count(last_index >> BITS);
     let digit_count = digit_count(last_index);
-    //println!("count: {:X}, tailoff: {:X}, last_index: {:X}, zero_count: {}, digit_count: {}",
-    //        guide.count, tailoff, last_index, zero_count, digit_count);
     let c = {
         let mut d = Digits::new(last_index, digit_count, digit_count - zero_count - 1);
         unalias_edge_path_pop(guide, guide.root.offset(d.pop() as i32), &mut d)

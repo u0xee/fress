@@ -10,7 +10,7 @@ use std::fmt;
 use memory::*;
 use value::*;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct AnchoredRange {
     pub seg: Segment,
     pub start: u32,

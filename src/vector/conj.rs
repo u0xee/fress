@@ -17,54 +17,60 @@ pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
 }
 
 pub fn unalias_root(guide: Guide) -> Guide {
-    if guide.count <= TAIL_CAP { // untailed
-        let width = size(guide.count);
-        let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
-        let g = {
-            let s = Segment::new(guide.root.index + (width | grew_tail_bit));
-            let mut g = guide;
-            g.prism = guide.prism.with_seg(s);
-            g.is_compact_bit = g.is_compact_bit & !grew_tail_bit;
-            g.reroot()
-        };
-        guide.segment().at(0..guide.root.index).to(g.segment());
-        let roots = guide.root.span(guide.count);
-        roots.to_offset(g.segment(), g.root.index);
-        guide.split_meta();
-        roots.split();
-        if guide.segment().unalias() == 0 {
-            guide.retire_meta();
-            roots.retire();
-            Segment::free(guide.segment());
-        }
-        g
-    } else { // tailed
-        let root_count = root_content_count(tailoff(guide.count));
-        let width = size(root_count + 1 /*tail*/);
-        let g = {
-            let cap = guide.root.index - 1 /*tail*/ + (width | is_arity_bit(width));
-            let s = Segment::new(cap);
-            let mut g = guide;
-            g.prism = guide.prism.with_seg(s);
-            g.reroot()
-        };
-        guide.segment().at(0..(guide.root.index + root_count)).to(g.segment());
-        guide.split_meta();
-        let tail_and_roots = guide.root.offset(-1).span(root_count + 1);
-        if guide.count <= (TAIL_CAP << 1) {
-            tail_and_roots.split();
-        } else {
-            tail_and_roots.alias();
-        }
-        if guide.segment().unalias() == 0 {
-            guide.retire_meta();
-            tail_and_roots.unalias();
-            Segment::free(guide.segment());
-        }
-        let mut g = g;
-        g.debug = true;
-        g
+    if guide.count <= TAIL_CAP {
+        unalias_root_untailed(guide)
+    } else {
+        unalias_root_tailed(guide)
     }
+}
+
+pub fn unalias_root_untailed(guide: Guide) -> Guide {
+    let width = size(guide.count);
+    let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
+    let g = {
+        let s = Segment::new(guide.root.index + (width | grew_tail_bit));
+        let mut g = guide;
+        g.prism = guide.prism.with_seg(s);
+        g.is_compact_bit = g.is_compact_bit & !grew_tail_bit;
+        g.reroot()
+    };
+    guide.segment().at(0..guide.root.index).to(g.segment());
+    let roots = guide.root.span(guide.count);
+    roots.to_offset(g.segment(), g.root.index);
+    guide.split_meta();
+    roots.split();
+    if guide.segment().unalias() == 0 {
+        guide.retire_meta();
+        roots.retire();
+        Segment::free(guide.segment());
+    }
+    g
+}
+
+pub fn unalias_root_tailed(guide: Guide) -> Guide {
+    let root_count = root_content_count(tailoff(guide.count));
+    let width = size(root_count + 1 /*tail*/);
+    let g = {
+        let cap = guide.root.index - 1 /*tail*/ + (width | is_arity_bit(width));
+        let s = Segment::new(cap);
+        let mut g = guide;
+        g.prism = guide.prism.with_seg(s);
+        g.reroot()
+    };
+    guide.segment().at(0..(guide.root.index + root_count)).to(g.segment());
+    guide.split_meta();
+    let tail_and_roots = guide.root.offset(-1).span(root_count + 1);
+    if guide.count <= (TAIL_CAP << 1) {
+        tail_and_roots.split();
+    } else {
+        tail_and_roots.alias();
+    }
+    if guide.segment().unalias() == 0 {
+        guide.retire_meta();
+        tail_and_roots.unalias();
+        Segment::free(guide.segment());
+    }
+    g
 }
 
 pub fn unaliased_root(guide: Guide) -> Guide {
@@ -109,26 +115,20 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
 }
 
 pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
-    /*if guide.debug {
-        println!("count: {}", guide.count);
-        println!("tail_count: {}", tail_count(guide.count));
-        guide.segment().print_bits();
-        guide.root[-1].segment().print_bits();
-    }*/
     let tail_count = tail_count(guide.count);
     if tail_count != TAIL_CAP {
         let tail = guide.root[-1].segment();
         if tail.is_aliased() {
-            let s = Segment::new(TAIL_CAP);
+            let t = Segment::new(TAIL_CAP);
             let tails = tail.at(0..tail_count);
-            tails.to(s);
+            tails.to(t);
             tails.split();
             if tail.unalias() == 0 {
                 tails.retire();
                 Segment::free(tail);
             }
-            s.set(tail_count, x);
-            guide.root.set(-1, s.unit());
+            t.set(tail_count, x);
+            guide.root.set(-1, t.unit());
             guide.inc_count().store().segment().unit()
         } else {
             tail.set(tail_count, x);
@@ -308,11 +308,6 @@ pub fn growing_child(guide: Guide, x: Unit, tailoff: u32) -> Unit {
         unalias_grown_index(c, d.pop())
     };
     let path = path_of_height(zero_count, guide.root[-1]);
-    /*if guide.debug {
-        println!("\nGrowing child");
-        guide.segment().print_bits();
-        guide.root[-1].segment().print_bits();
-    }*/
     c.set(0, path);
     let tail = {
         let t = Segment::new(TAIL_CAP);

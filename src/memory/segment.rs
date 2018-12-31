@@ -303,28 +303,26 @@ impl IndexMut<u32> for Segment {
     }
 }
 
-use std::cell::{Cell, RefCell};
+use std::cell::Cell;
 thread_local! {
-    pub static SAVE: Cell<usize> = Cell::new(0);
+    pub static NEW_COUNT: Cell<u64> = Cell::new(0);
+    pub static FREE_COUNT: Cell<u64> = Cell::new(0);
 }
 
-pub fn please_save(s: Segment) {
-    SAVE.with(|c| {
-        c.set(s.unit().u())
-    });
+pub fn new_free_counts() -> (u64, u64) {
+    let nc = NEW_COUNT.with(|c| c.get());
+    let fc = FREE_COUNT.with(|c| c.get());
+    (nc, fc)
 }
 
 pub mod trace {
     use super::*;
-    pub fn new_BEGIN(content_cap: u32) { }
+    pub fn new_BEGIN(content_cap: u32) {
+        NEW_COUNT.with(|c| c.set(c.get() + 1));
+    }
     pub fn new_END(s: Segment, content_cap: u32) { }
     pub fn free_BEGIN(s: Segment) {
-        use fuzz;
-        let saved = SAVE.with(|c| c.get());
-        if s.unit().u() == saved {
-            panic!("Trying to free saved segment: {:X}", saved);
-        }
-        fuzz::log(format!("{:X}", s.unit().u()));
+        FREE_COUNT.with(|c| c.set(c.get() + 1));
     }
     pub fn free_END(s: Line) { }
 }

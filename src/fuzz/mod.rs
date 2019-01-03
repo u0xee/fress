@@ -5,9 +5,7 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-pub mod rand;
-
-pub use self::rand::*;
+use random::*;
 use std::cell::{Cell, RefCell};
 
 thread_local! {

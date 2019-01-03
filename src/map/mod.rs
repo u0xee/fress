@@ -8,13 +8,13 @@
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use Value;
+use value::*;
 
 use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
-mod assoc;
-mod get;
+pub mod assoc;
+pub mod get;
 
 pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
 pub const ARITY: u32 = 1 << BITS;
@@ -37,6 +37,7 @@ impl Map {
         s[3] = Pop::new().into();
         Value { handle: Unit::from(s) }
     }
+    // fit newer guide structure in with Map
 
     fn line(&self) -> Line {
         Unit::from(&self.prism as *const Unit).into()
@@ -44,9 +45,7 @@ impl Map {
 }
 
 impl Dispatch for Map {
-    fn tear_down(&self) {
-        unimplemented!()
-    }
+    fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
 }
 
 impl fmt::Display for Map {
@@ -68,15 +67,11 @@ impl Identification for Map {
 impl Distinguish for Map {}
 
 impl Aggregate for Map {
-    fn get(&self, k: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 impl Sequential for Map {}
 impl Associative for Map {
-    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
-        unimplemented!()
-    }
+    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) { unimplemented!() }
 }
 impl Reversible for Map {}
 impl Sorted for Map {}

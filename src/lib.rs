@@ -13,15 +13,16 @@ pub mod hash;
 pub mod integral;
 pub mod keyword;
 pub mod list;
-//pub mod map;
+pub mod map;
 pub mod memory;
+pub mod random;
 pub mod rational;
 pub mod set;
 pub mod sorted_map;
 pub mod sorted_set;
 pub mod string;
-//pub mod transducer;
 pub mod symbol;
+//pub mod transducer;
 pub mod value;
 pub mod vector;
 

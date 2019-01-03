@@ -253,54 +253,69 @@ pub fn turbine(x: u64) -> u64 {
 pub const NOISE: [u64; 4] = [0x082efa98_ec4e6c89, 0x452821e6_38d01377, 0xbe5466cf_34e90c6c, 0xc0ac29b7_c97c50dd];
 pub const PATTERN_MATERIAL: u64 = 0x3f84d5b5_b5470917;
 
-pub fn hash_u64(x: u64, byte_count: u32) -> u32 {
+pub fn hash_64(x: u64, byte_count: u32) -> u32 {
     let y = x << 8 | (byte_count as u64);
-    let (a, b) = hash_256(x, x, x, y);
-    let t = scramble(x);
-    let s = t; //turbine(t ^ NOISE[0]);
-    let y = cycle_n(s, 1);
-    let res = y + (y >> 32);
-    res as u32
+    let (a, b) = hash_raw_256(x, x, x, y);
+    a as u32
+}
+
+pub fn hash_128(x: u64, y: u64, byte_count: u32) -> u32 {
+    let z = y << 8 | (byte_count as u64);
+    let (a, b) = hash_raw_256(x, y, x, z);
+    a as u32
+}
+
+pub fn hash_192(x: u64, y: u64, z: u64, byte_count: u32) -> u32 {
+    let w = x << 8 | (byte_count as u64);
+    let (a, b) = hash_raw_256(x, y, z, w);
+    a as u32
+}
+
+pub fn hash_256(x: u64, y: u64, z: u64, w: u64, byte_count: u32) -> u32 {
+    let v = w << 8 | (byte_count as u64);
+    let (a, b) = hash_raw_256(x, y, z, v);
+    a as u32
 }
 
 pub const PI: [u64; 4] = [0x243f6a88_85a308d3, 0x13198a2e_03707344, 0xa4093822_299f31d0, 0x082efa98_ec4e6c89];
 
-pub fn hash_256(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
-    a += PI[0]; b += PI[1]; c += PI[2]; d += PI[3];
+pub fn hash_raw_256(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
+    a = a.wrapping_add(PI[0]); b = b.wrapping_add(PI[1]);
+    c = c.wrapping_add(PI[2]); d = d.wrapping_add(PI[3]);
     let (e, f, g, h) = mix(a, b, c, d);
     end(e, f, g, h)
 }
 
 pub fn mix(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64, u64, u64) {
-    c = c.rotate_left(50);  c += d;  a ^= c;
-    d = d.rotate_left(52);  d += a;  b ^= d;
-    a = a.rotate_left(30);  a += b;  c ^= a;
-    b = b.rotate_left(41);  b += c;  d ^= b;
-    c = c.rotate_left(54);  c += d;  a ^= c;
-    d = d.rotate_left(48);  d += a;  b ^= d;
-    a = a.rotate_left(38);  a += b;  c ^= a;
-    b = b.rotate_left(37);  b += c;  d ^= b;
-    c = c.rotate_left(62);  c += d;  a ^= c;
-    d = d.rotate_left(34);  d += a;  b ^= d;
-    a = a.rotate_left(5);   a += b;  c ^= a;
-    b = b.rotate_left(36);  b += c;  d ^= b;
+    c = c.rotate_left(50);  c = c.wrapping_add(d);  a ^= c;
+    d = d.rotate_left(52);  d = d.wrapping_add(a);  b ^= d;
+    a = a.rotate_left(30);  a = a.wrapping_add(b);  c ^= a;
+    b = b.rotate_left(41);  b = b.wrapping_add(c);  d ^= b;
+    c = c.rotate_left(54);  c = c.wrapping_add(d);  a ^= c;
+    d = d.rotate_left(48);  d = d.wrapping_add(a);  b ^= d;
+    a = a.rotate_left(38);  a = a.wrapping_add(b);  c ^= a;
+    b = b.rotate_left(37);  b = b.wrapping_add(c);  d ^= b;
+    c = c.rotate_left(62);  c = c.wrapping_add(d);  a ^= c;
+    d = d.rotate_left(34);  d = d.wrapping_add(a);  b ^= d;
+    a = a.rotate_left(5);   a = a.wrapping_add(b);  c ^= a;
+    b = b.rotate_left(36);  b = b.wrapping_add(c);  d ^= b;
     (a, b, c, d)
 }
 
 pub fn end(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
     /*
-    d ^= c;  c = c.rotate_left(15);  d += c;
-    a ^= d;  d = d.rotate_left(52);  a += d;
-    b ^= a;  a = a.rotate_left(26);  b += a;
-    c ^= b;  b = b.rotate_left(51);  c += b;
-    d ^= c;  c = c.rotate_left(28);  d += c;
-    a ^= d;  d = d.rotate_left(9);   a += d;
+    d ^= c;  c = c.rotate_left(15);  d = d.wrapping_add(c);
+    a ^= d;  d = d.rotate_left(52);  a = a.wrapping_add(d);
+    b ^= a;  a = a.rotate_left(26);  b = b.wrapping_add(a);
+    c ^= b;  b = b.rotate_left(51);  c = c.wrapping_add(b);
+    d ^= c;  c = c.rotate_left(28);  d = d.wrapping_add(c);
+    a ^= d;  d = d.rotate_left(9);   a = a.wrapping_add(d);
     */
-    b ^= a;  a = a.rotate_left(47);  b += a;
-    c ^= b;  b = b.rotate_left(54);  c += b;
-    d ^= c;  c = c.rotate_left(32);  d += c;
-    a ^= d;  d = d.rotate_left(25);  a += d;
-    b ^= a;  a = a.rotate_left(63);  b += a;
+    b ^= a;  a = a.rotate_left(47);  b = b.wrapping_add(a);
+    c ^= b;  b = b.rotate_left(54);  c = c.wrapping_add(b);
+    d ^= c;  c = c.rotate_left(32);  d = d.wrapping_add(c);
+    a ^= d;  d = d.rotate_left(25);  a = a.wrapping_add(d);
+    b ^= a;  a = a.rotate_left(63);  b = b.wrapping_add(a);
     (a, b)
 }
 

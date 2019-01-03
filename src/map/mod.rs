@@ -13,8 +13,8 @@ use value::*;
 use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
-pub mod assoc;
-pub mod get;
+//pub mod assoc;
+//pub mod get;
 
 pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
 pub const ARITY: u32 = 1 << BITS;
@@ -29,14 +29,16 @@ pub struct Map {
 }
 
 impl Map {
+    /*
     pub fn new() -> Value {
         let unit_count = 3 /* prism, guide, pop */ + 8 /* four pairs */;
         let mut s = Segment::new(unit_count);
-        s[1] = prism::<Map>();
+        s[1] = mechanism::prism::<Map>();
         s[2] = Guide::new().into();
         s[3] = Pop::new().into();
         Value { handle: Unit::from(s) }
     }
+    */
     // fit newer guide structure in with Map
 
     fn line(&self) -> Line {
@@ -77,10 +79,12 @@ impl Reversible for Map {}
 impl Sorted for Map {}
 impl Named for Map {}
 
-pub fn un_set(guide: Guide) -> u32 {
+impl Notation for Map {}
+
+/*pub fn un_set(guide: Guide) -> u32 {
     let x: u64 = guide.post.into();
     (((x >> 52) & 1) ^ 1) as u32
-}
+}*/
 
 #[cfg(test)]
 mod tests {

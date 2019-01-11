@@ -67,7 +67,7 @@ pub fn unalias_root_tailed(guide: Guide) -> Guide {
     }
     if guide.segment().unalias() == 0 {
         guide.retire_meta();
-        tail_and_roots.unalias();
+        tail_and_roots.retire();
         Segment::free(guide.segment());
     }
     g

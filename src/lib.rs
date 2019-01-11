@@ -13,7 +13,7 @@ pub mod hash;
 pub mod integral;
 pub mod keyword;
 pub mod list;
-pub mod map;
+//pub mod map;
 pub mod memory;
 pub mod random;
 pub mod rational;

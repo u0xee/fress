@@ -9,6 +9,9 @@ extern crate fress_rust;
 use fress_rust::hash::*;
 
 fn main() {
+    use fress_rust::hash::keccak::hash_zero_message;
+    hash_zero_message();
+
     /*
     let count = 1000;
     for i in 50..55 {
@@ -21,6 +24,7 @@ fn main() {
         print_8x8(&rfreqs);
     }
     */
+    /*
     println!("hash_64(0, 0) => {:8X}", hash_64(0, 0));
     println!("hash_64(7, 1) => {:8X}", hash_64(7, 1));
     println!("hash_64(8, 1) => {:8X}", hash_64(8, 1));
@@ -38,7 +42,7 @@ fn main() {
     }
 
     println!("Hi: {}, lo: {}", counts.iter().max().unwrap(), counts.iter().min().unwrap())
-
+*/
     /*
     //println!("Hello, world!");
     let pi_bytes = 0x243A6A;

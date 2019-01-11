@@ -5,6 +5,8 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+pub mod keccak;
+
 
 // From George Marsaglia's "Xorshift RNGs", 2003
 // https://www.jstatsoft.org/index.php/jss/article/view/v008i14/xorshift.pdf
@@ -286,6 +288,8 @@ pub fn hash_raw_256(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64
     end(e, f, g, h)
 }
 
+// ShortMix from Bob Jenkins' SpookyHash.
+// http://burtleburtle.net/bob/hash/spooky.html
 pub fn mix(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64, u64, u64) {
     c = c.rotate_left(50);  c = c.wrapping_add(d);  a ^= c;
     d = d.rotate_left(52);  d = d.wrapping_add(a);  b ^= d;
@@ -302,6 +306,7 @@ pub fn mix(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64, u64, u6
     (a, b, c, d)
 }
 
+// ShortEnd from Bob Jenkins' SpookyHash.
 pub fn end(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
     /*
     d ^= c;  c = c.rotate_left(15);  d = d.wrapping_add(c);
@@ -318,5 +323,4 @@ pub fn end(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
     b ^= a;  a = a.rotate_left(63);  b = b.wrapping_add(a);
     (a, b)
 }
-
 

@@ -13,7 +13,7 @@ use value::*;
 use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
-//pub mod assoc;
+pub mod assoc;
 //pub mod get;
 
 pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
@@ -29,31 +29,25 @@ pub struct Map {
 }
 
 impl Map {
-    /*
-    pub fn new() -> Value {
-        let unit_count = 3 /* prism, guide, pop */ + 8 /* four pairs */;
-        let mut s = Segment::new(unit_count);
-        s[1] = mechanism::prism::<Map>();
-        s[2] = Guide::new().into();
-        s[3] = Pop::new().into();
-        Value { handle: Unit::from(s) }
+    pub fn new() -> Unit {
+        let guide = {
+            let s = Segment::new(11);
+            let prism = s.line_at(0);
+            prism.set(0, mechanism::prism::<Map>());
+            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+            g
+        };
+        guide.root.set(0, Pop::new().unit());
+        guide.store().segment().unit()
     }
-    */
-    // fit newer guide structure in with Map
 
-    fn line(&self) -> Line {
-        Unit::from(&self.prism as *const Unit).into()
+    pub fn new_value() -> Value {
+        Map::new().value_unit().value()
     }
 }
 
 impl Dispatch for Map {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
-}
-
-impl fmt::Display for Map {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        unimplemented!()
-    }
 }
 
 impl Identification for Map {
@@ -74,6 +68,7 @@ impl Aggregate for Map {
 impl Sequential for Map {}
 impl Associative for Map {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) { unimplemented!() }
+    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 impl Reversible for Map {}
 impl Sorted for Map {}
@@ -81,10 +76,19 @@ impl Named for Map {}
 
 impl Notation for Map {}
 
-/*pub fn un_set(guide: Guide) -> u32 {
-    let x: u64 = guide.post.into();
-    (((x >> 52) & 1) ^ 1) as u32
-}*/
+pub fn next_power(x: u32) -> u32 {
+    (x + 1).next_power_of_two()
+}
+
+pub fn cap_at_arity_width(power: u32) -> u32 {
+    power >> (power >> (BITS + 2))
+}
+
+/// Sizes a unit count to a power of two. With BITS as 5,
+/// it returns 8, 16, 32, 64
+pub fn size(unit_count: u32) -> u32 {
+    cap_at_arity_width(next_power(unit_count | 0x4))
+}
 
 #[cfg(test)]
 mod tests {

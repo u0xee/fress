@@ -7,19 +7,17 @@
 
 use super::*;
 
-pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
+// A | P G Meta Pop | Pop C Pop C | K V K V _ _ _ _
+pub fn assoc(prism: AnchoredLine, has_vals: u32, k: Unit, hash: u32, v: Unit) -> (Unit, Unit) {
+    let guide = unaliased_root(Guide::hydrate(prism), has_vals);
     let guide: Guide = prism[1].into();
     let anchor_gap = guide.prism_to_anchor_gap();
     let root_gap = guide.guide_to_root_gap();
     let pop: Pop = prism[2 + root_gap as usize].into();
 
-    let s = {
-        let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-        if segment.is_aliased() {
-            unalias_root(segment, pop, anchor_gap, root_gap, guide)
-        } else { segment }
-    };
-
+    // is child present?
+    // no. Then either placing key in root, or colliding key in root.
+    //
     let hash = ValueUnit::from(k).hash();
     let hash_stack = hash;
     let chunks = MAX_LEVELS;
@@ -61,41 +59,42 @@ pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
     }
 }
 
-fn unalias_root(mut segment: Segment, pop: Pop, anchor_gap: u32, root_gap: u32, guide: Guide) -> Segment {
-    let combined_count = pop.child_pop_count() + pop.key_pop_count();
-    let (used_units, cap) = {
-        let non_pop = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/;
-        (non_pop + 2 * combined_count,
-         non_pop + 2 * combined_count.next_power_of_two())
+pub fn unalias_root(guide: Guide, has_vals: u32) -> Guide {
+    let (child_count, key_count) = {
+        let pop = Pop::from(guide.root[0]);
+        (pop.child_pop_count(), pop.key_pop_count())
     };
-    let mut s = Segment::with_capacity(cap);
-    for i in 1..used_units {
-        s[i] = segment[i];
+    let root_units = (child_count << 1) + (key_count << has_vals);
+    let g = {
+        let cap = guide.root.index + 1 /*pop*/ + size(root_units);
+        let s = Segment::new(cap);
+        let mut g = guide;
+        g.prism = guide.prism.with_seg(s);
+        g.reroot()
+    };
+    guide.segment().at(0..(guide.root.index + root_units)).to(g.segment());
+    guide.split_meta();
+    for i in 0..child_count {
+        guide.root[2 + (i << 1)].segment().alias();
     }
-    let child_base = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/;
-    for i in 0..pop.child_pop_count() {
-        let idx = (i << 1) + 1;
-        Segment::from(s[child_base + idx]).alias();
-    }
-    let key_base = child_base + 2 * pop.child_pop_count();
-    for i in 0..(2 * pop.key_pop_count()) {
-        ValueUnit::from(s[key_base + i]).split();
-    }
-    if guide.has_meta() {
-        ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).split();
-    }
-    if segment.unalias() == 0 {
-        for i in 0..pop.child_pop_count() {
-            let idx = (i << 1) + 1;
-            Segment::from(s[child_base + idx]).unalias();
+    let kvs = guide.root.offset(1 + (child_count << 1)).span(key_count << has_vals);
+    kvs.split();
+    if guide.segment().unalias() == 0 {
+        guide.retire_meta();
+        for i in 0..child_count {
+            guide.root[2 + (i << 1)].segment().unalias();
         }
-        for i in 0..(2 * pop.key_pop_count()) {
-            ValueUnit::from(s[key_base + i]).retire();
-        }
-        if guide.has_meta() {
-            ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).retire();
-        }
+        kvs.retire();
+        Segment::free(guide.segment());
     }
-    s
+    g
+}
+
+pub fn unaliased_root(guide: Guide, has_vals: u32) -> Guide {
+    if guide.segment().is_aliased() {
+        unalias_root(guide, has_vals)
+    } else {
+        guide
+    }
 }
 

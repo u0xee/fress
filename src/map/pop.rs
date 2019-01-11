@@ -88,6 +88,10 @@ impl Pop {
         let keys_below_count = (k & mask).count_ones();
         keys_below_count
     }
+
+    pub fn unit(self) -> Unit {
+        self.into()
+    }
 }
 
 impl From<Unit> for Pop {
@@ -101,3 +105,4 @@ impl Into<Unit> for Pop {
         self.population
     }
 }
+

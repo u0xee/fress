@@ -49,10 +49,6 @@ impl AnchoredLine {
         AnchoredLine { seg, index: self.index }
     }
 
-    pub fn range(&self, length: u32) -> AnchoredRange {
-        AnchoredRange::new(self.seg, self.index..(self.index + length))
-    }
-
     pub fn line(&self) -> Line {
         self.seg.anchor_line.offset(self.index as isize + 1)
     }

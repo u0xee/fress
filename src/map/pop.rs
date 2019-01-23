@@ -9,100 +9,81 @@ use super::*;
 
 #[derive(Copy, Clone)]
 pub struct Pop {
-    pub population: Unit,
+    pub child_turnout: u32,
+    pub key_turnout: u32,
 }
 
 impl Pop {
     pub fn new() -> Pop {
-        Pop { population: Unit::from(0) }
+        Pop { child_turnout: 0, key_turnout: 0 }
     }
 
-    pub fn child_pop(&self) -> u32 {
-        let x: u64 = self.population.into();
+    pub fn hydrate(x: u64) -> Pop {
         let mask = (1u64 << ARITY) - 1;
-        (x & mask) as u32
+        Pop { child_turnout: (x & mask) as u32, key_turnout: ((x >> ARITY) & mask) as u32 }
     }
 
-    pub fn child_pop_count(&self) -> u32 {
-        self.child_pop().count_ones()
-    }
-
-    pub fn key_pop(&self) -> u32 {
-        let x: u64 = self.population.into();
-        let y = x >> ARITY;
+    pub fn store(&self) -> u64 {
         let mask = (1u64 << ARITY) - 1;
-        (y & mask) as u32
+        let bottom = self.child_turnout as u64 & mask;
+        let top = (self.key_turnout as u64 & mask) << ARITY;
+        top | bottom
     }
 
-    pub fn key_pop_count(&self) -> u32 {
-        self.key_pop().count_ones()
+    pub fn child_count(&self) -> u32 {
+        self.child_turnout.count_ones()
     }
 
-    pub fn from_pops(child_pop: u32, key_pop: u32) -> Pop {
-        let mask = (1u64 << ARITY) - 1;
-        let top = ((key_pop as u64) & mask) << ARITY;
-        let bottom = (child_pop as u64) & mask;
-        let p = top | bottom;
-        Pop { population: Unit::from(p) }
+    pub fn key_count(&self) -> u32 {
+        self.key_turnout.count_ones()
     }
 
-    fn index_in_pop(pop: u32, hash_chunk: u32) -> Result<u32, u32> {
+    pub fn has_child(&self, hash_chunk: u32) -> bool {
         let test_bit = 1u32 << hash_chunk;
-        if (test_bit & pop) != 0 {
-            let mask = test_bit - 1;
-            let members_before_target = (pop & mask).count_ones();
-            Ok(members_before_target)
-        } else {
-            Err(pop.count_ones())
-        }
+        (test_bit & self.child_turnout) != 0
     }
 
-    pub fn child_idx(&self, hash_chunk: u32) -> Result<u32, u32> {
-        let c = self.child_pop();
-        Pop::index_in_pop(c, hash_chunk)
-    }
-
-    pub fn key_idx(&self, hash_chunk: u32) -> Result<u32, u32> {
-        let k = self.key_pop();
-        Pop::index_in_pop(k, hash_chunk)
-    }
-
-    pub fn contains(&self, hash_chunk: u32) -> bool {
+    pub fn has_key(&self, hash_chunk: u32) -> bool {
         let test_bit = 1u32 << hash_chunk;
-        let combined_pop = self.child_pop() | self.key_pop();
-        (test_bit & combined_pop) != 0
+        (test_bit & self.key_turnout) != 0
     }
 
     pub fn children_below(&self, hash_chunk: u32) -> u32 {
-        let c = self.child_pop();
         let test_bit = 1u32 << hash_chunk;
         let mask = test_bit - 1;
-        let children_below_count = (c & mask).count_ones();
-        children_below_count
+        (self.child_turnout & mask).count_ones()
     }
 
     pub fn keys_below(&self, hash_chunk: u32) -> u32 {
-        let k = self.key_pop();
         let test_bit = 1u32 << hash_chunk;
         let mask = test_bit - 1;
-        let keys_below_count = (k & mask).count_ones();
-        keys_below_count
+        (self.key_turnout & mask).count_ones()
     }
 
     pub fn unit(self) -> Unit {
         self.into()
     }
+
+    pub fn flip_child(&self, hash_chunk: u32) -> Pop {
+        let bit = 1u32 << hash_chunk;
+        Pop { child_turnout: self.child_turnout ^ bit, key_turnout: self.key_turnout }
+    }
+
+    pub fn flip_key(&self, hash_chunk: u32) -> Pop {
+        let bit = 1u32 << hash_chunk;
+        Pop { child_turnout: self.child_turnout, key_turnout: self.key_turnout ^ bit }
+    }
 }
 
 impl From<Unit> for Pop {
     fn from(u: Unit) -> Self {
-        Pop { population: u }
+        Pop::hydrate(u.into())
     }
 }
 
 impl Into<Unit> for Pop {
     fn into(self) -> Unit {
-        self.population
+        Unit::from(self.store())
     }
 }
 

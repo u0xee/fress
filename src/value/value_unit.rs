@@ -46,10 +46,67 @@ impl ValueUnit {
         self.segment().line_at(0)
     }
 
+    pub fn type_name(self) -> String {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).type_name()
+        } else {
+            let v = self.unit.u();
+            if !(v | 0x8) == 0x0 {
+                return "Boolean".to_string()
+            }
+            if v == 0x7 {
+                return "Nil".to_string()
+            }
+            if (v & 0xF) == 0x3 {
+                return "Character".to_string()
+            }
+            if (v & 0xF) == 0x1 {
+                return "Integral".to_string()
+            }
+            if (v & 0xF) == 0x9 {
+                return "FloatPoint".to_string()
+            }
+            unreachable!("Bad value unit!: 0x{:016X}", v)
+        }
+    }
+
+    pub fn type_sentinel(self) -> *const u8 {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).type_sentinel()
+        } else {
+            (self.unit.u() & 0xF) as *const u8
+        }
+    }
+
     pub fn tear_down(self) {
         let prism = self.prism();
         let p = prism[0];
         mechanism::as_dispatch(&p).tear_down(prism);
+    }
+
+    pub fn eq(self, other: ValueUnit) -> bool {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).eq(prism, other.unit)
+        } else {
+            self.unit == other.unit
+        }
+    }
+
+    pub fn hash(self) -> u32 {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).hash(prism)
+        } else {
+            use hash::hash_64;
+            hash_64(self.unit.u64(), 8)
+        }
     }
 
     pub fn count(self) -> u32 {
@@ -148,11 +205,5 @@ impl From<Value> for ValueUnit {
         use std::mem::forget;
         forget(v);
         ret
-    }
-}
-
-impl ValueUnit {
-    pub fn eq(&self, other: Unit) -> bool {
-        self.unit == other
     }
 }

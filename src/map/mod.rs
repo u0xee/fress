@@ -16,7 +16,7 @@ use self::pop::Pop;
 pub mod assoc;
 //pub mod get;
 
-pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
+pub const BITS: u32 = 4; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
 pub const ARITY: u32 = 1 << BITS;
 pub const NODE_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
@@ -67,8 +67,19 @@ impl Aggregate for Map {
 }
 impl Sequential for Map {}
 impl Associative for Map {
-    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) { unimplemented!() }
-    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
+    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
+        let h = k.value_unit().hash();
+        // unalias root
+        // no root entry? add to root
+        // root key entry? Is it equal? We have an entry! Else a common prefix!
+        // else child entry. Child, as anchored line to [pop, child segment] in unaliased segment
+        // index_in_children, else index_in_keys, else keys below
+        unimplemented!()
+    }
+
+    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
+        unimplemented!()
+    }
 }
 impl Reversible for Map {}
 impl Sorted for Map {}
@@ -88,6 +99,13 @@ pub fn cap_at_arity_width(power: u32) -> u32 {
 /// it returns 8, 16, 32, 64
 pub fn size(unit_count: u32) -> u32 {
     cap_at_arity_width(next_power(unit_count | 0x4))
+}
+
+pub fn common_chunks(h1: u32, h2: u32) -> u32 {
+    let top_chunks = (h1 ^ h2) >> BITS;
+    let zeros = (top_chunks | 0x80000000u32).trailing_zeros();
+    // compute this division with a faster algorithm?
+    (zeros / BITS) + 1 /*for the bottom chunk*/
 }
 
 #[cfg(test)]

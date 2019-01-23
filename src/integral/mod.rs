@@ -11,6 +11,8 @@ use dispatch::*;
 
 pub static INTEGRAL_SENTINEL: u8 = 0;
 
+// create*, print*, hash*, equal*, tear_down*
+
 pub struct Integral {
     prism: Unit,
 }
@@ -57,9 +59,30 @@ impl Identification for Integral {
     }
 }
 
+use std::cmp::Ordering;
 impl Distinguish for Integral {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        unimplemented!()
+        use hash::hash_64;
+        let x = hydrate(prism) as u64;
+        hash_64(x, 8)
+    }
+
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        let c = self.cmp(prism, other);
+        c == Ordering::Equal
+    }
+
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering {
+        let o = other.value_unit();
+        if !o.is_ref() {
+            return Ordering::Greater
+        }
+        if o.type_sentinel() == (& INTEGRAL_SENTINEL) as *const u8 {
+            let x = hydrate(prism);
+            let y = hydrate(other.value_unit().prism());
+            return x.cmp(&y)
+        }
+        ((& INTEGRAL_SENTINEL) as *const u8).cmp(&o.type_sentinel())
     }
 }
 

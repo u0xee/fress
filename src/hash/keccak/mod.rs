@@ -48,6 +48,7 @@ pub fn print_bytes(a: &[u64]) {
 // keccak-p[1600, rounds]
 pub fn permute(a: &mut [u64], rounds: u32) {
     assert!(rounds <= 24 && rounds == (rounds >> 1) << 1);
+    assert_eq!(a.len(), 25);
     let mut e = [0u64; 25];
     let mut c = [0u64; 5];
     sum_columns(a, &mut c);
@@ -66,7 +67,7 @@ pub fn permute(a: &mut [u64], rounds: u32) {
     }
 }
 
-pub const RC: [u64; 24] = [
+const RC: [u64; 24] = [
     0x00000000_00000001, 0x00000000_00008082, 0x80000000_0000808A, 0x80000000_80008000,
     0x00000000_0000808B, 0x00000000_80000001, 0x80000000_80008081, 0x80000000_00008009,
     0x00000000_0000008A, 0x00000000_00000088, 0x00000000_80008009, 0x00000000_8000000A,
@@ -75,7 +76,7 @@ pub const RC: [u64; 24] = [
     0x80000000_80008081, 0x80000000_00008080, 0x00000000_80000001, 0x80000000_80008008,
 ];
 
-pub const RHO: [u32; 25] = [
+const RHO: [u32; 25] = [
     0 , 1 , 62, 28, 27,
     36, 44, 6 , 55, 20,
     3 , 10, 43, 25, 39,
@@ -83,7 +84,7 @@ pub const RHO: [u32; 25] = [
     18, 2 , 61, 56, 14,
 ];
 
-pub const PI: [usize; 25] = [
+const PI: [usize; 25] = [
     0 + 0 * 5, 1 + 1 * 5, 2 + 2 * 5, 3 + 3 * 5, 4 + 4 * 5,
     3 + 0 * 5, 4 + 1 * 5, 0 + 2 * 5, 1 + 3 * 5, 2 + 4 * 5,
     1 + 0 * 5, 2 + 1 * 5, 3 + 2 * 5, 4 + 3 * 5, 0 + 4 * 5,
@@ -91,7 +92,7 @@ pub const PI: [usize; 25] = [
     2 + 0 * 5, 3 + 1 * 5, 4 + 2 * 5, 0 + 3 * 5, 1 + 4 * 5,
 ];
 
-pub fn sum_columns(a: &[u64], c: &mut [u64]) {
+fn sum_columns(a: &[u64], c: &mut [u64]) {
     c[0] = a[0] ^ a[5] ^ a[10] ^ a[15] ^ a[20];
     c[1] = a[1] ^ a[6] ^ a[11] ^ a[16] ^ a[21];
     c[2] = a[2] ^ a[7] ^ a[12] ^ a[17] ^ a[22];
@@ -99,7 +100,7 @@ pub fn sum_columns(a: &[u64], c: &mut [u64]) {
     c[4] = a[4] ^ a[9] ^ a[14] ^ a[19] ^ a[24];
 }
 
-pub fn round(a: &[u64], e: &mut [u64], c: &mut [u64]) {
+fn round(a: &[u64], e: &mut [u64], c: &mut [u64]) {
     let d0 = c[4] ^ c[1].rotate_left(1);
     let d1 = c[0] ^ c[2].rotate_left(1);
     let d2 = c[1] ^ c[3].rotate_left(1);

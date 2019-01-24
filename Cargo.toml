@@ -5,3 +5,26 @@ authors = ["Cole Frederick <csp.frederick@gmail.com>"]
 description = "A cohesive fressian library for rust"
 
 [dependencies]
+
+[features]
+default = ["anchor_non_atomic", "segment"]
+
+anchor_non_atomic = []
+
+segment_clear = []
+segment_erase = []
+segment_bounds = []
+segment_mut = []
+segment_free = []
+segment_magic = []
+segment_null = []
+segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut", "segment_free", "segment_magic", "segment_null"]
+
+
+fuzz_segment_extra_cap = []
+fuzz_segment_random_content = []
+fuzz_segment_spurious_aliased = []
+fuzz_segment = ["fuzz_segment_extra_cap", "fuzz_segment_random_content", "fuzz_segment_spurious_aliased"]
+
+
+fuzz = ["fuzz_segment"]

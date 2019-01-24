@@ -6,31 +6,25 @@
 // You must not remove this notice, or any other, from this software.
 
 //! A unit of memory.
-
+use std::fmt;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
+use memory::*;
+use value::*;
 
 /// A Unit is one processor word. Here, 64 or 32 bits.
 
 #[cfg(any(target_pointer_width = "64", target_pointer_width = "32"))]
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct Unit {
     pub word: usize,
 }
 
-use super::segment::Segment;
-use super::anchor::Anchor;
-
-impl From<Anchor> for Unit {
-    fn from(a: Anchor) -> Self {
-        a.unit
+impl fmt::Debug for Unit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#X} }}", self.word)
     }
 }
 
-impl From<Segment> for Unit {
-    fn from(s: Segment) -> Self {
-        s.line.into()
-    }
-}
 
 impl Unit {
     pub fn is_even(&self) -> bool {
@@ -48,9 +42,26 @@ impl Unit {
     pub fn u64(&self) -> u64 {
         self.word as u64
     }
-    // high zeros?
-    // break into fields
-    // bit manipulation needed to decode vector header
+
+    pub fn u32(&self) -> u32 {
+        self.word as u32
+    }
+
+    pub fn anchor(self) -> Anchor {
+        Anchor::from(self)
+    }
+
+    pub fn line(self) -> Line {
+        Line::from(self)
+    }
+
+    pub fn segment(self) -> Segment {
+        Segment::from(self)
+    }
+
+    pub fn value_unit(self) -> ValueUnit {
+        ValueUnit::from(self)
+    }
 }
 
 

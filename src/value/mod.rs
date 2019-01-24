@@ -5,37 +5,64 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-mod aggregate;
-mod arithmetic;
-pub mod distinguish;
-mod immediate;
+pub mod value_unit;
+pub use self::value_unit::ValueUnit;
 
-/*
-Value is the main library API:
-- Static code dispatching based on union base, possibly to assembled trait object
-- &Value into another Value (during its scope)
-- Special high level operations like split
-*/
-
-use memory::unit::Unit;
-use memory::segment::Segment;
+use memory::*;
+use dispatch::*;
+use vector::Vector;
 
 #[derive(Debug)]
 pub struct Value {
     pub handle: Unit,
 }
 
-use std;
-use dispatch::Dispatch;
-
 impl Value {
     pub const NIL: Unit = Unit { word: 0x07 };
-    pub const TRUE: Unit = Unit { word: std::usize::MAX };
+    pub const TRUE: Unit = Unit { word: !0x00usize };
     pub const FALSE: Unit = Unit { word: !0x08usize };
 
-    pub fn add_one_test(&self) -> Value {
-        let x: u64 = self.handle.into();
-        Value { handle: (x + 1).into() }
+    fn consume(self) -> ValueUnit {
+        ValueUnit::from(self)
+    }
+
+    fn value_unit(&self) -> ValueUnit {
+        ValueUnit { unit: self.handle }
+    }
+
+    pub fn split(self) -> (Value, Value) {
+        let v = self.consume();
+        v.split();
+        (v.value(), v.value())
+    }
+
+    pub fn split_out(&self) -> Value {
+        let v = self.value_unit();
+        v.split();
+        v.value()
+    }
+
+    pub fn conj(self, x: Value) -> Value {
+        self.consume().conj(x.consume()).value()
+    }
+}
+
+impl From<ValueUnit> for Value {
+    fn from(vu: ValueUnit) -> Self {
+        Value { handle: vu.unit }
+    }
+}
+
+impl Drop for Value {
+    fn drop(&mut self) {
+        self.value_unit().retire();
+    }
+}
+
+impl PartialEq for Value {
+    fn eq(&self, other: &Value) -> bool {
+        // TODO expand to non-immediates
+        self.handle == other.handle
     }
 }
 
@@ -47,6 +74,26 @@ mod test {
     fn passes() {
         assert!(true)
     }
+
+    #[test]
+    fn first() {
+        assert!(true)
+        /*
+        let v = Vector::new_value();
+        let v1 = v.conj(1.into());
+        let v2 = v1.conj(2.into());
+        unimplemented!();
+        let w = v2.conj(3.into());
+
+        let (w_, three) = w.pop();
+        let (w__, two) = w_.pop();
+        let (w___, one) = w__.pop();
+        assert_eq!(three, 3.into());
+        assert_eq!(two, 2.into());
+        assert_eq!(one, 1.into());
+        */
+    }
+
     /*
     #[test]
     fn testbed() {

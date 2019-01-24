@@ -8,15 +8,15 @@
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use Value;
+use value::*;
 
 use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
-mod assoc;
-mod get;
+pub mod assoc;
+//pub mod get;
 
-pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
+pub const BITS: u32 = 4; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
 pub const ARITY: u32 = 1 << BITS;
 pub const NODE_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
@@ -29,30 +29,25 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new() -> Value {
-        let unit_count = 3 /* prism, guide, pop */ + 8 /* four pairs */;
-        let mut s = Segment::new(unit_count);
-        s[1] = prism::<Map>();
-        s[2] = Guide::new().into();
-        s[3] = Pop::new().into();
-        Value { handle: Unit::from(s) }
+    pub fn new() -> Unit {
+        let guide = {
+            let s = Segment::new(11);
+            let prism = s.line_at(0);
+            prism.set(0, mechanism::prism::<Map>());
+            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+            g
+        };
+        guide.root.set(0, Pop::new().unit());
+        guide.store().segment().unit()
     }
 
-    fn line(&self) -> Line {
-        Unit::from(&self.prism as *const Unit).into()
+    pub fn new_value() -> Value {
+        Map::new().value_unit().value()
     }
 }
 
 impl Dispatch for Map {
-    fn tear_down(&self) {
-        unimplemented!()
-    }
-}
-
-impl fmt::Display for Map {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        unimplemented!()
-    }
+    fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
 }
 
 impl Identification for Map {
@@ -68,13 +63,21 @@ impl Identification for Map {
 impl Distinguish for Map {}
 
 impl Aggregate for Map {
-    fn get(&self, k: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 impl Sequential for Map {}
 impl Associative for Map {
-    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
+    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
+        let h = k.value_unit().hash();
+        // unalias root
+        // no root entry? add to root
+        // root key entry? Is it equal? We have an entry! Else a common prefix!
+        // else child entry. Child, as anchored line to [pop, child segment] in unaliased segment
+        // index_in_children, else index_in_keys, else keys below
+        unimplemented!()
+    }
+
+    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
         unimplemented!()
     }
 }
@@ -82,9 +85,27 @@ impl Reversible for Map {}
 impl Sorted for Map {}
 impl Named for Map {}
 
-pub fn un_set(guide: Guide) -> u32 {
-    let x: u64 = guide.post.into();
-    (((x >> 52) & 1) ^ 1) as u32
+impl Notation for Map {}
+
+pub fn next_power(x: u32) -> u32 {
+    (x + 1).next_power_of_two()
+}
+
+pub fn cap_at_arity_width(power: u32) -> u32 {
+    power >> (power >> (BITS + 2))
+}
+
+/// Sizes a unit count to a power of two. With BITS as 5,
+/// it returns 8, 16, 32, 64
+pub fn size(unit_count: u32) -> u32 {
+    cap_at_arity_width(next_power(unit_count | 0x4))
+}
+
+pub fn common_chunks(h1: u32, h2: u32) -> u32 {
+    let top_chunks = (h1 ^ h2) >> BITS;
+    let zeros = (top_chunks | 0x80000000u32).trailing_zeros();
+    // compute this division with a faster algorithm?
+    (zeros / BITS) + 1 /*for the bottom chunk*/
 }
 
 #[cfg(test)]

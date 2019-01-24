@@ -7,116 +7,98 @@
 
 use super::*;
 
-pub fn assoc(prism: Line, idx: u32, x: Unit) -> (Unit, Unit) {
-    let guide: Guide = prism[1].into();
-    let count = guide.count();
+pub fn assoc(prism: AnchoredLine, idx: u32, x: Unit) -> (Unit, Unit) {
+    let guide = unaliased_root(Guide::hydrate(prism));
     use std::cmp::Ordering;
-    match idx.cmp(&count) {
+    match idx.cmp(&guide.count) {
         Ordering::Less => {
-            if count <= TAIL_CAP {
-                assoc_untailed(prism, idx, x, guide, count)
+            if guide.count <= TAIL_CAP {
+                assoc_untailed(guide, idx, x)
             } else {
-                assoc_tailed(prism, idx, x, guide, count)
+                assoc_tailed(guide, idx, x)
             }
         },
         Ordering::Equal   => { (super::conj::conj(prism, x), Value::NIL) },
-        Ordering::Greater => { panic!("Index out of bounds: {} in vector of count {}", idx, count); }
+        Ordering::Greater => { panic!("Index out of bounds: {} in vector of count {}", idx, guide.count); }
     }
 }
 
-fn assoc_untailed(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32) -> (Unit, Unit) {
-    let anchor_gap = guide.prism_to_anchor_gap();
-    let root_gap = guide.guide_to_root_gap();
-    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-    let mut s = if segment.is_aliased() {
-        unalias_root(segment, anchor_gap, root_gap, count, guide)
-    } else { segment };
-    let first_root = 3 + anchor_gap + root_gap;
-    let popped = s[first_root + idx];
-    s[first_root + idx] = x;
-    (Unit::from(s), popped)
+pub fn assoc_untailed(guide: Guide, idx: u32, x: Unit) -> (Unit, Unit) {
+    let popped = guide.root[idx as i32];
+    guide.root.set(idx as i32, x);
+    (guide.clear_hash().store().segment().unit(), popped)
 }
 
-fn assoc_tailed(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32) -> (Unit, Unit) {
-    let tailoff = (count - 1) & !MASK;
-    let anchor_gap = guide.prism_to_anchor_gap();
-    let root_gap = guide.guide_to_root_gap();
-    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-    let mut s = if segment.is_aliased() {
-        unalias_root(segment, anchor_gap, root_gap, count, guide)
-    } else { segment };
-    let first_root = 3 + anchor_gap + root_gap;
+pub fn assoc_tailed(guide: Guide, idx: u32, x: Unit) -> (Unit, Unit) {
+    let tailoff = tailoff(guide.count);
     if idx >= tailoff {
-        let tail_count = count - tailoff;
-        let mut tail: Segment = s[first_root - 1].into();
-        let mut t = if tail.is_aliased() {
-            let mut t = Segment::with_capacity(tail.capacity());
-            for i in 1..(tail_count + 1) {
-                t[i] = tail[i];
-            }
-            for i in 1..(tail_count + 1) {
-                ValueUnit::from(t[i]).split();
-            }
-            if tail.unalias() == 0 {
-                for i in 1..(tail_count + 1) {
-                    ValueUnit::from(t[i]).retire();
+        let tail_count = tail_count(guide.count);
+        let tail = {
+            let tail = guide.root[-1].segment();
+            if tail.is_aliased() {
+                let s = Segment::new(TAIL_CAP);
+                let tails = tail.at(0..tail_count);
+                tails.to(s);
+                tails.split();
+                if tail.unalias() == 0 {
+                    tails.retire();
+                    Segment::free(tail);
                 }
-                Segment::free(tail)
+                guide.root.set(-1, s.unit());
+                s
+            } else {
+                tail
             }
-            s[first_root - 1] = t.into();
-            t
-        } else { tail };
+        };
         let tail_idx = idx - tailoff;
-        let popped = t[1 + tail_idx];
-        t[1 + tail_idx] = x;
-        (Unit::from(s), popped)
+        let popped = tail[tail_idx];
+        tail.set(tail_idx, x);
+        (guide.clear_hash().store().segment().unit(), popped)
     } else {
-        assoc_tailed_tree(prism, idx, x, guide, count, anchor_gap, root_gap, tailoff, s)
+        assoc_tailed_tree(guide, idx, x, tailoff)
     }
 }
 
-fn assoc_tailed_tree(prism: Line, idx: u32, x: Unit, guide: Guide, count: u32,
-                     anchor_gap: u32, root_gap: u32, tailoff: u32, header: Segment) -> (Unit, Unit) {
-    let first_root = 3 + anchor_gap + root_gap;
-    let digit_count = digit_count(tailoff - 1);
-    let (mut stack, root_idx) = {
-        let rev = reverse_digits(idx, digit_count);
-        (rev >> BITS, rev & MASK)
+pub fn create_path_width(root: AnchoredLine, path: u32, path_widths: u32, height: u32) -> AnchoredLine {
+    let mut shift = height * BITS;
+    let mut curr = {
+        shift -= BITS;
+        root.offset(last_digit(path >> shift) as i32)
     };
-    let mut child = Line::from(header).offset((first_root + root_idx) as isize);
-    let mut path_width_stack = path_width_stack(tailoff, idx) >> BITS;
-
-    for _ in 0..(digit_count - 1) {
-        let mut s = Segment::from(child[0]);
-        let digit = stack & MASK;
-        stack = stack >> BITS;
-        let last_sibling_idx = path_width_stack & MASK;
-        path_width_stack = path_width_stack >> BITS;
-
+    for _ in 0..(height - 1) {
+        let s = curr[0].segment();
+        let (digit, last_sibling_idx) = {
+            shift -= BITS;
+            (last_digit(path >> shift), last_digit(path_widths >> shift))
+        };
         if !s.is_aliased() {
-            child = Line::from(s).offset((1 + digit) as isize);
+            curr = s.line_at(digit);
         } else {
-            let mut c = Segment::with_capacity(s.capacity());
-            for i in 0..(last_sibling_idx + 1) {
-                c[1 + i] = s[1 + i];
-            }
-            for i in 0..(last_sibling_idx + 1) {
-                ValueUnit::from(c[1 + i]).split();
-            }
-            if s.unalias() == 0 {
-                for i in 0..(last_sibling_idx + 1) {
-                    ValueUnit::from(c[1 + i]).retire();
+            let t = {
+                let t = Segment::new(size(last_sibling_idx + 1));
+                let range = s.at(0..(last_sibling_idx + 1));
+                range.to(t);
+                range.split();
+                if s.unalias() == 0 {
+                    range.retire();
+                    Segment::free(s);
                 }
-            }
-            let next_child = Line::from(c).offset((1 + digit) as isize);
-            child[0] = c.into();
-            child = next_child;
+                t
+            };
+            curr.set(0, t.unit());
+            curr = t.line_at(digit);
         }
     }
-
-    let popped = child[0];
-    child[0] = x;
-    (Unit::from(header), popped)
+    assert_eq!(shift, 0);
+    curr
 }
 
-
+pub fn assoc_tailed_tree(guide: Guide, idx: u32, x: Unit, tailoff: u32) -> (Unit, Unit) {
+    let last_index = tailoff - 1;
+    let digit_count = digit_count(last_index);
+    let path_widths = path_widths(tailoff, idx);
+    let c = create_path_width(guide.root, idx, path_widths, digit_count);
+    let popped = c[0];
+    c.set(0, x);
+    (guide.clear_hash().store().segment().unit(), popped)
+}

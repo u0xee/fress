@@ -5,19 +5,16 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-mod mechanism;
-pub use self::mechanism::prism;
-mod value_unit;
-pub use self::value_unit::ValueUnit;
-mod shim;
-pub use self::shim::BlankShim;
-use memory::unit::Unit;
-use std::fmt::Display;
+use memory::*;
+pub mod mechanism;
+use std::fmt;
+use std::io;
 use std::cmp::Ordering;
 
 /// A trait to dynamically dispatch methods on heap values
 pub trait Dispatch :
 Identification +
+Notation +
 Distinguish +
 Aggregate +
 Sequential +
@@ -25,101 +22,58 @@ Associative +
 Reversible +
 Sorted +
 Named {
-    fn tear_down(&self) {
-        unimplemented!()
-    }
-    fn anchor_gap_change(&self, delta: i32) {
-        unimplemented!()
-    }
-    fn unaliased(&self) -> Unit {
-        unimplemented!()
-    }
+    fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
+    fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
 }
 
-pub trait Identification : Display {
-    fn type_name(&self) -> String {
-        unimplemented!()
-    }
-    fn type_sentinel(&self) -> *const u8 {
-        unimplemented!()
-    }
+pub trait Identification {
+    fn type_name(&self) -> String { unimplemented!() }
+    fn type_sentinel(&self) -> *const u8 { unimplemented!() }
+}
+
+pub trait Notation {
+    fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
+    fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> { unimplemented!() }
 }
 
 pub trait Distinguish {
-    fn hash(&self) -> u32 {
-        unimplemented!()
-    }
-    fn eq(&self, other: Unit) -> bool {
-        unimplemented!()
-    }
-    fn cmp(&self, other: Unit) -> Ordering {
-        unimplemented!()
-    }
+    fn hash(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool { unimplemented!() }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering { unimplemented!() }
 }
 
 pub trait Aggregate {
-    fn count(&self) -> u32 {
-        unimplemented!()
-    }
-    fn empty(&self) -> Unit {
-        unimplemented!()
-    }
-    fn conj(&self, x: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn meta(&self) -> Unit {
-        unimplemented!()
-    }
-    fn with_meta(&self, m: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn peek(&self) -> Unit {
-        unimplemented!()
-    }
-    fn pop(&self) -> (Unit, Unit) {
-        unimplemented!()
-    }
-    fn get(&self, k: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn count(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
+    fn empty(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit { unimplemented!() }
+    fn meta(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { unimplemented!() }
+    fn peek(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { unimplemented!() }
+    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Sequential {
-    fn nth(&self, idx: u32) -> Unit {
-        unimplemented!()
-    }
+    fn nth(&self, prism: AnchoredLine, idx: u32) -> Unit { unimplemented!() }
 }
 
 pub trait Associative {
-    fn contains(&self, x: Unit) -> bool {
-        unimplemented!()
-    }
-    fn assoc(&self, k: Unit, v: Unit) -> (Unit, Unit) {
-        unimplemented!()
-    }
-    fn dissoc(&self, k: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn contains(&self, prism: AnchoredLine, x: Unit) -> bool { unimplemented!() }
+    fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) { unimplemented!() }
+    fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Reversible {
-    fn reverse(&self) -> Unit {
-        unimplemented!()
-    }
+    fn reverse(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 
 pub trait Sorted {
-    fn subrange(&self, start: Unit, end: Unit) -> Unit {
-        unimplemented!()
-    }
+    fn subrange(&self, prism: AnchoredLine, start: Unit, end: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Named {
-    fn name(&self) -> Unit {
-        unimplemented!()
-    }
-    fn namespace(&self) -> Unit {
-        unimplemented!()
-    }
+    fn name(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn namespace(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 

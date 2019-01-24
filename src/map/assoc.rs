@@ -7,95 +7,284 @@
 
 use super::*;
 
-pub fn assoc(prism: Line, k: Unit, v: Unit) -> Unit {
-    let guide: Guide = prism[1].into();
-    let anchor_gap = guide.prism_to_anchor_gap();
-    let root_gap = guide.guide_to_root_gap();
-    let pop: Pop = prism[2 + root_gap as usize].into();
+pub fn chunk_at(hash: u32, chunk_idx: u32) -> u32 {
+    (hash >> (chunk_idx * BITS)) & MASK
+}
 
-    let s = {
-        let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-        if segment.is_aliased() {
-            unalias_root(segment, pop, anchor_gap, root_gap, guide)
-        } else { segment }
-    };
+pub fn address(child_count: u32, key_count: u32, has_vals: u32) -> u32 {
+    (child_count << 1) + (key_count << has_vals)
+}
 
-    let hash = ValueUnit::from(k).hash();
-    let hash_stack = hash;
-    let chunks = MAX_LEVELS;
-    let unset = un_set(guide);
-
-    if !pop.contains(hash_stack & MASK) {
-        // place key in root
-        let child_count = pop.child_pop_count();
-        let key_count = pop.key_pop_count();
-        let used_units = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/ +
-            (child_count << 1) + (key_count << unset);
-        let free_units = s.capacity() - used_units;
-        let s = if free_units >= (1 << unset) {
-            s
-        } else {
-            let total_count = child_count + key_count;
-            let content_room = total_count.next_power_of_two() << 1;
-            let cap = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/ +
-                content_room;
-            let mut segment = Segment::with_capacity(cap);
-            for i in 1..used_units {
-                segment[i] = s[i];
+pub fn child_assoc(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
+                   -> Result<AnchoredLine, AnchoredLine> {
+    for chunk_idx in 1..MAX_LEVELS {
+        let p = Pop::from(child_pop[0]);
+        let c = {
+            let c = child_pop[1].segment();
+            if !c.is_aliased() { c } else {
+                let s = unalias_child(p, has_vals, c);
+                child_pop.set(1, s.unit());
+                s
             }
-            Segment::free(s);
-            segment
         };
-        let keys_below_count = pop.keys_below(hash_stack & MASK);
-        // A P G | P | P C P C | K V K V K V K V
-        //                     | K K K K
-        //
+        let chunk = chunk_at(hash, chunk_idx);
+        if p.has_child(chunk) {
+            child_pop = c.line_at(p.children_below(chunk) << 1);
+        } else if p.has_key(chunk) {
+            let child_count = p.child_count();
+            let idx = p.keys_below(chunk);
+            let key_idx = address(child_count, idx, has_vals);
+            let k2 = c.get(key_idx).value_unit();
+            if k.value_unit().eq(k2) {
+                return Err(c.line_at(key_idx));
+            } else {
+                let (coll_pop, coll_child, key_slot) = collision_stalk(
+                    chunk_idx + 1, hash, k2.hash(), c.line_at(key_idx), has_vals);
+                let d = if has_vals == 1 { c } else {
+                    let key_count = p.key_count();
+                    let end = (child_count << 1) + key_count;
+                    let d = if c.has_index(end) { c } else {
+                        let s = Segment::new(size(end + 1));
+                        c.at(0..end).to(s);
+                        c.unalias();
+                        Segment::free(c);
+                        child_pop.set(1, s.unit());
+                        s
+                    };
+                    d.at((key_idx + 1)..end).shift_up(1);
+                    d
+                };
+                let c_idx = p.children_below(chunk) << 1;
+                d.at(c_idx..key_idx).shift_up(2);
+                d.set(c_idx, coll_pop);
+                d.set(c_idx + 1, coll_child.unit());
+                child_pop.set(0, p.flip_key(chunk).flip_child(chunk).into());
+                return Ok(key_slot);
+            }
+        } else {
+            return Ok(new_key_assoc(child_pop, p, c, chunk, has_vals));
+        }
+    }
+    return chaining_assoc(child_pop, k, has_vals);
+}
 
-        // return
-        unimplemented!()
+pub fn chaining_assoc(mut child_pop: AnchoredLine, k: Unit, has_vals: u32)
+                      -> Result<AnchoredLine, AnchoredLine> {
+    let key_count = child_pop[0].u32();
+    let c = {
+        let c = child_pop[1].segment();
+        if !c.is_aliased() { c } else {
+            let s = Segment::new((key_count + 1) << has_vals);
+            let kvs = c.at(0..(key_count << has_vals));
+            kvs.split();
+            if c.unalias() == 0 {
+                kvs.retire();
+                Segment::free(c);
+            }
+            child_pop.set(1, s.unit());
+            s
+        }
+    };
+    for i in 0..key_count {
+        let k2 = c.get(i << has_vals).value_unit();
+        if k.value_unit().eq(k2) {
+            return Err(c.line_at(i << has_vals));
+        }
+    }
+    let key_index = key_count << has_vals;
+    let d = if c.has_index(key_index + has_vals) { c } else {
+        let s = Segment::new(key_index + has_vals + 1);
+        c.at(0..key_index).to(s);
+        c.unalias();
+        Segment::free(c);
+        child_pop.set(1, s.unit());
+        s
+    };
+    child_pop.set(0, Unit::from(key_count + 1));
+    return Ok(d.line_at(key_index));
+}
+
+pub fn collision_stalk(skip_chunks: u32, hash: u32, hash2: u32, key2: AnchoredLine, has_vals: u32)
+                       -> (Unit, Segment, AnchoredLine) {
+    let leaf = Segment::new(size(2 << has_vals));
+    let shared_chunks = common_chunks(hash, hash2);
+    let (leaf_pop, k_idx) = if shared_chunks == MAX_LEVELS {
+        (Unit::from(2u32), 0)
     } else {
-        // line to [pop, child] in unaliased segment
-        // hash_stack and chunks
+        let c = chunk_at(hash, shared_chunks);
+        let p = Pop::new().flip_key(c)
+            .flip_key(chunk_at(hash2, shared_chunks));
+        (p.unit(), p.keys_below(c))
+    };
+    {
+        let k2_idx = (1 - k_idx) << has_vals;
+        leaf.set(k2_idx, key2[0]);
+        leaf.set(k2_idx + has_vals, key2[0 + has_vals as i32]);
+    }
+    let (mut u, mut s) = (leaf_pop, leaf);
+    for chunk_idx in (skip_chunks..shared_chunks).rev() {
+        let t = Segment::new(size(2));
+        t.set(0, u);
+        t.set(1, s.unit());
+        s = t;
+        u = Pop::new().flip_child(chunk_at(hash, chunk_idx)).unit();
+    }
+    (u, s, leaf.line_at(k_idx << has_vals))
+}
 
-        unimplemented!()
+pub fn new_key_assoc(child_pop: AnchoredLine, p: Pop, c: Segment, chunk: u32,
+                     has_vals: u32) -> AnchoredLine {
+    let child_count = p.child_count();
+    let key_count = p.key_count();
+    let new_address = address(child_count, p.key_count(), has_vals);
+    let s = if c.has_index(new_address + has_vals) { c } else {
+        let unit_count = address(child_count, key_count + 1, has_vals);
+        let s = Segment::new(size(unit_count));
+        c.at(0..(unit_count - (1 << has_vals))).to(s);
+        c.unalias();
+        Segment::free(c);
+        child_pop.set(1, s.unit());
+        s
+    };
+    let key_idx = p.keys_below(chunk);
+    let idx = address(child_count, key_idx, has_vals);
+    {
+        let kvs_above = (key_count - key_idx) << has_vals;
+        s.line_at(idx).span(kvs_above).shift_up(1 << has_vals);
+    }
+    child_pop.set(0, p.flip_key(chunk).into());
+    s.line_at(idx)
+}
+
+pub fn unalias_child(p: Pop, has_vals: u32, c: Segment) -> Segment {
+    let child_count = p.child_count();
+    let key_count = p.key_count();
+    let unit_count = address(child_count, key_count, has_vals);
+    let s = Segment::new(size(unit_count));
+    c.at(0..unit_count).to(s);
+    for i in 0..child_count {
+        c[1 + (i << 1)].segment().alias();
+    }
+    let kvs = c.line_at(child_count << 1).span(key_count << has_vals);
+    kvs.split();
+    if c.unalias() == 0 {
+        for i in 0..child_count {
+            c[1 + (i << 1)].segment().unalias();
+        }
+        kvs.retire();
+        Segment::free(c);
+    }
+    s
+}
+
+pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
+             -> (Guide, Result<AnchoredLine, AnchoredLine>) {
+    let guide = unaliased_root(Guide::hydrate(prism), has_vals);
+    let p = Pop::from(guide.root[0]);
+    let chunk = hash & MASK;
+    if p.has_child(chunk) {
+        let child_pop = guide.root.offset((p.children_below(chunk) << 1) as i32 + 1);
+        (guide, child_assoc(child_pop, k, hash, has_vals))
+    } else if p.has_key(chunk) {
+        let child_count = p.child_count();
+        let idx = p.keys_below(chunk);
+        let root_idx = 1 + address(child_count, idx, has_vals);
+        let k2 = guide.root.get(root_idx as i32).value_unit();
+        if k.value_unit().eq(k2) {
+            (guide, Err(guide.root.offset(root_idx as i32)))
+        } else {
+            let (coll_pop, coll_child, key_slot) = collision_stalk(
+                1, hash, k2.hash(), guide.root.offset(root_idx as i32), has_vals);
+            let g = if has_vals == 0 { guide } else {
+                let key_count = p.key_count();
+                let end = 1 + (child_count << 1) + key_count;
+                let g = if guide.root.has_index(end as i32) { guide } else {
+                    let cap = guide.root.index + 1 /*pop*/ + size(end);
+                    let s = Segment::new(cap);
+                    guide.segment().at(0..(guide.root.index + end)).to(s);
+                    let mut g = guide;
+                    g.prism = guide.prism.with_seg(s);
+                    guide.segment().unalias();
+                    Segment::free(guide.segment());
+                    g.reroot()
+                };
+                let r = g.root.index();
+                g.root.segment().at((r + root_idx + 1)..(r + end)).shift_up(1);
+                g
+            };
+            let c_idx = 1 + (p.children_below(chunk) << 1) as i32;
+            g.root.offset(c_idx).span(root_idx - c_idx as u32).shift_up(2);
+            g.root.set(c_idx, coll_pop);
+            g.root.set(c_idx + 1, coll_child.unit());
+            g.root.set(0, p.flip_key(chunk).flip_child(chunk).into());
+            (g, Ok(key_slot))
+        }
+    } else {
+        guide.root.set(0, p.flip_key(chunk).into());
+        let child_count = p.child_count();
+        let key_count = p.key_count();
+        let idx = p.keys_below(chunk);
+        let root_idx = 1 + address(child_count, idx, has_vals);
+        let root_end = 1 + address(child_count, key_count, has_vals);
+        let root_above = (key_count - idx) << has_vals;
+        if guide.root.has_index((root_end + has_vals) as i32) {
+            guide.root.offset(root_idx as i32).span(root_above).shift_up(1 << has_vals);
+            (guide, Ok(guide.root.offset(root_idx as i32)))
+        } else {
+            let root_units = address(child_count, key_count + 1, has_vals);
+            let g = {
+                let cap = guide.root.index + 1 /*pop*/ + size(root_units);
+                let s = Segment::new(cap);
+                let mut g = guide;
+                g.prism = guide.prism.with_seg(s);
+                g.reroot()
+            };
+            guide.segment().at(0..(guide.root.index + root_idx)).to(g.segment());
+            guide.root.offset(root_idx as i32).span(root_above).to_offset(g.segment(), root_idx + (1 << has_vals));
+            guide.segment().unalias();
+            Segment::free(guide.segment());
+            (g, Ok(g.root.offset(root_idx as i32)))
+        }
     }
 }
 
-fn unalias_root(mut segment: Segment, pop: Pop, anchor_gap: u32, root_gap: u32, guide: Guide) -> Segment {
-    let combined_count = pop.child_pop_count() + pop.key_pop_count();
-    let (used_units, cap) = {
-        let non_pop = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/;
-        (non_pop + 2 * combined_count,
-         non_pop + 2 * combined_count.next_power_of_two())
+
+pub fn unalias_root(guide: Guide, has_vals: u32) -> Guide {
+    let (child_count, key_count) = {
+        let pop = Pop::from(guide.root[0]);
+        (pop.child_count(), pop.key_count())
     };
-    let mut s = Segment::with_capacity(cap);
-    for i in 1..used_units {
-        s[i] = segment[i];
+    let root_units = address(child_count, key_count, has_vals);
+    let g = {
+        let cap = guide.root.index + 1 /*pop*/ + size(root_units);
+        let s = Segment::new(cap);
+        let mut g = guide;
+        g.prism = guide.prism.with_seg(s);
+        g.reroot()
+    };
+    guide.segment().at(0..(guide.root.index + root_units)).to(g.segment());
+    guide.split_meta();
+    for i in 0..(child_count as i32) {
+        guide.root[2 + (i << 1)].segment().alias();
     }
-    let child_base = anchor_gap + root_gap + 4 /*anchor, prism, guide, pop*/;
-    for i in 0..pop.child_pop_count() {
-        let idx = (i << 1) + 1;
-        Segment::from(s[child_base + idx]).alias();
-    }
-    let key_base = child_base + 2 * pop.child_pop_count();
-    for i in 0..(2 * pop.key_pop_count()) {
-        ValueUnit::from(s[key_base + i]).split();
-    }
-    if guide.has_meta() {
-        ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).split();
-    }
-    if segment.unalias() == 0 {
-        for i in 0..pop.child_pop_count() {
-            let idx = (i << 1) + 1;
-            Segment::from(s[child_base + idx]).unalias();
+    let kvs = guide.root.offset(1 + address(child_count, 0, has_vals) as i32).span(key_count << has_vals);
+    kvs.split();
+    if guide.segment().unalias() == 0 {
+        guide.retire_meta();
+        for i in 0..(child_count as i32) {
+            guide.root[2 + (i << 1)].segment().unalias();
         }
-        for i in 0..(2 * pop.key_pop_count()) {
-            ValueUnit::from(s[key_base + i]).retire();
-        }
-        if guide.has_meta() {
-            ValueUnit::from(s[3 + anchor_gap + guide.meta_gap()]).retire();
-        }
+        kvs.retire();
+        Segment::free(guide.segment());
     }
-    s
+    g
+}
+
+pub fn unaliased_root(guide: Guide, has_vals: u32) -> Guide {
+    if guide.segment().is_aliased() {
+        unalias_root(guide, has_vals)
+    } else {
+        guide
+    }
 }
 

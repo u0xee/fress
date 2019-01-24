@@ -27,7 +27,7 @@ pub fn cycle_n(mut y: u64, n: u32) -> u64 {
 pub fn uniform_f64(exp_seed: u64, mantissa_seed: u64) -> f64 {
     let o = exponent_offset(exp_seed) as u64;
     let exp = 0x3FEu64 /*exponent for 1/2*/ - o;
-    let mantissa_mask = ((1u64 << 52) - 1);
+    let mantissa_mask = (1u64 << 52) - 1;
     let bits = (mantissa_seed & mantissa_mask) | (exp << 52);
     f64::from_bits(bits)
 }
@@ -37,7 +37,7 @@ fn exponent_offset(y: u64) -> u32 {
     let mut coin_flips = 0u64;
     for i in 0..8 {
         let ones_in_byte = (y & (mask << (i << 3))).count_ones();
-        coin_flips |= ((ones_in_byte as u64 & 1) << i);
+        coin_flips |= (ones_in_byte as u64 & 1) << i;
     }
     let top_bits = (y ^ (y >> 32)) | (1 << 32);
     coin_flips |= top_bits << 8;

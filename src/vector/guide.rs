@@ -5,138 +5,152 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use memory::unit::Unit;
+use memory::*;
 
-// TODO store and read guide in 32-bit environment
+/// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
+/// The top 32 bits contain the hash, the bottom 32 bits contain the collection's count.
+/// Also in the top, two booleans represent the presence of a hash and of meta.
+/// The two lowest order bits are not part of the hash, they are the booleans.
+/// So a collection's hash will always end in two zero bits.
+/// The highest order two bits of the bottom 32 bits also represent two booleans:
+/// is the collection a set, and is the representation compact (no info unit).
+/// So a collection's count resides in the 30 lowest order bits.
 
-#[derive(Copy, Clone)]
+/// ```
+/// Top 32 bits  [    Hash (30)    | Hash? | Meta? ]
+/// Bottom bits  [ Set? | Compact? |   Count (30)  ]
+/// ```
+///
+
+#[derive(Copy, Clone, Debug)]
 pub struct Guide {
-    pub post: u64,
+    pub hash: u32,
+    pub has_hash_bit: u32,
+    pub has_meta_bit: u32,
+
+    pub is_set_bit: u32,
+    pub is_compact_bit: u32,
+    pub count: u32,
+
+    pub prism: AnchoredLine,
+    pub root: AnchoredLine,
 }
 
-// Layout of guide unit, 64bits in bytes:
-// A B H H | H H C C
-// A byte is distance to anchor
-// Four H bytes are for storing the hash
-// Two C bytes for storing the count of the collection
-
-// New B byte layout
-// Info byte in bit fields:
-// h? m? l? u | u ic ic ic
-// hash present?
-// meta present?
-// large count?
-// index of contents - 3 bits
-
-// Count algorithm:
-// Isolate the large-count-? bit
-// Shift one (a constant) left by this bit
-// Shift the result left by four (a constant)
-// Negate 0u64 (like -1 in signed numbers), shift it left by the result above
-// Negate this, producing a 32 or 16 bit wide mask
-// Use the mask to isolate the count field, or splice into the count field
-
-// fields: count, anchor_distance, hash?, hash, meta?, root_offset
-
 impl Guide {
-    pub fn new() -> Guide {
-        Guide { post: 0u64 }
+    pub fn segment(&self) -> Segment {
+        self.prism.segment()
     }
 
-    pub fn count(&self) -> u32 {
-        let x: u64 = self.post;
-        let large_count = (x >> 53) & 1;
-        let field_width = (1u64 << large_count) << 4;
-        let mask = !(!0u64 << field_width);
-        (x & mask) as u32
+    pub fn set_hash(mut self, hash: u32) -> Guide {
+        self.hash = hash & !0x3;
+        self.has_hash_bit = 1;
+        self
     }
 
-    pub fn has_meta(&self) -> bool {
-        let x: u64 = self.post;
-        let meta_bit = (x >> 54) & 1;
-        meta_bit == 1
-    }
-
-    pub fn with_meta(&self) -> Guide {
-        let x: u64 = self.post;
-        let meta_bit = (x >> 54) & 1;
-        (x | (1 << 54)).into()
-    }
-
-    pub fn meta_gap(&self) -> u32 {
-        let x: u64 = self.post;
-        let large_count = (x >> 53) & 1;
-        let extra_guide_unit: u32 = if cfg!(target_pointer_width = "32") { 1 } else { 0 };
-        (large_count as u32) + extra_guide_unit
+    pub fn clear_hash(mut self) -> Guide {
+        self.hash = 0;
+        self.has_hash_bit = 0;
+        self
     }
 
     pub fn has_hash(&self) -> bool {
-        let x: u64 = self.post;
-        let hash_bit = (x >> 55) & 1;
-        hash_bit == 1
+        self.has_hash_bit == 1
     }
 
-    pub fn inc(&self) -> Guide {
-        let x: u64 = self.post;
-        (x + 1).into()
+    pub fn set_meta(mut self) -> Guide {
+        self.has_meta_bit = 1;
+        self
     }
 
-    pub fn dec(&self) -> Guide {
-        let x: u64 = self.post;
-        (x - 1).into()
+    pub fn clear_meta(mut self) -> Guide {
+        self.has_meta_bit = 0;
+        self
     }
 
-    pub fn prism_to_anchor_gap(&self) -> u32 {
-        let x: u64 = self.post;
-        (x >> 56) as u32
+    pub fn has_meta(&self) -> bool {
+        self.has_meta_bit == 1
     }
 
-    pub fn with_anchor_gap_change(&self, delta: i32) -> Guide {
-        let x: u64 = self.post;
-        let anchor_gap = self.prism_to_anchor_gap();
-        let new_gap = ((anchor_gap as i32) + delta) as u64;
-        let mask = (1u64 << 56) - 1;
-        let new_x = (x & mask) | (new_gap << 56);
-        Unit::from(new_x).into()
+    pub fn meta_line(&self) -> AnchoredLine {
+        self.prism.offset(if cfg!(target_pointer_width = "32") { 3 } else { 2 })
     }
 
-    pub fn guide_to_root_gap(&self) -> u32 {
-        let x: u64 = self.post;
-        ((x >> 48) & 0b111) as u32
+    pub fn split_meta(&self) {
+        if self.has_meta() {
+            self.meta_line()[0].value_unit().split();
+        }
     }
 
-    pub fn inc_guide_to_root_gap(&self) -> Guide {
-        let x: u64 = self.post;
-        Unit::from(x + (1u64 << 48)).into()
+    pub fn retire_meta(&self) {
+        if self.has_meta() {
+            self.meta_line()[0].value_unit().retire();
+        }
     }
 
-    pub fn with_root_gap_change(&self, delta: i32) -> Guide {
-        let x: u64 = self.post;
-        // TODO verify works
-        Unit::from(x + ((delta as u64) << 48)).into()
+    pub fn clear_compact(mut self) -> Guide {
+        self.is_compact_bit = 0;
+        self
+    }
+
+    pub fn inc_count(mut self) -> Guide {
+        self.count = self.count + 1;
+        self.clear_hash()
+    }
+
+    pub fn dec_count(mut self) -> Guide {
+        self.count = self.count - 1;
+        self.clear_hash()
+    }
+
+    pub fn reroot(mut self) -> Guide {
+        let root_offset = 1 /*prism*/ +
+            if cfg!(target_pointer_width = "32") { 2 } else { 1 } /*guide*/ +
+            self.has_meta_bit + (!self.is_compact_bit & 0x1);
+        self.root = self.prism.offset(root_offset as i32);
+        self
+    }
+
+    pub fn hydrate(prism: AnchoredLine) -> Guide {
+        if cfg!(target_pointer_width = "32") {
+            Guide::hydrate_top_bot(prism, prism[1].into(), prism[2].into())
+        } else {
+            let g: u64 = prism[1].into();
+            Guide::hydrate_top_bot(prism, (g >> 32) as u32, g as u32)
+        }
+    }
+
+    pub fn hydrate_top_bot(prism: AnchoredLine, top: u32, bot: u32) -> Guide {
+        let hash = top & !0x3;
+        let has_hash_bit = (top >> 1) & 0x1;
+        let has_meta_bit = (top & 0x1);
+
+        let count = bot & !(0x3 << 30);
+        let is_set_bit = (bot >> 31) & 0x1;
+        let is_compact_bit = (bot >> 30) & 0x1;
+
+        let root_offset = 1 /*prism*/ +
+            if cfg!(target_pointer_width = "32") { 2 } else { 1 } /*guide*/ +
+            has_meta_bit + (!is_compact_bit & 0x1);
+        let root = prism.offset(root_offset as i32);
+
+        Guide { hash, has_hash_bit, has_meta_bit, count, is_set_bit, is_compact_bit, prism, root }
+    }
+
+    pub fn store_at(&self, mut prism: AnchoredLine) {
+        let top: u32 = self.hash | (self.has_hash_bit << 1) | self.has_meta_bit;
+        let bot: u32 = (self.is_set_bit << 31) | (self.is_compact_bit << 30) | self.count;
+        if cfg!(target_pointer_width = "32") {
+            prism[1] = top.into();
+            prism[2] = bot.into();
+        } else {
+            let g: u64 = ((top as u64) << 32) | (bot as u64);
+            prism[1] = g.into();
+        }
+    }
+
+    pub fn store(self) -> Guide {
+        self.store_at(self.prism);
+        self
     }
 }
 
-impl From<u64> for Guide {
-    fn from(x: u64) -> Self {
-        Guide { post: x }
-    }
-}
-
-impl Into<u64> for Guide {
-    fn into(self) -> u64 {
-        self.post
-    }
-}
-
-impl From<Unit> for Guide {
-    fn from(u: Unit) -> Self {
-        Guide { post: u.into() }
-    }
-}
-
-impl Into<Unit> for Guide {
-    fn into(self) -> Unit {
-        Unit::from(self.post)
-    }
-}

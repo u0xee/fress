@@ -7,50 +7,37 @@
 
 use super::*;
 
-pub fn nth(prism: Line, idx: u32) -> Unit {
-    let guide: Guide = prism[1].into();
-    let count = guide.count();
-    if idx >= count {
-        panic!("Index out of bounds: {} in vector of count {}", idx, count);
+pub fn nth(prism: AnchoredLine, idx: u32) -> Unit {
+    let guide = Guide::hydrate(prism);
+    if idx >= guide.count {
+        panic!("Index out of bounds: {} in vector of count {}", idx, guide.count);
     }
-    if count <= TAIL_CAP {
-        nth_untailed(prism, idx, guide, count)
+    if guide.count <= TAIL_CAP {
+        guide.root[idx as i32]
     } else {
-        nth_tailed(prism, idx, guide, count)
+        nth_tailed(guide, idx)
     }
 }
 
-fn nth_untailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
-    let anchor_gap = guide.prism_to_anchor_gap();
-    let root_gap = guide.guide_to_root_gap();
-    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-    let first_root = 3 + anchor_gap + root_gap;
-    segment[first_root + idx]
-}
-
-fn nth_tailed(prism: Line, idx: u32, guide: Guide, count: u32) -> Unit {
-    let tailoff = (count - 1) & !MASK;
-    let anchor_gap = guide.prism_to_anchor_gap();
-    let root_gap = guide.guide_to_root_gap();
-    let segment: Segment = prism.offset(-((anchor_gap + 1) as isize)).into();
-    let first_root = 3 + anchor_gap + root_gap;
+fn nth_tailed(guide: Guide, idx: u32) -> Unit {
+    let tailoff = tailoff(guide.count);
     if idx >= tailoff {
-        let tail = Segment::from(segment[first_root - 1]);
-        tail[1 + (idx - tailoff)]
+        guide.root[-1].segment()[idx - tailoff]
     } else {
         let digit_count = digit_count(tailoff - 1);
-        let (mut stack, root_idx) = {
-            let rev = reverse_digits(idx, digit_count);
-            (rev >> BITS, rev & MASK)
+        let mut shift = digit_count * BITS;
+        let mut curr = {
+            shift -= BITS;
+            guide.root.offset(last_digit(idx >> shift) as i32)
         };
-        let mut x = segment[first_root + root_idx];
         for _ in 0..(digit_count - 1) {
-            let digit = stack & MASK;
-            stack = stack >> BITS;
-            x = Line::from(x)[(1 + digit) as usize]
+            let digit = {
+                shift -= BITS;
+                last_digit(idx >> shift)
+            };
+            curr = curr[0].segment().line_at(digit);
         }
-        x
+        assert_eq!(shift, 0);
+        curr[0]
     }
 }
-
-

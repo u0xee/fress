@@ -152,9 +152,9 @@ impl Segment {
                     let diff = base ^ x;
                     if diff.leading_zeros() > base.leading_zeros() {
                         let xx = (!0 >> diff.leading_zeros()) & x;
-                        print!("{:2}: {:.>12X}, ", index, xx);
+                        print!("{:2}: {:.>12X}  ", index, xx);
                     } else {
-                        print!("{:2}: {:_>12X}, ", index, x);
+                        print!("{:2}: {:_>12X}  ", index, x);
                     }
                 }
             }

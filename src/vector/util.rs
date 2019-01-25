@@ -7,6 +7,26 @@
 
 use super::*;
 
+pub fn divide_by_three(x: u32) -> u32 {
+    let p = x as u64 * 0x55555556u64;
+    (p >> 32) as u32
+}
+
+pub fn divide_by_five(x: u32) -> u32 {
+    let p = x as u64 * 0x33333334u64;
+    (p >> 32) as u32
+}
+
+pub fn divide_by_bits(x: u32) -> u32 {
+    if BITS == 4 {
+        x >> 2
+    } else if BITS == 5 {
+        divide_by_five(x)
+    } else {
+        divide_by_three(x) >> 1
+    }
+}
+
 pub fn next_power(x: u32) -> u32 {
     (x + 1).next_power_of_two()
 }
@@ -25,11 +45,11 @@ pub fn significant_bits(x: u32) -> u32 {
 }
 
 pub fn digit_count(x: u32) -> u32 {
-    (significant_bits(x) + BITS - 1) / BITS
+    divide_by_bits(significant_bits(x) + BITS - 1)
 }
 
 pub fn trailing_zero_digit_count(x: u32) -> u32 {
-    x.trailing_zeros() / BITS
+    divide_by_bits(x.trailing_zeros())
 }
 
 pub fn tailoff(count: u32) -> u32 {

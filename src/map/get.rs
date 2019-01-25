@@ -7,10 +7,9 @@
 
 use super::*;
 
-pub fn get(prism: Line, k: Unit) -> Option<Unit> {
-    let guide: Guide = prism[1].into();
-    let root_gap = guide.guide_to_root_gap();
-    let hash = ValueUnit::from(k).hash();
+pub fn get(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Option<Unit> {
+    let guide = Guide::hydrate(prism);
+
 
     let (base, pop, hash_stack, chunks, child_count) = {
         let mut pop: Pop = prism[2 + root_gap as usize].into();

@@ -14,9 +14,9 @@ use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
 pub mod assoc;
-//pub mod get;
+pub mod get;
 
-pub const BITS: u32 = 4; // one of 5 (for 64 bit words) or 4 (for 32 bit words)
+pub const BITS: u32 = 4; // one of 5 (for 64 bit words) or 4 (for 32 bit words; fine for 64 bit too)
 pub const ARITY: u32 = 1 << BITS;
 pub const NODE_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
@@ -31,7 +31,7 @@ pub struct Map {
 impl Map {
     pub fn new() -> Unit {
         let guide = {
-            let s = Segment::new(11);
+            let s = Segment::new(3 + size(1));
             let prism = s.line_at(0);
             prism.set(0, mechanism::prism::<Map>());
             let mut g = Guide::hydrate_top_bot(prism, 0, 0);
@@ -69,12 +69,19 @@ impl Sequential for Map {}
 impl Associative for Map {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let h = k.value_unit().hash();
-        // unalias root
-        // no root entry? add to root
-        // root key entry? Is it equal? We have an entry! Else a common prefix!
-        // else child entry. Child, as anchored line to [pop, child segment] in unaliased segment
-        // index_in_children, else index_in_keys, else keys below
-        unimplemented!()
+        let (g, key_slot) = assoc::assoc(prism, k, h, 1);
+        match key_slot {
+            Ok(new_slot) => {
+                new_slot.set(0, k);
+                new_slot.set(1, v);
+                (g.inc_count().store().segment().unit(), Value::NIL)
+            },
+            Err(old_slot) => {
+                let prev = old_slot[1];
+                old_slot.set(1, v);
+                (g.clear_hash().store().segment().unit(), prev)
+            },
+        }
     }
 
     fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
@@ -104,8 +111,20 @@ pub fn size(unit_count: u32) -> u32 {
 pub fn common_chunks(h1: u32, h2: u32) -> u32 {
     let top_chunks = (h1 ^ h2) >> BITS;
     let zeros = (top_chunks | 0x80000000u32).trailing_zeros();
-    // compute this division with a faster algorithm?
-    (zeros / BITS) + 1 /*for the bottom chunk*/
+    divide_by_bits(zeros) + 1 /*for the bottom chunk*/
+}
+
+pub fn divide_by_five(x: u32) -> u32 {
+    let p = x as u64 * 0x33333334u64;
+    (p >> 32) as u32
+}
+
+pub fn divide_by_bits(x: u32) -> u32 {
+    if BITS == 4 {
+        x >> 2
+    } else {
+        divide_by_five(x)
+    }
 }
 
 #[cfg(test)]

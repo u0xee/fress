@@ -87,3 +87,24 @@ impl Into<Unit> for Pop {
     }
 }
 
+use std::fmt;
+impl fmt::Debug for Pop {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "@[");
+        for i in 0..ARITY {
+            if self.has_child(i) {
+                write!(f, "C");
+            } else if self.has_key(i) {
+                write!(f, "K");
+            } else {
+                write!(f, "x");
+            }
+            let k = i + 1;
+            if k % 4 == 0 && k != ARITY {
+                write!(f, " ");
+            }
+        }
+        write!(f, "]")
+    }
+}
+

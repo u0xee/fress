@@ -180,26 +180,30 @@ pub fn unalias_child(p: Pop, has_vals: u32, c: Segment) -> Segment {
 pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
              -> (Guide, Result<AnchoredLine, AnchoredLine>) {
     let guide = unaliased_root(Guide::hydrate(prism), has_vals);
-    let p = Pop::from(guide.root[0]);
+    let p = Pop::from(guide.root[-1]);
+    println!("Count: {:2} {:?}", guide.count, p);
     let chunk = hash & MASK;
     if p.has_child(chunk) {
-        let child_pop = guide.root.offset((p.children_below(chunk) << 1) as i32 + 1);
+        println!("Add to child {}", chunk);
+        let child_pop = guide.root.offset((p.children_below(chunk) << 1) as i32);
         (guide, child_assoc(child_pop, k, hash, has_vals))
     } else if p.has_key(chunk) {
+        println!("Root contains key at {}", chunk);
         let child_count = p.child_count();
         let idx = p.keys_below(chunk);
-        let root_idx = 1 + address(child_count, idx, has_vals);
+        let root_idx = address(child_count, idx, has_vals);
         let k2 = guide.root.get(root_idx as i32).value_unit();
         if k.value_unit().eq(k2) {
             (guide, Err(guide.root.offset(root_idx as i32)))
         } else {
             let (coll_pop, coll_child, key_slot) = collision_stalk(
                 1, hash, k2.hash(), guide.root.offset(root_idx as i32), has_vals);
-            let g = if has_vals == 0 { guide } else {
+            let g = if has_vals == 1 { guide } else {
                 let key_count = p.key_count();
-                let end = 1 + (child_count << 1) + key_count;
+                let end = address(child_count, key_count, 0);
+                let root_idx = address(child_count, idx, has_vals);
                 let g = if guide.root.has_index(end as i32) { guide } else {
-                    let cap = guide.root.index + 1 /*pop*/ + size(end);
+                    let cap = guide.root.index + size(end + 1);
                     let s = Segment::new(cap);
                     guide.segment().at(0..(guide.root.index + end)).to(s);
                     let mut g = guide;
@@ -209,38 +213,44 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
                     g.reroot()
                 };
                 let r = g.root.index();
-                g.root.segment().at((r + root_idx + 1)..(r + end)).shift_up(1);
+                g.root.offset(root_idx as i32).span(key_count - idx).shift_up(1);
                 g
             };
-            let c_idx = 1 + (p.children_below(chunk) << 1) as i32;
+            let c_idx = (p.children_below(chunk) << 1) as i32;
             g.root.offset(c_idx).span(root_idx - c_idx as u32).shift_up(2);
             g.root.set(c_idx, coll_pop);
             g.root.set(c_idx + 1, coll_child.unit());
-            g.root.set(0, p.flip_key(chunk).flip_child(chunk).into());
+            g.root.set(-1, p.flip_key(chunk).flip_child(chunk).into());
             (g, Ok(key_slot))
         }
     } else {
-        guide.root.set(0, p.flip_key(chunk).into());
+        println!("Add key to root {}", chunk);
+        guide.root.set(-1, p.flip_key(chunk).into());
         let child_count = p.child_count();
         let key_count = p.key_count();
         let idx = p.keys_below(chunk);
-        let root_idx = 1 + address(child_count, idx, has_vals);
-        let root_end = 1 + address(child_count, key_count, has_vals);
+        let root_idx = address(child_count, idx, has_vals);
+        let root_end = address(child_count, key_count, has_vals);
         let root_above = (key_count - idx) << has_vals;
         if guide.root.has_index((root_end + has_vals) as i32) {
             guide.root.offset(root_idx as i32).span(root_above).shift_up(1 << has_vals);
             (guide, Ok(guide.root.offset(root_idx as i32)))
         } else {
+            //guide.segment().interactive_print_bits("Before resize");
             let root_units = address(child_count, key_count + 1, has_vals);
             let g = {
-                let cap = guide.root.index + 1 /*pop*/ + size(root_units);
+                let cap = guide.root.index + size(root_units);
                 let s = Segment::new(cap);
                 let mut g = guide;
                 g.prism = guide.prism.with_seg(s);
                 g.reroot()
             };
+            //g.segment().interactive_print_bits("Before copy");
             guide.segment().at(0..(guide.root.index + root_idx)).to(g.segment());
-            guide.root.offset(root_idx as i32).span(root_above).to_offset(g.segment(), root_idx + (1 << has_vals));
+            //g.segment().interactive_print_bits("After low copy");
+            let keys_above = guide.root.offset(root_idx as i32).span(root_above);
+            keys_above.to_offset(g.segment(), guide.root.index() + root_idx + (1 << has_vals));
+            //g.segment().interactive_print_bits("After high copy");
             guide.segment().unalias();
             Segment::free(guide.segment());
             (g, Ok(g.root.offset(root_idx as i32)))
@@ -248,15 +258,14 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
     }
 }
 
-
 pub fn unalias_root(guide: Guide, has_vals: u32) -> Guide {
     let (child_count, key_count) = {
-        let pop = Pop::from(guide.root[0]);
+        let pop = Pop::from(guide.root[-1]);
         (pop.child_count(), pop.key_count())
     };
     let root_units = address(child_count, key_count, has_vals);
     let g = {
-        let cap = guide.root.index + 1 /*pop*/ + size(root_units);
+        let cap = guide.root.index + size(root_units);
         let s = Segment::new(cap);
         let mut g = guide;
         g.prism = guide.prism.with_seg(s);
@@ -265,14 +274,14 @@ pub fn unalias_root(guide: Guide, has_vals: u32) -> Guide {
     guide.segment().at(0..(guide.root.index + root_units)).to(g.segment());
     guide.split_meta();
     for i in 0..(child_count as i32) {
-        guide.root[2 + (i << 1)].segment().alias();
+        guide.root[1 + (i << 1)].segment().alias();
     }
-    let kvs = guide.root.offset(1 + address(child_count, 0, has_vals) as i32).span(key_count << has_vals);
+    let kvs = guide.root.offset((child_count << 1) as i32).span(key_count << has_vals);
     kvs.split();
     if guide.segment().unalias() == 0 {
         guide.retire_meta();
         for i in 0..(child_count as i32) {
-            guide.root[2 + (i << 1)].segment().unalias();
+            guide.root[1 + (i << 1)].segment().unalias();
         }
         kvs.retire();
         Segment::free(guide.segment());

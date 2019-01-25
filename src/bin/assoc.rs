@@ -9,16 +9,23 @@ extern crate fress_rust;
 use fress_rust::value::{Value, ValueUnit};
 use fress_rust::integral::Integral;
 use fress_rust::map::Map;
+use fress_rust::map::pop::Pop;
 
 fn main() {
-    let x = Integral::new(8);
+    /*
+    let x = Integral::new(7);
     let y = Integral::new(10 - 3).value_unit();
     println!("Seven is {}. #{:08X}", x.value_unit(), x.value_unit().hash());
     println!("Y #{:08X}", y.hash());
     println!("x is == to y: {}", x.value_unit().eq(y));
+    */
 
-    let m = Map::new().value_unit();
-    let ma = m.assoc(x.value_unit(), y);
-    println!("map: {}", ma);
+    let mut m = Map::new().value_unit();
+    for i in 0..100 {
+        let k = Integral::new(i).value_unit();
+        let v = Integral::new(i + 1).value_unit();
+        m = m.assoc(k, v);
+        println!("#Associated {:2} to {:2}", i, i + 1);
+    }
 }
 

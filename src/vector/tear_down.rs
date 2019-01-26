@@ -21,11 +21,11 @@ pub fn tear_down(prism: AnchoredLine) {
 
 #[derive(Copy, Clone, Debug)]
 pub struct NodeRecord {
-    first_child: AnchoredLine,
-    child_count: u32,
-    height: u32,
-    on_boundary: bool,
-    current_child: Option<u32>,
+    pub first_child: AnchoredLine,
+    pub child_count: u32,
+    pub height: u32,
+    pub on_boundary: bool,
+    pub current_child: Option<u32>,
 }
 
 pub const BLANK: NodeRecord = NodeRecord {
@@ -38,8 +38,8 @@ pub const BLANK: NodeRecord = NodeRecord {
 };
 
 pub fn base_case(node: &NodeRecord) {
-    for i in 0..(node.child_count as i32) {
-        let a_tail = node.first_child[i].segment();
+    for i in 0..node.child_count {
+        let a_tail = node.first_child[i as i32].segment();
         if a_tail.unalias() == 0 {
             a_tail.at(0..TAIL_CAP).retire();
             Segment::free(a_tail);

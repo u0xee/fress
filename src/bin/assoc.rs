@@ -10,6 +10,7 @@ use fress_rust::value::{Value, ValueUnit};
 use fress_rust::integral::Integral;
 use fress_rust::map::Map;
 use fress_rust::map::pop::Pop;
+use fress_rust::memory::segment;
 
 fn main() {
     /*
@@ -20,12 +21,36 @@ fn main() {
     println!("x is == to y: {}", x.value_unit().eq(y));
     */
 
+    let (new_a, free_a) = segment::new_free_counts();
+
+    let limit = 1000;
     let mut m = Map::new().value_unit();
-    for i in 0..100 {
+    for i in 0..limit {
         let k = Integral::new(i).value_unit();
         let v = Integral::new(i + 1).value_unit();
         m = m.assoc(k, v);
-        println!("#Associated {:2} to {:2}", i, i + 1);
+        //println!("#Associated {:2} to {:2}", i, i + 1);
+    }
+    {
+        let (new_b, free_b) = segment::new_free_counts();
+        let new_diff = new_b - new_a;
+        let free_diff = free_b - free_a;
+        println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
+    }
+    for i in 0..limit {
+        let k = Integral::new(i).value_unit();
+        let v = m.get(k);
+        print!("{} {}, ", k, v);
+        k.retire();
+    }
+    println!();
+
+    m.retire();
+    {
+        let (new_b, free_b) = segment::new_free_counts();
+        let new_diff = new_b - new_a;
+        let free_diff = free_b - free_a;
+        println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
 }
 

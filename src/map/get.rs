@@ -6,59 +6,60 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
+use super::assoc::{address, chunk_at};
 
-pub fn get(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Option<Unit> {
-    let guide = Guide::hydrate(prism);
-
-
-    let (base, pop, hash_stack, chunks, child_count) = {
-        let mut pop: Pop = prism[2 + root_gap as usize].into();
-        let mut base: Line = prism.offset((2 + root_gap) as isize);
-        let mut child_count: u32 = 0;
-        let mut hash_stack = hash;
-        let mut chunks = MAX_LEVELS;
-        loop {
-            match pop.child_idx(hash_stack & MASK) {
-                Ok(idx) => {
-                    let i = idx * 2;
-                    pop = base[1 + i as usize].into();
-                    base = base[1 + i as usize + 1].into();
-                    hash_stack = hash_stack >> BITS;
-                    chunks = chunks - 1;
-                },
-                Err(c_count) => {
-                    child_count = c_count;
-                    break;
-                },
-            }
-        }
-        (base, pop, hash_stack, chunks, child_count)
-    };
-
-    match pop.key_idx(hash_stack & MASK) {
-        Ok(idx) => {
-            let i = child_count * 2 + idx * 2;
-            if (chunks == 1) && pop.child_idx(hash_stack & MASK).is_ok() {
-                let collision_count: u32 = base[1 + i as usize].into();
-                let collision: Segment = base[1 + i as usize + 1].into();
-                for j in 0..collision_count {
-                    let maybe_k = collision[1 + j * 2];
-                    if ValueUnit::from(k).eq(maybe_k) {
-                        return Some(collision[1 + j * 2 + 1]);
-                    }
-                }
-                None
+pub fn get_child(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
+                 -> Option<AnchoredLine> {
+    for chunk_idx in 1..MAX_LEVELS {
+        let p = Pop::from(child_pop[0]);
+        let c = child_pop[1].segment();
+        let chunk = chunk_at(hash, chunk_idx);
+        if p.has_child(chunk) {
+            child_pop = c.line_at(p.children_below(chunk) << 1);
+        } else if p.has_key(chunk) {
+            let child_count = p.child_count();
+            let idx = p.keys_below(chunk);
+            let key_idx = address(child_count, idx, has_vals);
+            let k2 = c.get(key_idx);
+            return if k.value_unit().eq(k2.value_unit()) {
+                Some(c.line_at(key_idx))
             } else {
-                let maybe_k = base[1 + i as usize];
-                if ValueUnit::from(k).eq(maybe_k) {
-                    Some(base[1 + i as usize + 1])
-                } else {
-                    None
-                }
-            }
-        },
-        Err(k_count) => {
+                None
+            };
+        } else {
+            return None;
+        }
+    }
+    let key_count = child_pop[0].u32();
+    let c = child_pop[1].segment();
+    for i in 0..key_count {
+        let k2 = c.get(i << has_vals);
+        if k.value_unit().eq(k2.value_unit()) {
+            return Some(c.line_at(i << has_vals));
+        }
+    }
+    None
+}
+
+pub fn get(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Option<AnchoredLine> {
+    let guide = Guide::hydrate(prism);
+    let p = Pop::from(guide.root[-1]);
+    let chunk = hash & MASK;
+    if p.has_child(chunk) {
+        let idx = p.children_below(chunk) << 1;
+        get_child(guide.root.offset(idx as i32), k, hash, has_vals)
+    } else if p.has_key(chunk) {
+        let child_count = p.child_count();
+        let idx = p.keys_below(chunk);
+        let root_idx = address(child_count, idx, has_vals);
+        let k2 = guide.root.get(root_idx as i32);
+        if k.value_unit().eq(k2.value_unit()) {
+            Some(guide.root.offset(root_idx as i32))
+        } else {
             None
-        },
+        }
+    } else {
+        None
     }
 }
+

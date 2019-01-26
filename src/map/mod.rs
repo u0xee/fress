@@ -15,8 +15,9 @@ pub mod pop;
 use self::pop::Pop;
 pub mod assoc;
 pub mod get;
+pub mod tear_down;
 
-pub const BITS: u32 = 4; // one of 5 (for 64 bit words) or 4 (for 32 bit words; fine for 64 bit too)
+pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words; fine for 64 bit too)
 pub const ARITY: u32 = 1 << BITS;
 pub const NODE_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
@@ -47,7 +48,9 @@ impl Map {
 }
 
 impl Dispatch for Map {
-    fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
+    fn tear_down(&self, prism: AnchoredLine) {
+        tear_down::tear_down(prism, 1)
+    }
 }
 
 impl Identification for Map {
@@ -63,7 +66,14 @@ impl Identification for Map {
 impl Distinguish for Map {}
 
 impl Aggregate for Map {
-    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
+    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit {
+        let h = k.value_unit().hash();
+        if let Some(key_line) = get::get(prism, k, h, 1) {
+            key_line[1]
+        } else {
+            Value::NIL
+        }
+    }
 }
 impl Sequential for Map {}
 impl Associative for Map {

@@ -152,6 +152,17 @@ impl ValueUnit {
         }
     }
 
+    pub fn get(self, k: ValueUnit) -> ValueUnit {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let v = mechanism::as_dispatch(&p).get(prism, k.unit);
+            v.value_unit()
+        } else {
+            unimplemented!()
+        }
+    }
+
     pub fn nth(self, idx: u32) -> ValueUnit {
         if self.is_ref() {
             let prism = self.prism();

@@ -181,14 +181,12 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
              -> (Guide, Result<AnchoredLine, AnchoredLine>) {
     let guide = unaliased_root(Guide::hydrate(prism), has_vals);
     let p = Pop::from(guide.root[-1]);
-    println!("Count: {:2} {:?}", guide.count, p);
+    //println!("Count: {:2} {:?}", guide.count, p);
     let chunk = hash & MASK;
     if p.has_child(chunk) {
-        println!("Add to child {}", chunk);
         let child_pop = guide.root.offset((p.children_below(chunk) << 1) as i32);
         (guide, child_assoc(child_pop, k, hash, has_vals))
     } else if p.has_key(chunk) {
-        println!("Root contains key at {}", chunk);
         let child_count = p.child_count();
         let idx = p.keys_below(chunk);
         let root_idx = address(child_count, idx, has_vals);
@@ -224,7 +222,6 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
             (g, Ok(key_slot))
         }
     } else {
-        println!("Add key to root {}", chunk);
         guide.root.set(-1, p.flip_key(chunk).into());
         let child_count = p.child_count();
         let key_count = p.key_count();
@@ -236,7 +233,6 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
             guide.root.offset(root_idx as i32).span(root_above).shift_up(1 << has_vals);
             (guide, Ok(guide.root.offset(root_idx as i32)))
         } else {
-            //guide.segment().interactive_print_bits("Before resize");
             let root_units = address(child_count, key_count + 1, has_vals);
             let g = {
                 let cap = guide.root.index + size(root_units);
@@ -245,12 +241,9 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
                 g.prism = guide.prism.with_seg(s);
                 g.reroot()
             };
-            //g.segment().interactive_print_bits("Before copy");
             guide.segment().at(0..(guide.root.index + root_idx)).to(g.segment());
-            //g.segment().interactive_print_bits("After low copy");
             let keys_above = guide.root.offset(root_idx as i32).span(root_above);
             keys_above.to_offset(g.segment(), guide.root.index() + root_idx + (1 << has_vals));
-            //g.segment().interactive_print_bits("After high copy");
             guide.segment().unalias();
             Segment::free(guide.segment());
             (g, Ok(g.root.offset(root_idx as i32)))
@@ -260,8 +253,8 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
 
 pub fn unalias_root(guide: Guide, has_vals: u32) -> Guide {
     let (child_count, key_count) = {
-        let pop = Pop::from(guide.root[-1]);
-        (pop.child_count(), pop.key_count())
+        let p = Pop::from(guide.root[-1]);
+        (p.child_count(), p.key_count())
     };
     let root_units = address(child_count, key_count, has_vals);
     let g = {

@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use value::Value;
+use handle::Handle;
 
 // TODO design parsing machinery
 // chew up whitespace, table contains bit for that
@@ -34,33 +35,25 @@ use value::Value;
 // simple tests: comment, string, char, dispatch char
 // varied: aggregate controls, digit +-, symbol/kw
 
-pub enum Agg {
-    // how to add to collection. closing collection matching.
-    List(Value),
-    Vector(Value),
-    Set(Value),
-    Map(Value),
-    KeyValue,
-}
 
 pub enum ReadResult {
     Ok(Value, u32),
     NeedMore,
-    Error(String),
+    Error{ line: u32, description: String },
 }
 
 pub struct EdnReader {
-    pub aggregate_stack: Vec<Agg>,
-    pub partial_atomic: Vec<u8>,
+    pub pending: Vec<Pending>,
+    pub partial: Option<Partial>,
 }
 
 impl EdnReader {
     pub fn new() -> EdnReader {
-        EdnReader { aggregate_stack: Vec::new(), partial_atomic: Vec::new() }
+        EdnReader { pending: Vec::new(), partial: None }
     }
 
     pub fn read(&mut self, bs: &[u8]) -> ReadResult {
-        // if partial atomic in progress, try parsing it now with more input
+        // if partial, try parsing it now with more input
         'start: loop {
             // chew up ws
             // dispatch based on first character
@@ -68,5 +61,30 @@ impl EdnReader {
 
         }
     }
+
+    pub fn finish(&mut self) -> ReadResult {
+        // if pending, error
+        // if partial bytes, add ending whitespace, parse
+        unimplemented!()
+        // call read with whitespace, map result:
+        // Ok -> Ok, Error -> Error
+        // NeedMore -> Error (and reset partial/pending)
+    }
+}
+
+pub enum Partial {
+    Bytes(Vec<u8>),
+    String(Handle),
+}
+
+pub enum Pending {
+    List(Handle),
+    Vector(Handle),
+    Set(Handle),
+    Map(Handle),
+    Mapping,
+    MappingKey(Handle),
+    Tagged,
+    Tag(Handle),
 }
 

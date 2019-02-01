@@ -76,11 +76,11 @@ impl AnchoredRange {
 
 impl AnchoredRange {
     pub fn split(&self) {
-        self.each_unit(|u| u.value_unit().split());
+        self.each_unit(|u| u.handle().split());
     }
 
     pub fn retire(&self) {
-        self.each_unit(|u| u.value_unit().retire());
+        self.each_unit(|u| u.handle().retire());
     }
 
     pub fn debug(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -89,8 +89,8 @@ impl AnchoredRange {
         } else {
             let mut short = *self;
             short.end -= 1;
-            short.each_unit(|u| { write!(f, "{:?} ", u.value_unit()); });
-            write!(f, "{:?}", self.seg[self.end - 1].value_unit())
+            short.each_unit(|u| { write!(f, "{:?} ", u.handle()); });
+            write!(f, "{:?}", self.seg[self.end - 1].handle())
         }
     }
 }

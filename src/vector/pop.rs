@@ -57,9 +57,9 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
     let tail = guide.root[-1].segment();
     let popped = tail[0];
     if tail.is_aliased() {
-        popped.value_unit().split();
+        popped.handle().split();
         if tail.unalias() == 0 {
-            popped.value_unit().retire();
+            popped.handle().retire();
             Segment::free(tail);
         }
     } else {

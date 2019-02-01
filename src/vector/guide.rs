@@ -77,13 +77,13 @@ impl Guide {
 
     pub fn split_meta(&self) {
         if self.has_meta() {
-            self.meta_line()[0].value_unit().split();
+            self.meta_line()[0].handle().split();
         }
     }
 
     pub fn retire_meta(&self) {
         if self.has_meta() {
-            self.meta_line()[0].value_unit().retire();
+            self.meta_line()[0].handle().retire();
         }
     }
 

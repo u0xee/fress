@@ -49,7 +49,7 @@ impl Vector {
     }
 
     pub fn new_value() -> Value {
-        Vector::new().value_unit().value()
+        Vector::new().handle().value()
     }
 }
 
@@ -68,7 +68,7 @@ impl Dispatch for Vector {
             format!(" #x{:X}", guide.hash)
         };
         let meta = if !guide.has_meta() { "".to_string() } else {
-            format!(" ^{:?}", guide.meta_line()[0].value_unit())
+            format!(" ^{:?}", guide.meta_line()[0].handle())
         };
         write!(f, "{aliases}->[Vector{hash}{meta} {count}ct ",
                aliases = guide.segment().anchor().aliases(),

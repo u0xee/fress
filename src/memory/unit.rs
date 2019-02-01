@@ -9,7 +9,8 @@
 use std::fmt;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
 use memory::*;
-use value::*;
+use value::Value;
+use handle::Handle;
 
 /// A Unit is one processor word. Here, 64 or 32 bits.
 
@@ -59,8 +60,8 @@ impl Unit {
         Segment::from(self)
     }
 
-    pub fn value_unit(self) -> ValueUnit {
-        ValueUnit::from(self)
+    pub fn handle(self) -> Handle {
+        Handle::from(self)
     }
 }
 

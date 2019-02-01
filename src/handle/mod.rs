@@ -11,13 +11,13 @@ use dispatch::*;
 use value::*;
 
 #[derive(Copy, Clone)]
-pub struct ValueUnit {
+pub struct Handle {
     pub unit: Unit,
 }
 
-impl ValueUnit {
+impl Handle {
     pub fn value(self) -> Value {
-        Value::from(self)
+        Value { handle: self }
     }
 
     pub fn segment(self) -> Segment {
@@ -88,7 +88,7 @@ impl ValueUnit {
         mechanism::as_dispatch(&p).tear_down(prism);
     }
 
-    pub fn eq(self, other: ValueUnit) -> bool {
+    pub fn eq(self, other: Handle) -> bool {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -119,68 +119,68 @@ impl ValueUnit {
         }
     }
 
-    pub fn conj(self, x: ValueUnit) -> ValueUnit {
+    pub fn conj(self, x: Handle) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            mechanism::as_dispatch(&p).conj(prism, x.unit).value_unit()
+            mechanism::as_dispatch(&p).conj(prism, x.unit).handle()
         } else {
             unimplemented!()
         }
     }
 
-    pub fn pop(self) -> ValueUnit {
+    pub fn pop(self) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let (v, _) = mechanism::as_dispatch(&p).pop(prism);
-            v.value_unit()
+            v.handle()
         } else {
             unimplemented!()
         }
     }
 
-    pub fn assoc(self, k: ValueUnit, v: ValueUnit) -> ValueUnit {
+    pub fn assoc(self, k: Handle, v: Handle) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let (v, replaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
-            replaced.value_unit().retire();
-            v.value_unit()
+            replaced.handle().retire();
+            v.handle()
         } else {
             unimplemented!()
         }
     }
 
-    pub fn get(self, k: ValueUnit) -> ValueUnit {
+    pub fn get(self, k: Handle) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let v = mechanism::as_dispatch(&p).get(prism, k.unit);
-            v.value_unit()
+            v.handle()
         } else {
             unimplemented!()
         }
     }
 
-    pub fn nth(self, idx: u32) -> ValueUnit {
+    pub fn nth(self, idx: u32) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let elem = mechanism::as_dispatch(&p).nth(prism, idx);
-            elem.value_unit()
+            elem.handle()
         } else {
             unimplemented!()
         }
     }
 
-    pub fn num(x: u32) -> ValueUnit {
+    pub fn num(x: u32) -> Handle {
         let y = x << 4;
-        Unit::from(y | 1).value_unit()
+        Unit::from(y | 1).handle()
     }
 }
 
-impl fmt::Display for ValueUnit {
+impl fmt::Display for Handle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_ref() {
             let prism = self.prism();
@@ -192,7 +192,7 @@ impl fmt::Display for ValueUnit {
     }
 }
 
-impl fmt::Debug for ValueUnit {
+impl fmt::Debug for Handle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_ref() {
             let prism = self.prism();
@@ -204,17 +204,18 @@ impl fmt::Debug for ValueUnit {
     }
 }
 
-impl From<Unit> for ValueUnit {
+impl From<Unit> for Handle {
     fn from(u: Unit) -> Self {
-        ValueUnit { unit: u }
+        Handle { unit: u }
     }
 }
 
-impl From<Value> for ValueUnit {
+impl From<Value> for Handle {
     fn from(v: Value) -> Self {
-        let ret = ValueUnit { unit: v.handle };
+        let ret = v.handle;
         use std::mem::forget;
         forget(v);
         ret
     }
 }
+

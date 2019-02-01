@@ -21,7 +21,7 @@ pub fn get_child(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
             let idx = p.keys_below(chunk);
             let key_idx = address(child_count, idx, has_vals);
             let k2 = c.get(key_idx);
-            return if k.value_unit().eq(k2.value_unit()) {
+            return if k.handle().eq(k2.handle()) {
                 Some(c.line_at(key_idx))
             } else {
                 None
@@ -34,7 +34,7 @@ pub fn get_child(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
     let c = child_pop[1].segment();
     for i in 0..key_count {
         let k2 = c.get(i << has_vals);
-        if k.value_unit().eq(k2.value_unit()) {
+        if k.handle().eq(k2.handle()) {
             return Some(c.line_at(i << has_vals));
         }
     }
@@ -53,7 +53,7 @@ pub fn get(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Option<Anc
         let idx = p.keys_below(chunk);
         let root_idx = address(child_count, idx, has_vals);
         let k2 = guide.root.get(root_idx as i32);
-        if k.value_unit().eq(k2.value_unit()) {
+        if k.handle().eq(k2.handle()) {
             Some(guide.root.offset(root_idx as i32))
         } else {
             None

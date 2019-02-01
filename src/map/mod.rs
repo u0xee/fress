@@ -45,7 +45,7 @@ impl Map {
     }
 
     pub fn new_value() -> Value {
-        Map::new().value_unit().value()
+        Map::new().handle().value()
     }
 }
 
@@ -69,7 +69,7 @@ impl Distinguish for Map {}
 
 impl Aggregate for Map {
     fn get(&self, prism: AnchoredLine, k: Unit) -> Unit {
-        let h = k.value_unit().hash();
+        let h = k.handle().hash();
         if let Some(key_line) = get::get(prism, k, h, 1) {
             key_line[1]
         } else {
@@ -80,7 +80,7 @@ impl Aggregate for Map {
 impl Sequential for Map {}
 impl Associative for Map {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
-        let h = k.value_unit().hash();
+        let h = k.handle().hash();
         let (g, key_slot) = assoc::assoc(prism, k, h, 1);
         match key_slot {
             Ok(new_slot) => {

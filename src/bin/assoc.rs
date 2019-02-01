@@ -6,28 +6,20 @@
 // You must not remove this notice, or any other, from this software.
 
 extern crate fress_rust;
-use fress_rust::value::{Value, ValueUnit};
+use fress_rust::value::Value;
 use fress_rust::integral::Integral;
 use fress_rust::map::Map;
 use fress_rust::map::pop::Pop;
 use fress_rust::memory::segment;
 
 fn main() {
-    /*
-    let x = Integral::new(7);
-    let y = Integral::new(10 - 3).value_unit();
-    println!("Seven is {}. #{:08X}", x.value_unit(), x.value_unit().hash());
-    println!("Y #{:08X}", y.hash());
-    println!("x is == to y: {}", x.value_unit().eq(y));
-    */
-
     let (new_a, free_a) = segment::new_free_counts();
 
     let limit = 1000;
-    let mut m = Map::new().value_unit();
+    let mut m = Map::new().handle();
     for i in 0..limit {
-        let k = Integral::new(i).value_unit();
-        let v = Integral::new(i + 1).value_unit();
+        let k = Integral::new(i).handle();
+        let v = Integral::new(i + 1).handle();
         m = m.assoc(k, v);
         //println!("#Associated {:2} to {:2}", i, i + 1);
     }
@@ -38,7 +30,7 @@ fn main() {
         println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
     for i in 0..limit {
-        let k = Integral::new(i).value_unit();
+        let k = Integral::new(i).handle();
         let v = m.get(k);
         print!("{} {}, ", k, v);
         k.retire();

@@ -34,8 +34,8 @@ pub fn child_assoc(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u3
             let child_count = p.child_count();
             let idx = p.keys_below(chunk);
             let key_idx = address(child_count, idx, has_vals);
-            let k2 = c.get(key_idx).value_unit();
-            if k.value_unit().eq(k2) {
+            let k2 = c.get(key_idx).handle();
+            if k.handle().eq(k2) {
                 return Err(c.line_at(key_idx));
             } else {
                 let (coll_pop, coll_child, key_slot) = collision_stalk(
@@ -86,8 +86,8 @@ pub fn chaining_assoc(mut child_pop: AnchoredLine, k: Unit, has_vals: u32)
         }
     };
     for i in 0..key_count {
-        let k2 = c.get(i << has_vals).value_unit();
-        if k.value_unit().eq(k2) {
+        let k2 = c.get(i << has_vals).handle();
+        if k.handle().eq(k2) {
             return Err(c.line_at(i << has_vals));
         }
     }
@@ -189,8 +189,8 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
         let child_count = p.child_count();
         let idx = p.keys_below(chunk);
         let root_idx = address(child_count, idx, has_vals);
-        let k2 = guide.root.get(root_idx as i32).value_unit();
-        if k.value_unit().eq(k2) {
+        let k2 = guide.root.get(root_idx as i32).handle();
+        if k.handle().eq(k2) {
             (guide, Err(guide.root.offset(root_idx as i32)))
         } else {
             let (coll_pop, coll_child, key_slot) = collision_stalk(

@@ -73,13 +73,13 @@ impl Distinguish for Integral {
     }
 
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering {
-        let o = other.value_unit();
+        let o = other.handle();
         if !o.is_ref() {
             return Ordering::Greater
         }
         if o.type_sentinel() == (& INTEGRAL_SENTINEL) as *const u8 {
             let x = hydrate(prism);
-            let y = hydrate(other.value_unit().prism());
+            let y = hydrate(other.handle().prism());
             return x.cmp(&y)
         }
         ((& INTEGRAL_SENTINEL) as *const u8).cmp(&o.type_sentinel())

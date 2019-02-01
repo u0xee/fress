@@ -10,6 +10,7 @@
 pub mod dispatch;
 pub mod edn;
 pub mod fuzz;
+pub mod handle;
 pub mod hash;
 pub mod integral;
 pub mod keyword;

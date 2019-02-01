@@ -6,7 +6,8 @@
 // You must not remove this notice, or any other, from this software.
 
 extern crate fress_rust;
-use fress_rust::value::{Value, ValueUnit};
+use fress_rust::value::Value;
+use fress_rust::handle::Handle;
 use fress_rust::vector::Vector;
 
 fn main() {
@@ -16,20 +17,20 @@ fn main() {
     let (new_a, free_a) = segment::new_free_counts();
 
     let count = 20000;
-    let mut v = Vector::new().value_unit();
+    let mut v = Vector::new().handle();
     /*
-    let mut z = Vector::new().value_unit();
+    let mut z = Vector::new().handle();
     for i in 0..10 {
-        z = z.conj(Integral::new(i).value_unit());
+        z = z.conj(Integral::new(i).handle());
     }
     z.tear_down();
     */
     for i in 0..count {
-        v = v.conj(Integral::new(i).value_unit());
+        v = v.conj(Integral::new(i).handle());
     }
     v.split();
     let mut w = v;
-    w = w.conj(Integral::new(5).value_unit());
+    w = w.conj(Integral::new(5).handle());
     {
         let (new_b, free_b) = segment::new_free_counts();
         let new_diff = new_b - new_a;
@@ -37,7 +38,7 @@ fn main() {
         println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
     for i in 0..(count - 5) {
-        v = v.assoc(ValueUnit::num(i as u32), Integral::new(20).value_unit());
+        v = v.assoc(Handle::num(i as u32), Integral::new(20).handle());
     }
     {
         v.retire();

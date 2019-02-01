@@ -181,7 +181,6 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
              -> (Guide, Result<AnchoredLine, AnchoredLine>) {
     let guide = unaliased_root(Guide::hydrate(prism), has_vals);
     let p = Pop::from(guide.root[-1]);
-    //println!("Count: {:2} {:?}", guide.count, p);
     let chunk = hash & MASK;
     if p.has_child(chunk) {
         let child_pop = guide.root.offset((p.children_below(chunk) << 1) as i32);

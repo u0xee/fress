@@ -5,32 +5,13 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-//! A cohesive fressian library for rust
+use super::*;
 
-pub mod dispatch;
-pub mod edn;
-pub mod fuzz;
-pub mod hash;
-pub mod integral;
-pub mod keyword;
-pub mod list;
-pub mod map;
-pub mod memory;
-pub mod random;
-pub mod rational;
-pub mod set;
-pub mod sorted_map;
-pub mod sorted_set;
-pub mod string;
-pub mod symbol;
-pub mod transducer;
-pub mod value;
-pub mod vector;
-
-pub use value::Value;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
+pub fn dissoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
+              -> (Guide, AnchoredLine) {
+    unimplemented!()
 }
+
+// find a key, remove it, possibly shrink child
+// inverse of collision
+//

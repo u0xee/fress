@@ -11,6 +11,7 @@ use memory::*;
 use dispatch::*;
 use Value;
 
+
 pub trait Process {
     fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
         let (next, rest) = process_stack.split_last_mut().unwrap();
@@ -24,92 +25,6 @@ pub trait Process {
         let (next, rest) = process_stack.split_last_mut().unwrap();
         next.last_call(rest)
     }
-}
-
-pub struct Pass {}
-
-impl Process for Pass {}
-
-pub struct Map<F, Next> {
-    pub function: F,
-    pub next: Next,
-}
-
-impl<F: Fn(&Value) -> Value, Next: Process> Process for Map<F, Next> {
-    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
-        let x = (self.function)(v);
-        self.next.ingest(process_stack, &x)
-    }
-    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
-        self.next.last_call(process_stack)
-    }
-}
-
-pub struct Xf<F> {
-    pub new_process: F,
-}
-
-impl<F: 'static + Fn() -> Box<Process>> Transducer for Xf<F> {
-    fn process(&self) -> Box<Process> {
-        (self.new_process)()
-    }
-}
-
-impl<F: 'static + Fn() -> Box<Process>> Xf<F> {
-    pub fn new(f: F) -> Arc<Transducer> {
-        Arc::new(Xf { new_process: f })
-    }
-}
-
-//pub fn vec_into_vec(vals: Vec<Value>, )
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn map1() {
-        let m = Map { function: |x: &Value| x.add_one_test(), next: Pass {} };
-
-
-        /*let t = Xf::new(move || {
-            let b: Box<Process> = Box::new(m);
-            b
-        });
-        */
-    }
-}
-
-pub trait Transducer {
-    fn process(&self) -> Box<Process>;
-    fn transduce(&self, mut process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
-        process_stack.push(self.process());
-        process_stack
-    }
-    fn info(&self) -> Option<String> {
-        None
-    }
-}
-
-
-pub struct Transducers {
-    pub stack: Arc<Vec<Arc<Transducer>>>,
-}
-
-impl Transducers {
-    pub fn new() -> Transducers {
-        Transducers { stack: Vec::new().into() }
-    }
-
-    pub fn add_transducer(&mut self, t: Arc<Transducer>) {
-        Arc::make_mut(&mut self.stack).push(t)
-    }
-}
-
-pub fn apply(ts: &Transducers, mut process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
-    for t in ts.stack.iter().rev() {
-        process_stack = t.transduce(process_stack);
-    }
-    process_stack
 }
 
 pub fn ingest(process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
@@ -127,7 +42,87 @@ pub fn last_call(process_stack: &mut [Box<Process>]) -> Value {
     top.last_call(rest)
 }
 
+pub struct Pass {}
+impl Process for Pass {}
+
+pub struct Map<F, Next> {
+    pub function: F,
+    pub next: Next,
+}
+
+impl<F: Fn(&Value) -> Value, Next: Process> Process for Map<F, Next> {
+    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+        let x = (self.function)(v);
+        self.next.ingest(process_stack, &x)
+    }
+    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+        self.next.last_call(process_stack)
+    }
+}
 
 
+
+pub struct Xf<F> {
+    pub new_process: F,
+}
+
+impl<F: 'static + Fn() -> Box<Process>> Transducer for Xf<F> {
+    fn process(&self) -> Box<Process> {
+        (self.new_process)()
+    }
+}
+
+impl<F: 'static + Fn() -> Box<Process>> Xf<F> {
+    pub fn new(f: F) -> Arc<Transducer> {
+        Arc::new(Xf { new_process: f })
+    }
+}
+
+
+pub trait Transducer {
+    fn process(&self) -> Box<Process>;
+    fn transduce(&self, mut process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
+        process_stack.push(self.process());
+        process_stack
+    }
+    fn info(&self) -> Option<String> {
+        None
+    }
+}
+
+pub struct Transducers {
+    pub stack: Arc<Vec<Arc<Transducer>>>,
+}
+
+impl Transducers {
+    pub fn new() -> Transducers {
+        Transducers { stack: Vec::new().into() }
+    }
+
+    pub fn add_transducer(&mut self, t: Arc<Transducer>) {
+        Arc::make_mut(&mut self.stack).push(t)
+    }
+
+    pub fn apply(&self, mut process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
+        for t in self.stack.iter().rev() {
+            process_stack = t.transduce(process_stack);
+        }
+        process_stack
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn map1() {
+        let m = Map { function: |x: &Value| x.add_one_test(), next: Pass {} };
+        /*let t = Xf::new(move || {
+            let b: Box<Process> = Box::new(m);
+            b
+        });
+        */
+    }
+}
 
 

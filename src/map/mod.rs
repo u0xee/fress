@@ -14,8 +14,10 @@ use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
 pub mod assoc;
+use self::assoc::unaliased_root;
 pub mod get;
 pub mod tear_down;
+pub mod dissoc;
 
 pub const BITS: u32 = 5; // one of 5 (for 64 bit words) or 4 (for 32 bit words; fine for 64 bit too)
 pub const ARITY: u32 = 1 << BITS;
@@ -101,6 +103,9 @@ impl Associative for Map {
 impl Reversible for Map {}
 impl Sorted for Map {}
 impl Named for Map {}
+
+// reduce, fold, into, iter, channels
+// edn,fressian->reduce
 
 impl Notation for Map {}
 

@@ -139,6 +139,16 @@ impl Handle {
         }
     }
 
+    pub fn contains(self, k: Handle) -> bool {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).contains(prism, k.unit())
+        } else {
+            unimplemented!()
+        }
+    }
+
     pub fn conj(self, x: Handle) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
@@ -166,6 +176,17 @@ impl Handle {
             let p = prism[0];
             let (v, replaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
             replaced.handle().retire();
+            v.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn dissoc(self, k: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let v = mechanism::as_dispatch(&p).dissoc(prism, k.unit);
             v.handle()
         } else {
             unimplemented!()
@@ -207,7 +228,15 @@ impl fmt::Display for Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).edn(prism, f)
         } else {
-            write!(f, "{}", self.unit.u32() >> 4)
+            if self.unit == Handle::NIL {
+                write!(f, "nil")
+            } else if self.unit == Handle::FALSE {
+                write!(f, "false")
+            } else if self.unit == Handle::TRUE {
+                write!(f, "true")
+            } else {
+                write!(f, "{}", self.unit.u32() >> 4)
+            }
         }
     }
 }
@@ -219,7 +248,7 @@ impl fmt::Debug for Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).debug(prism, f)
         } else {
-            write!(f, "{}", self.unit.u32() >> 4)
+            write!(f, "Handle[0x{:X}]", self.unit.u())
         }
     }
 }

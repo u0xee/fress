@@ -13,6 +13,7 @@ use fress_rust::map::pop::Pop;
 use fress_rust::memory::segment;
 
 fn main() {
+    // try with splitting
     let (new_a, free_a) = segment::new_free_counts();
 
     let limit = 1000;
@@ -29,13 +30,19 @@ fn main() {
         let free_diff = free_b - free_a;
         println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
-    for i in 0..limit {
-        let k = Integral::new(i).handle();
-        let v = m.get(k);
-        print!("{} {}, ", k, v);
+    {
+        let k = Integral::new(50).handle();
+        println!("Contains 50 {}", m.contains(k));
         k.retire();
     }
-    println!();
+    for i in 0..limit {
+        let k = Integral::new(i).handle();
+        //let v = m.get(k);
+        m = m.dissoc(k);
+        //print!("{} {}, ", k, v);
+        k.retire();
+    }
+    println!("Map count: {}", m.count());
 
     m.retire();
     {

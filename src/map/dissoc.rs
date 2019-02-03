@@ -168,7 +168,7 @@ pub fn dissoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Guide {
                 Segment::free(c);
                 ret
             };
-            let after = child_pop.index + 2;
+            let after = (p.children_below(chunk) + 1) << 1;
             let pos = address(p.child_count(), p.keys_below(chunk), has_vals);
             g.root.offset(after as i32).span(pos - after).shift_down(2);
             g.root.set(pos as i32 - 2, k);

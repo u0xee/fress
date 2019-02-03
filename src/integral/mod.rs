@@ -11,8 +11,6 @@ use dispatch::*;
 
 pub static INTEGRAL_SENTINEL: u8 = 0;
 
-// create*, print*, hash*, equal*, tear_down*
-
 pub struct Integral {
     prism: Unit,
 }

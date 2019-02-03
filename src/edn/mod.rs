@@ -34,7 +34,7 @@ use handle::Handle;
 // string, dispatch char, aggregate controls, digit +-, comment, char, symbol/keyword, invalid
 // simple tests: comment, string, char, dispatch char
 // varied: aggregate controls, digit +-, symbol/kw
-
+/*
 
 pub enum ReadResult {
     Ok(Value, u32),
@@ -52,29 +52,82 @@ impl EdnReader {
         EdnReader { pending: Vec::new(), partial: None }
     }
 
-    pub fn read(&mut self, bs: &[u8]) -> ReadResult {
-        // if partial, try parsing it now with more input
-        'start: loop {
-            // chew up ws
-            // dispatch based on first character
-            // match on dispatch enum
-
+    pub fn read(&mut self, bytes: &[u8]) -> ReadResult {
+        if self.partial.is_some() {
+            unimplemented!()
         }
+
+        let mut bs = bytes;
+        let mut curr = 0usize;
+        let mut ready = Handle::nil();
+        'start: loop { 'ready: loop {
+            while whitespace(bs[curr]) {
+                curr += 1;
+            }
+            // dispatch based on first character
+        } // ready
+            if let Some(p) = self.pending.pop() {
+                match p {
+                    Pending::List(h)       => {self.pending.push(Pending::List(h.conj(ready)))},
+                    Pending::Vector(h)     => {self.pending.push(Pending::Vector(h.conj(ready)))},
+                    Pending::Set(h)        => {self.pending.push(Pending::Set(h.conj(ready)))},
+                    Pending::Map(h)        => {unreachable!()},
+                    Pending::Mapping       => {self.pending.push(Pending::MappingKey(ready))},
+                    Pending::MappingKey(h) => {
+                        unimplemented!()
+                    },
+                    Pending::Tagged        => {self.pending.push(Pending::Tag(ready))},
+                    Pending::Tag(h)        => {unimplemented!() },
+                }
+            } else {
+                return ReadResult::Ok(ready.value(), curr);
+            }
+        }
+        unimplemented!()
     }
 
     pub fn finish(&mut self) -> ReadResult {
-        // if pending, error
-        // if partial bytes, add ending whitespace, parse
-        unimplemented!()
-        // call read with whitespace, map result:
-        // Ok -> Ok, Error -> Error
-        // NeedMore -> Error (and reset partial/pending)
+        let res = {
+            let res = self.read(&b" "[..]);
+            match res {
+                ReadResult::NeedMore => ReadResult::Error { line: 0, description: "".to_string() },
+                _ => res,
+            }
+        };
+        self.partial = None;
+        self.pending.clear();
+        res
     }
 }
 
+pub const SPECIAL:   (u64, u64) = (0x0800_030C_0000_0000, 0x2800_0000_3800_0000); // "#();[\]{}
+pub const NUM_NAME:  (u64, u64) = (0xF7FF_EC72_0000_0000, 0x17FF_FFFE_87FF_FFFE); // alphanum .*+!-_?$%&=<>|:/
+pub const DELIMITER: (u64, u64) = (0x0800_1301_FFFF_FFFF, 0xA800_0000_2800_0000); // WS (),;[]{}
+
+pub fn digit(b: u8) -> bool {
+    b'0' <= b && b <= b'9'
+}
+
+pub fn whitespace(b: u8) -> bool {
+    b.wrapping_add(1) < b'"' || b == b','
+}
+
+pub fn ascii(b: u8) -> bool {
+    (b & 0x80) == 0x00
+}
+
+pub fn get_bit(x: u64, y: u64, idx: u8) -> u32 {
+    let z = x ^ y;
+    let word_idx = idx & 0x3F;
+    let x_ = (x >> word_idx) as u32;
+    let z_ = (z >> word_idx) as u32;
+    let masked = z_ & (idx as u32 >> 6);
+    (masked ^ x_) & 0x01
+}
+
 pub enum Partial {
-    Bytes(Vec<u8>),
-    String(Handle),
+    Byt(Vec<u8>),
+    Str(Handle),
 }
 
 pub enum Pending {
@@ -88,3 +141,4 @@ pub enum Pending {
     Tag(Handle),
 }
 
+*/

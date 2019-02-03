@@ -18,7 +18,7 @@ pub fn assoc(prism: AnchoredLine, idx: u32, x: Unit) -> (Unit, Unit) {
                 assoc_tailed(guide, idx, x)
             }
         },
-        Ordering::Equal   => { (super::conj::conj(prism, x), Value::NIL) },
+        Ordering::Equal   => { (super::conj::conj(prism, x), Handle::nil().unit()) },
         Ordering::Greater => { panic!("Index out of bounds: {} in vector of count {}", idx, guide.count); }
     }
 }

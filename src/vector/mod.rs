@@ -9,6 +9,7 @@ use std::fmt;
 use memory::*;
 use dispatch::*;
 use value::*;
+use handle::Handle;
 
 pub mod guide;
 use self::guide::Guide;

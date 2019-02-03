@@ -14,9 +14,7 @@ pub struct Value {
 }
 
 impl Value {
-    pub const NIL: Unit = Unit { word: 0x07 };
-    pub const TRUE: Unit = Unit { word: !0x00usize };
-    pub const FALSE: Unit = Unit { word: !0x08usize };
+
 
     fn consume(self) -> Handle {
         Handle::from(self)

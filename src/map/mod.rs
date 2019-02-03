@@ -9,6 +9,7 @@ use std::fmt;
 use memory::*;
 use dispatch::*;
 use value::*;
+use handle::Handle;
 
 use vector::guide::Guide;
 pub mod pop;
@@ -73,7 +74,7 @@ impl Aggregate for Map {
         if let Some(key_line) = get::get(prism, k, h, 1) {
             key_line[1]
         } else {
-            Value::NIL
+            Handle::nil().unit
         }
     }
 }
@@ -86,7 +87,7 @@ impl Associative for Map {
             Ok(new_slot) => {
                 new_slot.set(0, k);
                 new_slot.set(1, v);
-                (g.inc_count().store().segment().unit(), Value::NIL)
+                (g.inc_count().store().segment().unit(), Handle::nil().unit())
             },
             Err(old_slot) => {
                 let prev = old_slot[1];
@@ -97,7 +98,9 @@ impl Associative for Map {
     }
 
     fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
-        unimplemented!()
+        let h = k.handle().hash();
+        let g = dissoc::dissoc(prism, k, h, 1);
+
     }
 }
 impl Reversible for Map {}

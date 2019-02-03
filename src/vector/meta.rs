@@ -12,7 +12,7 @@ pub fn meta(prism: AnchoredLine) -> Unit {
     if guide.has_meta() {
         guide.meta_line()[0]
     } else {
-        Value::NIL
+        Handle::nil().unit()
     }
 }
 

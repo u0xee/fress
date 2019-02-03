@@ -16,8 +16,28 @@ pub struct Handle {
 }
 
 impl Handle {
+    pub const NIL: Unit = Unit { word: 0x07 };
+    pub const TRUE: Unit = Unit { word: !0x00usize };
+    pub const FALSE: Unit = Unit { word: !0x08usize };
+
+    pub fn nil() -> Handle {
+        Handle::from(Handle::NIL)
+    }
+
+    pub fn tru() -> Handle {
+        Handle::from(Handle::TRUE)
+    }
+
+    pub fn fals() -> Handle {
+        Handle::from(Handle::FALSE)
+    }
+
     pub fn value(self) -> Value {
         Value { handle: self }
+    }
+
+    pub fn unit(self) -> Unit {
+        self.unit
     }
 
     pub fn segment(self) -> Segment {

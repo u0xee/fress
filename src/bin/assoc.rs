@@ -13,38 +13,43 @@ use fress_rust::map::pop::Pop;
 use fress_rust::memory::segment;
 
 fn main() {
-    // try with splitting
     let (new_a, free_a) = segment::new_free_counts();
 
     let limit = 1000;
     let mut m = Map::new().handle();
+
     for i in 0..limit {
         let k = Integral::new(i).handle();
         let v = Integral::new(i + 1).handle();
         m = m.assoc(k, v);
-        //println!("#Associated {:2} to {:2}", i, i + 1);
     }
+
     {
         let (new_b, free_b) = segment::new_free_counts();
         let new_diff = new_b - new_a;
         let free_diff = free_b - free_a;
         println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
-    {
-        let k = Integral::new(50).handle();
-        println!("Contains 50 {}", m.contains(k));
-        k.retire();
-    }
-    for i in 0..limit {
-        let k = Integral::new(i).handle();
-        //let v = m.get(k);
-        m = m.dissoc(k);
-        //print!("{} {}, ", k, v);
-        k.retire();
-    }
-    println!("Map count: {}", m.count());
 
+    let ma = m;
+    m.split();
+
+    for i in 0..(limit >> 1) {
+        let k = Integral::new(i).handle();
+        let v = Integral::new(i + 2).handle();
+        m = m.assoc(k, v);
+    }
+
+    for i in (limit >> 2)..(limit - (limit >> 2)) {
+        let k = Integral::new(i).handle();
+        let v = m.get(k);
+        print!("{} {}, ", k, v);
+        k.retire();
+    }
+
+    ma.retire();
     m.retire();
+
     {
         let (new_b, free_b) = segment::new_free_counts();
         let new_diff = new_b - new_a;

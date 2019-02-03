@@ -20,7 +20,9 @@ pub mod get;
 pub mod tear_down;
 pub mod dissoc;
 
-pub const BITS: u32 = 4; // one of 5 (for 64 bit words) or 4 (for 32 bit words; fine for 64 bit too)
+// 4 -> sixteen    way branches; 32 or 64 bit words
+// 5 -> thirty-two way branches;       64 bit words
+pub const BITS: u32 = 4; // one of 4 or 5
 pub const ARITY: u32 = 1 << BITS;
 pub const NODE_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
@@ -101,6 +103,7 @@ impl Associative for Map {
                 (g.inc_count().store().segment().unit(), Handle::nil().unit())
             },
             Err(old_slot) => {
+                k.handle().retire();
                 let prev = old_slot[1];
                 old_slot.set(1, v);
                 (g.clear_hash().store().segment().unit(), prev)

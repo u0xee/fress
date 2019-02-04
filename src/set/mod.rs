@@ -104,7 +104,6 @@ impl Associative for Set {
 
 impl Reversible for Set {}
 impl Sorted for Set {}
-impl Named for Set {}
 impl Notation for Set {}
 
 

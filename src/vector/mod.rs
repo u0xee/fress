@@ -149,8 +149,6 @@ impl Associative for Vector {
 
 impl Reversible for Vector {}
 impl Sorted for Vector {}
-impl Named for Vector {}
-
 impl Notation for Vector {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         unimplemented!()

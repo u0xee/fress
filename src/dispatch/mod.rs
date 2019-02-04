@@ -20,8 +20,7 @@ Aggregate +
 Sequential +
 Associative +
 Reversible +
-Sorted +
-Named {
+Sorted {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
     fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
@@ -70,10 +69,5 @@ pub trait Reversible {
 
 pub trait Sorted {
     fn subrange(&self, prism: AnchoredLine, start: Unit, end: Unit) -> Unit { unimplemented!() }
-}
-
-pub trait Named {
-    fn name(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
-    fn namespace(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 

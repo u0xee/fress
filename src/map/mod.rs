@@ -119,7 +119,6 @@ impl Associative for Map {
 }
 impl Reversible for Map {}
 impl Sorted for Map {}
-impl Named for Map {}
 
 // reduce, fold, into, iter, channels
 // edn,fressian->reduce

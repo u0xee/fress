@@ -108,7 +108,6 @@ impl Associative for List {
 
 impl Reversible for List {}
 impl Sorted for List {}
-impl Named for List {}
 impl Notation for List {}
 
 #[cfg(test)]

@@ -92,7 +92,6 @@ impl Associative for Integral { }
 
 impl Reversible for Integral {}
 impl Sorted for Integral {}
-impl Named for Integral {}
 
 impl Notation for Integral {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {

@@ -14,8 +14,6 @@ pub struct Value {
 }
 
 impl Value {
-
-
     fn consume(self) -> Handle {
         Handle::from(self)
     }
@@ -60,35 +58,39 @@ impl PartialEq for Value {
 #[cfg(test)]
 mod test {
     use super::*;
-    /*
-    #[test]
-    fn is_immediate() {
-        assert!(Value {handle: 7}.is_immediate())
-    }
-
-    #[test]
-    fn is_not() {
-        assert!(Value::NIL.is_not() && Value::FALSE.is_not())
-    }
-
-    #[test]
-    fn is_so() {
-        assert!(Value {handle: 0}.is_so())
-    }
-
-    #[test]
-    fn is_nil() {
-        assert!(Value {handle: 7}.is_nil())
-    }
-
-    #[test]
-    fn is_true() {
-        assert!(Value {handle: !0}.is_true())
-    }
-
-    #[test]
-    fn is_false() {
-        assert!(Value {handle: !0 - 8}.is_false())
-    }
-    */
 }
+
+// Value handle - bit patterns:
+//
+// !(handle | 0x08) => 0, boolean
+// 0xFFFFFFFFFFFFFFFF true
+// 0xFFFFFFFFFFFFFFF7 false
+//
+// End in 0b0111, logically negative
+// 0x0000000000000007 nil
+// 0xFFFFFFFFFFFFFFF7 false
+//
+// End in 0b011
+// 0xXXXXXXXX00000003 char
+// 0xXXXXXXXXXXXXXXLB string, L holds count
+//
+// End in 0b001
+// 0xXXXXXXXXXXXXXXX1 integral
+// 0xXXXXXXXXXXXXXXX9 FloatPoint
+//
+// Even handles (rightmost bit of 0) are pointers.
+// They point to segments that have a distributor as the first unit.
+
+//struct MapValue {}
+//struct SetValue {}
+//struct SortedMapValue {}
+//struct SortedSetValue {}
+//struct VectorValue {}
+//struct ListValue {}
+//struct StringValue {}
+//struct Boolean {}
+//struct Symbol {}
+//struct Keyword {}
+//struct Integral {}
+//struct Rational {}
+//struct FloatPoint {}

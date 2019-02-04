@@ -9,6 +9,8 @@
 
 pub mod dispatch;
 pub mod edn;
+pub mod float_point;
+pub mod fressian;
 pub mod fuzz;
 pub mod handle;
 pub mod hash;

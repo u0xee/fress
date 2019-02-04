@@ -7,21 +7,25 @@
 
 extern crate fress_rust;
 use fress_rust::value::Value;
+use fress_rust::handle::Handle;
 use fress_rust::integral::Integral;
 use fress_rust::map::Map;
+use fress_rust::set::Set;
 use fress_rust::map::pop::Pop;
 use fress_rust::memory::segment;
 
 fn main() {
     let (new_a, free_a) = segment::new_free_counts();
 
-    let limit = 1000;
-    let mut m = Map::new().handle();
+    let limit = 100_000;
+    let mut s = Set::new().handle();
 
     for i in 0..limit {
+        if i % 4 == 0 {
+            continue
+        }
         let k = Integral::new(i).handle();
-        let v = Integral::new(i + 1).handle();
-        m = m.assoc(k, v);
+        s = s.conj(k);
     }
 
     {
@@ -31,6 +35,7 @@ fn main() {
         println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
 
+    /*
     let ma = m;
     m.split();
 
@@ -48,13 +53,30 @@ fn main() {
     }
 
     ma.retire();
-    m.retire();
+    */
+    let sa = s;
+    s.split();
+
+    for i in 50..90 {
+        let k = Integral::new(i).handle();
+        s = s.dissoc(k);
+        k.retire();
+    }
+
+    for i in 0..100 {
+        let k = Integral::new(i).handle();
+        println!("Contains {}: {}", i, s.contains(k));
+        k.retire();
+    }
+
+    s.retire();
+    sa.retire();
 
     {
         let (new_b, free_b) = segment::new_free_counts();
         let new_diff = new_b - new_a;
         let free_diff = free_b - free_a;
-        println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
+        println!("\nNew diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
 }
 

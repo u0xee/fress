@@ -11,6 +11,13 @@ use memory::*;
 use dispatch::*;
 use Value;
 
+// Model:
+// Transducer -> [Transducers] stack
+// Process stack [reduce base]
+// Transducers stack -> Process Stack -> Ready Process Stack
+// Ready Stack ingest value, value, ...
+// Last call.
+
 
 pub trait Process {
     fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {

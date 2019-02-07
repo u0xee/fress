@@ -23,6 +23,9 @@ impl Line {
     pub fn offset(&self, x: isize) -> Line {
         Line { line: unsafe { self.line.offset(x) } }
     }
+    pub fn star(self) -> *const Unit {
+        self.line
+    }
 }
 
 impl From<Unit> for Line {

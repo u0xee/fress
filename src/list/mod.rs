@@ -65,6 +65,9 @@ impl Aggregate for List {
         let guide = Guide::hydrate(prism);
         guide.count
     }
+    fn empty(&self, prism: AnchoredLine) -> Unit {
+        List::new()
+    }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
         vector::conj::conj(prism, x)
     }
@@ -80,12 +83,12 @@ impl Aggregate for List {
 }
 
 impl Sequential for List {
-    fn nth(&self, prism: AnchoredLine, idx: u32) -> Unit {
+    fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit {
         let guide = Guide::hydrate(prism);
         if idx >= guide.count {
             panic!("Index out of bounds: {} in list of count {}", idx, guide.count);
         }
-        vector::nth::nth(prism, guide.count - 1 - idx)
+        vector::nth::nth(prism, guide.count - 1 - idx).line().star()
     }
 }
 

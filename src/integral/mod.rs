@@ -98,6 +98,11 @@ impl Notation for Integral {
         let x = hydrate(prism);
         write!(f, "{}", x)
     }
+
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let x = hydrate(prism);
+        write!(f, "Integral[{}]", x)
+    }
 }
 
 #[cfg(test)]

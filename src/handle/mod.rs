@@ -15,8 +15,11 @@ pub struct Handle {
     pub unit: Unit,
 }
 
+pub static STATIC_NIL: Unit = Handle::NIL;
+
 impl Handle {
     pub const NIL: Unit = Unit { word: 0x07 };
+
     pub const TRUE: Unit = Unit { word: !0x00usize };
     pub const FALSE: Unit = Unit { word: !0x08usize };
 
@@ -193,26 +196,39 @@ impl Handle {
         }
     }
 
-    pub fn get(self, k: Handle) -> Handle {
+    pub fn get(self, k: Handle) -> *const Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let v = mechanism::as_dispatch(&p).get(prism, k.unit);
-            v.handle()
+            v as *const Handle
         } else {
             unimplemented!()
         }
     }
 
-    pub fn nth(self, idx: u32) -> Handle {
+    pub fn nth(self, idx: u32) -> *const Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let elem = mechanism::as_dispatch(&p).nth(prism, idx);
-            elem.handle()
+            elem as *const Handle
         } else {
             unimplemented!()
         }
+    }
+
+    pub fn add(self, rhs: Handle) -> Handle {
+        // dispatch if applicable, else
+        // primitive arithmetic.
+        // xxxxxxx0
+        // 00 dispatch first
+        // 01 dispatch first
+        // 10 dispatch second
+        // 11 primitive:
+        //
+
+        unimplemented!("Handle add.")
     }
 
     pub fn num(x: u32) -> Handle {

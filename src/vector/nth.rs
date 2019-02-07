@@ -7,22 +7,22 @@
 
 use super::*;
 
-pub fn nth(prism: AnchoredLine, idx: u32) -> Unit {
+pub fn nth(prism: AnchoredLine, idx: u32) -> AnchoredLine {
     let guide = Guide::hydrate(prism);
     if idx >= guide.count {
         panic!("Index out of bounds: {} in vector of count {}", idx, guide.count);
     }
     if guide.count <= TAIL_CAP {
-        guide.root[idx as i32]
+        guide.root.offset(idx as i32)
     } else {
         nth_tailed(guide, idx)
     }
 }
 
-fn nth_tailed(guide: Guide, idx: u32) -> Unit {
+fn nth_tailed(guide: Guide, idx: u32) -> AnchoredLine {
     let tailoff = tailoff(guide.count);
     if idx >= tailoff {
-        guide.root[-1].segment()[idx - tailoff]
+        guide.root[-1].segment().line_at(idx - tailoff)
     } else {
         let digit_count = digit_count(tailoff - 1);
         let mut shift = digit_count * BITS;
@@ -38,6 +38,6 @@ fn nth_tailed(guide: Guide, idx: u32) -> Unit {
             curr = curr[0].segment().line_at(digit);
         }
         assert_eq!(shift, 0);
-        curr[0]
+        curr
     }
 }

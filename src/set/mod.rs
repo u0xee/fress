@@ -10,6 +10,7 @@ use memory::*;
 use dispatch::*;
 use value::*;
 use map;
+use handle;
 use handle::Handle;
 use vector::guide::Guide;
 
@@ -28,7 +29,7 @@ impl Set {
             let mut g = Guide::hydrate_top_bot(prism, 0, 0);
             g
         };
-        guide.root.set(0, map::pop::Pop::new().unit());
+        guide.root.set(-1, map::pop::Pop::new().unit());
         guide.store().segment().unit()
     }
 
@@ -61,12 +62,16 @@ impl Aggregate for Set {
         guide.count
     }
 
-    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit {
+    fn empty(&self, prism: AnchoredLine) -> Unit {
+        Set::new()
+    }
+
+    fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit {
         let h = k.handle().hash();
         if let Some(key_line) = map::get::get(prism, k, h, 0) {
-            k
+            key_line.line().star()
         } else {
-            Handle::nil().unit()
+            (& handle::STATIC_NIL) as *const Unit
         }
     }
 

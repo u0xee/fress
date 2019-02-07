@@ -5,10 +5,13 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+//! Hash array mapped trie, supporting maps and sets.
+
 use std::fmt;
 use memory::*;
 use dispatch::*;
 use value::*;
+use handle;
 use handle::Handle;
 
 use vector::guide::Guide;
@@ -20,16 +23,19 @@ pub mod get;
 pub mod tear_down;
 pub mod dissoc;
 
-// 4 -> sixteen    way branches; 32 or 64 bit words
-// 5 -> thirty-two way branches;       64 bit words
+/// Defines branching factor.
+///
+/// Can be 4 or 5, making for sixteen way branching or thirty-two way branching.<br>
+/// 32-bit platforms can only support sixteen way branching.
 pub const BITS: u32 = 4; // one of 4 or 5
+/// Tree arity, either 16 or 32.
 pub const ARITY: u32 = 1 << BITS;
-pub const NODE_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
 pub const MAX_LEVELS: u32 = (32 + BITS - 1) / BITS;
 
 pub static MAP_SENTINEL: u8 = 0;
 
+/// Map dispatch.
 pub struct Map {
     prism: Unit,
 }
@@ -43,7 +49,7 @@ impl Map {
             let mut g = Guide::hydrate_top_bot(prism, 0, 0);
             g
         };
-        guide.root.set(0, Pop::new().unit());
+        guide.root.set(-1, Pop::new().unit());
         guide.store().segment().unit()
     }
 
@@ -77,12 +83,16 @@ impl Aggregate for Map {
         guide.count
     }
 
-    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit {
+    fn empty(&self, prism: AnchoredLine) -> Unit {
+        Map::new()
+    }
+
+    fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit {
         let h = k.handle().hash();
         if let Some(key_line) = get::get(prism, k, h, 1) {
-            key_line[1]
+            key_line.offset(1).line().star()
         } else {
-            Handle::nil().unit()
+            (& handle::STATIC_NIL) as *const Unit
         }
     }
 }
@@ -133,8 +143,9 @@ pub fn cap_at_arity_width(power: u32) -> u32 {
     power >> (power >> (BITS + 2))
 }
 
-/// Sizes a unit count to a power of two. With BITS as 5,
-/// it returns 8, 16, 32, 64
+/// Sizes a unit count to a power of two.
+///
+/// With BITS as 5, it returns 8, 16, 32, 64.
 pub fn size(unit_count: u32) -> u32 {
     cap_at_arity_width(next_power(unit_count | 0x4))
 }

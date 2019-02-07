@@ -23,7 +23,6 @@ Reversible +
 Sorted {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
     fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
 }
 
 pub trait Identification {
@@ -32,6 +31,7 @@ pub trait Identification {
 }
 
 pub trait Notation {
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
     fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> { unimplemented!() }
 }
@@ -50,11 +50,11 @@ pub trait Aggregate {
     fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { unimplemented!() }
     fn peek(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { unimplemented!() }
-    fn get(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
+    fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit { unimplemented!() }
 }
 
 pub trait Sequential {
-    fn nth(&self, prism: AnchoredLine, idx: u32) -> Unit { unimplemented!() }
+    fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit { unimplemented!() }
 }
 
 pub trait Associative {

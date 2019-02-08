@@ -48,8 +48,8 @@ impl Dispatch for Integral {
 }
 
 impl Identification for Integral {
-    fn type_name(&self) -> String {
-        "Integral".to_string()
+    fn type_name(&self) -> &'static str {
+        "Integral"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -102,6 +102,11 @@ impl Notation for Integral {
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let x = hydrate(prism);
         write!(f, "Integral[{}]", x)
+    }
+}
+impl Numeral for Integral {
+    fn add(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        unimplemented!("YAAAAA")
     }
 }
 

@@ -20,13 +20,14 @@ Aggregate +
 Sequential +
 Associative +
 Reversible +
-Sorted {
+Sorted +
+Numeral {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
     fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 
 pub trait Identification {
-    fn type_name(&self) -> String { unimplemented!() }
+    fn type_name(&self) -> &'static str { unimplemented!() }
     fn type_sentinel(&self) -> *const u8 { unimplemented!() }
 }
 
@@ -46,9 +47,9 @@ pub trait Aggregate {
     fn count(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
     fn empty(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit { unimplemented!() }
-    fn meta(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn meta(&self, prism: AnchoredLine) -> *const Unit { unimplemented!() }
     fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { unimplemented!() }
-    fn peek(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn peek(&self, prism: AnchoredLine) -> *const Unit { unimplemented!() }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { unimplemented!() }
     fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit { unimplemented!() }
 }
@@ -69,5 +70,24 @@ pub trait Reversible {
 
 pub trait Sorted {
     fn subrange(&self, prism: AnchoredLine, start: Unit, end: Unit) -> Unit { unimplemented!() }
+}
+
+pub trait Numeral {
+    fn inc(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn dec(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn add(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn subtract(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+
+    fn multiply(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn divide(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn modulus(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+}
+
+pub trait Binary {
+    fn bit_and(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn bit_or(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn bit_xor(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn bit_shl(&self, prism: AnchoredLine, shift: Unit) -> Unit { unimplemented!() }
+    fn bit_shr(&self, prism: AnchoredLine, shift: Unit) -> Unit { unimplemented!() }
 }
 

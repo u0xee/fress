@@ -49,8 +49,8 @@ impl Dispatch for List {
 }
 
 impl Identification for List {
-    fn type_name(&self) -> String {
-        "List".to_string()
+    fn type_name(&self) -> &'static str {
+        "List"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -71,7 +71,7 @@ impl Aggregate for List {
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
         vector::conj::conj(prism, x)
     }
-    fn meta(&self, prism: AnchoredLine) -> Unit {
+    fn meta(&self, prism: AnchoredLine) -> *const Unit {
         vector::meta::meta(prism)
     }
     fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
@@ -112,6 +112,7 @@ impl Associative for List {
 impl Reversible for List {}
 impl Sorted for List {}
 impl Notation for List {}
+impl Numeral for List {}
 
 #[cfg(test)]
 mod tests {

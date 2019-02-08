@@ -69,7 +69,7 @@ impl Handle {
         self.segment().line_at(0)
     }
 
-    pub fn type_name(self) -> String {
+    pub fn type_name(self) -> &'static str {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -77,19 +77,19 @@ impl Handle {
         } else {
             let v = self.unit.u();
             if !(v | 0x8) == 0x0 {
-                return "Boolean".to_string()
+                return "Boolean"
             }
             if v == 0x7 {
-                return "Nil".to_string()
+                return "Nil"
             }
             if (v & 0xF) == 0x3 {
-                return "Character".to_string()
+                return "Character"
             }
             if (v & 0xF) == 0x1 {
-                return "Integral".to_string()
+                return "Integral"
             }
             if (v & 0xF) == 0x9 {
-                return "FloatPoint".to_string()
+                return "FloatPoint"
             }
             unreachable!("Bad value unit!: 0x{:016X}", v)
         }
@@ -226,7 +226,13 @@ impl Handle {
         // 01 dispatch first
         // 10 dispatch second
         // 11 primitive:
-        //
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let elem = mechanism::as_dispatch(&p).add(prism, rhs.unit);
+        } else {
+
+        }
 
         unimplemented!("Handle add.")
     }

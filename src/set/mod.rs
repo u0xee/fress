@@ -45,8 +45,8 @@ impl Dispatch for Set {
 }
 
 impl Identification for Set {
-    fn type_name(&self) -> String {
-        "Set".to_string()
+    fn type_name(&self) -> &'static str {
+        "Set"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -110,6 +110,7 @@ impl Associative for Set {
 impl Reversible for Set {}
 impl Sorted for Set {}
 impl Notation for Set {}
+impl Numeral for Set {}
 
 
 #[cfg(test)]

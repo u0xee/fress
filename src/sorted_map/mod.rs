@@ -56,8 +56,8 @@ impl Dispatch for SortedMap {
 }
 
 impl Identification for SortedMap {
-    fn type_name(&self) -> String {
-        "SortedMap".to_string()
+    fn type_name(&self) -> &'static str {
+        "SortedMap"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -98,6 +98,7 @@ impl Sorted for SortedMap {}
 // edn,fressian->reduce
 
 impl Notation for SortedMap {}
+impl Numeral for SortedMap {}
 
 pub fn next_power(x: u32) -> u32 {
     (x + 1).next_power_of_two()

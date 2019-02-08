@@ -6,13 +6,14 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
+use handle::STATIC_NIL;
 
-pub fn meta(prism: AnchoredLine) -> Unit {
+pub fn meta(prism: AnchoredLine) -> *const Unit {
     let guide = Guide::hydrate(prism);
     if guide.has_meta() {
-        guide.meta_line()[0]
+        guide.meta_line().line().star()
     } else {
-        Handle::nil().unit()
+        (& STATIC_NIL) as *const Unit
     }
 }
 

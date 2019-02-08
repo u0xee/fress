@@ -37,8 +37,8 @@ impl Dispatch for String {
 }
 
 impl Identification for String {
-    fn type_name(&self) -> std::string::String {
-        "String".to_string()
+    fn type_name(&self) -> &'static str {
+        "String"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -79,6 +79,7 @@ impl Notation for String {
         unimplemented!()
     }
 }
+impl Numeral for String {}
 
 #[cfg(test)]
 mod tests {

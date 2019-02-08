@@ -65,8 +65,8 @@ impl Dispatch for Map {
 }
 
 impl Identification for Map {
-    fn type_name(&self) -> String {
-        "Map".to_string()
+    fn type_name(&self) -> &'static str {
+        "Map"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -134,6 +134,7 @@ impl Sorted for Map {}
 // edn,fressian->reduce
 
 impl Notation for Map {}
+impl Numeral for Map {}
 
 pub fn next_power(x: u32) -> u32 {
     (x + 1).next_power_of_two()

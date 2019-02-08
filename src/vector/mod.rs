@@ -71,8 +71,8 @@ impl Dispatch for Vector {
 }
 
 impl Identification for Vector {
-    fn type_name(&self) -> String {
-        "Vector".to_string()
+    fn type_name(&self) -> &'static str {
+        "Vector"
     }
 
     fn type_sentinel(&self) -> *const u8 {
@@ -93,7 +93,7 @@ impl Aggregate for Vector {
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
         conj::conj(prism, x)
     }
-    fn meta(&self, prism: AnchoredLine) -> Unit {
+    fn meta(&self, prism: AnchoredLine) -> *const Unit {
         meta::meta(prism)
     }
     fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
@@ -163,6 +163,7 @@ impl Notation for Vector {
         unimplemented!()
     }
 }
+impl Numeral for Vector {}
 
 #[cfg(test)]
 mod tests {

@@ -71,6 +71,25 @@ impl Value {
     }
 }
 
+impl From<&'static str> for Value {
+    fn from(s: &'static str) -> Self {
+        // read edn string
+        unimplemented!()
+    }
+}
+
+impl From<i64> for Value {
+    fn from(x: i64) -> Self {
+        unimplemented!()
+    }
+}
+
+impl From<bool> for Value {
+    fn from(x: bool) -> Self {
+        unimplemented!()
+    }
+}
+
 impl From<Handle> for Value {
     fn from(h: Handle) -> Self {
         Value { handle: h }

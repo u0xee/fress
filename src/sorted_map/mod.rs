@@ -53,6 +53,10 @@ impl Dispatch for SortedMap {
     fn tear_down(&self, prism: AnchoredLine) {
         unimplemented!()
     }
+
+    fn unaliased(&self, prism: AnchoredLine) -> Unit {
+        unimplemented!()
+    }
 }
 
 impl Identification for SortedMap {

@@ -12,6 +12,7 @@ use value::*;
 use map;
 use handle;
 use handle::Handle;
+use transducer::{Process};
 use vector::guide::Guide;
 
 pub static SET_SENTINEL: u8 = 0;
@@ -41,6 +42,10 @@ impl Set {
 impl Dispatch for Set {
     fn tear_down(&self, prism: AnchoredLine) {
         map::tear_down::tear_down(prism, 0)
+    }
+
+    fn unaliased(&self, prism: AnchoredLine) -> Unit {
+        map::assoc::unaliased_root(Guide::hydrate(prism), 0).segment().unit()
     }
 }
 
@@ -109,7 +114,48 @@ impl Associative for Set {
 
 impl Reversible for Set {}
 impl Sorted for Set {}
-impl Notation for Set {}
+impl Notation for Set {
+    fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut procs = {
+            let mut procs: Vec<Box<Process>> = Vec::new();
+            let b: Box<Process> = Box::new(Printer::new(f));
+            procs.push(b);
+            procs
+        };
+        let _ = map::reduce::reduce(prism, &mut procs, 0);
+        write!(f, "")
+    }
+}
+
+struct Printer {
+    pub is_first: bool,
+    pub f: usize,
+}
+
+impl Printer {
+    pub fn new(f: &mut fmt::Formatter) -> Printer {
+        use std::mem::transmute;
+        unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
+    }
+}
+
+impl Process for Printer {
+    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+        use std::mem::transmute;
+        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+               "{}{}",
+               if self.is_first { self.is_first = false; "#{" } else { " " },
+               v);
+        None
+    }
+    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+        use std::mem::transmute;
+        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+               "}}");
+        Handle::nil().value()
+    }
+}
+
 impl Numeral for Set {}
 
 

@@ -11,7 +11,7 @@ use fress_rust::handle::Handle;
 use fress_rust::integral::Integral;
 use fress_rust::transducer;
 use fress_rust::transducer::{Process};
-
+use fress_rust::value::{new_vector, new_list, new_map, new_set};
 
 pub struct Printer {}
 impl Process for Printer {
@@ -20,7 +20,6 @@ impl Process for Printer {
         None
     }
 }
-
 
 fn main() {
     let mut ps: Vec<Box<Process>> = Vec::new();
@@ -32,8 +31,14 @@ fn main() {
 
     let y = Integral::new(7).handle().value();
     let z = Integral::new(2).handle().value();
-    let w = y + z;
-    println!("Goodbye: {}", w);
-}
+    //let w = y + z;
+    //println!("Goodbye: {}", w);
 
+
+    let mut v = new_vector();
+    for i in 0..100i64 {
+        v = v.conj(Value::from(i));
+    }
+    println!("Now v: {}", v);
+}
 

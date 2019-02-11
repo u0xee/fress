@@ -13,6 +13,7 @@ use dispatch::*;
 use value::*;
 use handle;
 use handle::Handle;
+use transducer::{Process};
 
 use vector::guide::Guide;
 pub mod pop;
@@ -20,6 +21,7 @@ use self::pop::Pop;
 pub mod assoc;
 use self::assoc::unaliased_root;
 pub mod get;
+pub mod reduce;
 pub mod tear_down;
 pub mod dissoc;
 
@@ -62,6 +64,10 @@ impl Dispatch for Map {
     fn tear_down(&self, prism: AnchoredLine) {
         tear_down::tear_down(prism, 1)
     }
+
+    fn unaliased(&self, prism: AnchoredLine) -> Unit {
+        unaliased_root(Guide::hydrate(prism), 1).segment().unit()
+    }
 }
 
 impl Identification for Map {
@@ -74,7 +80,18 @@ impl Identification for Map {
     }
 }
 
-impl Distinguish for Map {}
+impl Distinguish for Map {
+    fn hash(&self, prism: AnchoredLine) -> u32 {
+        // reduce over elements
+        unimplemented!()
+    }
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        // basic checks
+        // compare structurally down tree
+        // like tandem tear_down's
+        unimplemented!()
+    }
+}
 
 impl Aggregate for Map {
     fn count(&self, prism: AnchoredLine) -> u32 {
@@ -133,7 +150,48 @@ impl Sorted for Map {}
 // reduce, fold, into, iter, channels
 // edn,fressian->reduce
 
-impl Notation for Map {}
+impl Notation for Map {
+    fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut procs = {
+            let mut procs: Vec<Box<Process>> = Vec::new();
+            let b: Box<Process> = Box::new(Printer::new(f));
+            procs.push(b);
+            procs
+        };
+        let _ = reduce::reduce(prism, &mut procs, 1);
+        write!(f, "")
+    }
+}
+
+struct Printer {
+    pub is_first: bool,
+    pub f: usize,
+}
+
+impl Printer {
+    pub fn new(f: &mut fmt::Formatter) -> Printer {
+        use std::mem::transmute;
+        unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
+    }
+}
+
+impl Process for Printer {
+    fn ingest_kv(&mut self, process_stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+        use std::mem::transmute;
+        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+               "{}{} {}",
+               if self.is_first { self.is_first = false; "{" } else { ", " },
+               k, v);
+        None
+    }
+    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+        use std::mem::transmute;
+        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+               "}}");
+        Handle::nil().value()
+    }
+}
+
 impl Numeral for Map {}
 
 pub fn next_power(x: u32) -> u32 {

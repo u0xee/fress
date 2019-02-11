@@ -80,7 +80,8 @@ impl From<&'static str> for Value {
 
 impl From<i64> for Value {
     fn from(x: i64) -> Self {
-        unimplemented!()
+        use integral::Integral;
+        Integral::new(x).handle().value()
     }
 }
 
@@ -272,3 +273,24 @@ mod test {
 //struct Integral {}
 //struct Rational {}
 //struct FloatPoint {}
+
+pub fn new_vector() -> Value {
+    use vector::Vector;
+    Vector::new_value()
+}
+
+pub fn new_list() -> Value {
+    use list::List;
+    List::new_value()
+}
+
+pub fn new_map() -> Value {
+    use map::Map;
+    Map::new_value()
+}
+
+pub fn new_set() -> Value {
+    use set::Set;
+    Set::new_value()
+}
+

@@ -18,6 +18,11 @@ use Value;
 // Ready Stack ingest value, value, ...
 // Last call.
 
+// Transduction contexts:
+// reduce
+// fold
+// iter
+// channel
 
 pub trait Process {
     fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {

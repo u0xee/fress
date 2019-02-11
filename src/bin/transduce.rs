@@ -35,10 +35,13 @@ fn main() {
     //println!("Goodbye: {}", w);
 
 
-    let mut v = new_vector();
+    let mut v = new_map();
     for i in 0..100i64 {
-        v = v.conj(Value::from(i));
+        v = v.assoc(Value::from(i), Value::from(i + 1));
     }
     println!("Now v: {}", v);
+
+    let cat = v.empty();
+    println!("cat: {}", cat);
 }
 

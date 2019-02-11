@@ -116,6 +116,7 @@ impl Reversible for Set {}
 impl Sorted for Set {}
 impl Notation for Set {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "#{{");
         let mut procs = {
             let mut procs: Vec<Box<Process>> = Vec::new();
             let b: Box<Process> = Box::new(Printer::new(f));
@@ -123,7 +124,7 @@ impl Notation for Set {
             procs
         };
         let _ = map::reduce::reduce(prism, &mut procs, 0);
-        write!(f, "")
+        write!(f, "}}")
     }
 }
 
@@ -144,14 +145,11 @@ impl Process for Printer {
         use std::mem::transmute;
         write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
                "{}{}",
-               if self.is_first { self.is_first = false; "#{" } else { " " },
+               if self.is_first { self.is_first = false; "" } else { " " },
                v);
         None
     }
     fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
-        use std::mem::transmute;
-        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
-               "}}");
         Handle::nil().value()
     }
 }

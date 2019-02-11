@@ -132,6 +132,16 @@ impl Handle {
         }
     }
 
+    pub fn empty(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).empty(prism).handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
     pub fn count(self) -> u32 {
         if self.is_ref() {
             let prism = self.prism();

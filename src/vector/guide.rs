@@ -9,27 +9,25 @@ use memory::*;
 
 /// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
 /// The top 32 bits contain the hash, the bottom 32 bits contain the collection's count.
-/// Also in the top, two booleans represent the presence of a hash and of meta.
-/// The two lowest order bits are not part of the hash, they are the booleans.
-/// So a collection's hash will always end in two zero bits.
-/// The highest order two bits of the bottom 32 bits also represent two booleans:
-/// is the collection a set, and is the representation compact (no info unit).
+/// The top uses one bit to indicate presence of a hash, and 31 bits to store the hash.
+/// So a collection's hash will always have a zero as the highest order bit.
+/// The two highest order bits of the bottom 32 bits also represent two booleans:
+/// is the representation compact (no info unit), and is there meta data.
 /// So a collection's count resides in the 30 lowest order bits.
 
 /// ```
-/// Top 32 bits  [    Hash (30)    | Hash? | Meta? ]
-/// Bottom bits  [ Set? | Compact? |   Count (30)  ]
+/// Top 32 bits  [ Hash?    |          Hash  (31) ]
+/// Bottom bits  [ Compact? | Meta? |  Count (30) ]
 /// ```
 ///
 
 #[derive(Copy, Clone, Debug)]
 pub struct Guide {
-    pub hash: u32,
     pub has_hash_bit: u32,
-    pub has_meta_bit: u32,
+    pub hash: u32,
 
-    pub is_set_bit: u32,
     pub is_compact_bit: u32,
+    pub has_meta_bit: u32,
     pub count: u32,
 
     pub prism: AnchoredLine,
@@ -120,25 +118,24 @@ impl Guide {
     }
 
     pub fn hydrate_top_bot(prism: AnchoredLine, top: u32, bot: u32) -> Guide {
-        let hash = top & !0x3;
-        let has_hash_bit = (top >> 1) & 0x1;
-        let has_meta_bit = (top & 0x1);
+        let has_hash_bit = (top >> 31) & 0x1;
+        let hash = top & !(0x1 << 31);
 
+        let is_compact_bit = (bot >> 31) & 0x1;
+        let has_meta_bit = (bot >> 30) & 0x1;
         let count = bot & !(0x3 << 30);
-        let is_set_bit = (bot >> 31) & 0x1;
-        let is_compact_bit = (bot >> 30) & 0x1;
 
         let root_offset = 1 /*prism*/ +
             if cfg!(target_pointer_width = "32") { 2 } else { 1 } /*guide*/ +
             has_meta_bit + (!is_compact_bit & 0x1);
         let root = prism.offset(root_offset as i32);
 
-        Guide { hash, has_hash_bit, has_meta_bit, count, is_set_bit, is_compact_bit, prism, root }
+        Guide { hash, has_hash_bit, has_meta_bit, count, is_compact_bit, prism, root }
     }
 
     pub fn store_at(&self, mut prism: AnchoredLine) {
-        let top: u32 = self.hash | (self.has_hash_bit << 1) | self.has_meta_bit;
-        let bot: u32 = (self.is_set_bit << 31) | (self.is_compact_bit << 30) | self.count;
+        let top: u32 = (self.has_hash_bit   << 31) |                             self.hash;
+        let bot: u32 = (self.is_compact_bit << 31) | (self.has_meta_bit << 30) | self.count;
         if cfg!(target_pointer_width = "32") {
             prism[1] = top.into();
             prism[2] = bot.into();

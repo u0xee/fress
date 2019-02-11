@@ -48,6 +48,10 @@ impl Value {
         self.handle().hash()
     }
 
+    pub fn empty(&self) -> Value {
+        self.handle().empty().value()
+    }
+
     pub fn contains(&self, k: &Value) -> bool {
         self.handle().contains(k.handle())
     }

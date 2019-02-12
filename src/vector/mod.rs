@@ -24,8 +24,10 @@ pub mod pop;
 pub mod nth;
 pub mod meta;
 pub mod assoc;
+pub mod eq;
 pub mod tear_down;
 pub mod reduce;
+pub mod iter;
 pub mod util;
 use self::util::*;
 #[cfg(test)]
@@ -86,7 +88,27 @@ impl Identification for Vector {
 
 impl Distinguish for Vector {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        // reduce over elements
+        struct X {
+            pub x: u64,
+        }
+        impl Process for X {
+            fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+                use random::cycle_abc;
+                let h = v.hash() as u64;
+                self.x = cycle_abc(34, self.x + h);
+                None
+            }
+            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+                use random::cycle_abc;
+                let ret = cycle_abc(191, self.x) as u32;
+                Handle::nil().value()
+            }
+        }
+
+        let y = X { x: 0 };
+        // start with type_code | count, cycle a few times
+        let mut procs: [Box<Process>; 1] = [Box::new(y)];
+        let _ = reduce::reduce(prism, &mut procs);
         unimplemented!()
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -183,48 +205,41 @@ impl Notation for Vector {
     }
 
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        struct Printer {
+            pub is_first: bool,
+            pub f: usize,
+        }
+
+        impl Printer {
+            pub fn new(f: &mut fmt::Formatter) -> Printer {
+                use std::mem::transmute;
+                unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
+            }
+        }
+
+        impl Process for Printer {
+            fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+                use std::mem::transmute;
+                write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+                       "{}{}",
+                       if self.is_first { self.is_first = false; "" } else { " " },
+                       v);
+                None
+            }
+            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+                Handle::nil().value()
+            }
+        }
+
         write!(f, "[");
-        let mut procs = {
-            let mut procs: Vec<Box<Process>> = Vec::new();
-            let b: Box<Process> = Box::new(Printer::new(f));
-            procs.push(b);
-            procs
-        };
+        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
         let _ = reduce::reduce(prism, &mut procs);
         write!(f, "]")
     }
 }
 
-// layout Guide with unused hash bits as high bits (not low)
-// stack allocate procs for edn
 // conversion to and from &Formatter
 // factor out Printer parts
-
-struct Printer {
-    pub is_first: bool,
-    pub f: usize,
-}
-
-impl Printer {
-    pub fn new(f: &mut fmt::Formatter) -> Printer {
-        use std::mem::transmute;
-        unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
-    }
-}
-
-impl Process for Printer {
-    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
-        use std::mem::transmute;
-        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
-               "{}{}",
-               if self.is_first { self.is_first = false; "" } else { " " },
-               v);
-        None
-    }
-    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
-        Handle::nil().value()
-    }
-}
 
 impl Numeral for Vector {}
 

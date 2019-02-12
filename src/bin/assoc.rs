@@ -5,14 +5,14 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-extern crate fress_rust;
-use fress_rust::value::Value;
-use fress_rust::handle::Handle;
-use fress_rust::integral::Integral;
-use fress_rust::map::Map;
-use fress_rust::set::Set;
-use fress_rust::map::pop::Pop;
-use fress_rust::memory::segment;
+extern crate fress;
+use fress::value::Value;
+use fress::handle::Handle;
+use fress::integral::Integral;
+use fress::map::Map;
+use fress::set::Set;
+use fress::map::pop::Pop;
+use fress::memory::segment;
 
 fn main() {
     let (new_a, free_a) = segment::new_free_counts();

@@ -5,13 +5,13 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-extern crate fress_rust;
-use fress_rust::value::Value;
-use fress_rust::handle::Handle;
-use fress_rust::integral::Integral;
-use fress_rust::transducer;
-use fress_rust::transducer::{Process};
-use fress_rust::value::{new_vector, new_list, new_map, new_set};
+extern crate fress;
+use fress::value::Value;
+use fress::handle::Handle;
+use fress::integral::Integral;
+use fress::transducer;
+use fress::transducer::{Process};
+use fress::value::{new_vector, new_list, new_map, new_set};
 
 pub struct Printer {}
 impl Process for Printer {
@@ -38,10 +38,14 @@ fn main() {
     let mut v = new_map();
     for i in 0..100i64 {
         v = v.assoc(Value::from(i), Value::from(i + 1));
+        //v = v.conj(Value::from(i));
     }
     println!("Now v: {}", v);
 
     let cat = v.empty();
     println!("cat: {}", cat);
+
+    use fress::random::ABC;
+    println!("hash: {:?}", ABC[155]);
 }
 

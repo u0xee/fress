@@ -59,7 +59,19 @@ impl Identification for Set {
     }
 }
 
-impl Distinguish for Set {}
+impl Distinguish for Set {
+    fn hash(&self, prism: AnchoredLine) -> u32 {
+        // reduce over elements
+        // sum hash codes. finalize
+        unimplemented!()
+    }
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        // basic checks
+        // compare structurally down tree
+        // like tandem tear_down's
+        unimplemented!()
+    }
+}
 
 impl Aggregate for Set {
     fn count(&self, prism: AnchoredLine) -> u32 {
@@ -116,41 +128,36 @@ impl Reversible for Set {}
 impl Sorted for Set {}
 impl Notation for Set {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        struct Printer {
+            pub is_first: bool,
+            pub f: usize,
+        }
+
+        impl Printer {
+            pub fn new(f: &mut fmt::Formatter) -> Printer {
+                use std::mem::transmute;
+                unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
+            }
+        }
+
+        impl Process for Printer {
+            fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+                use std::mem::transmute;
+                write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+                       "{}{}",
+                       if self.is_first { self.is_first = false; "" } else { " " },
+                       v);
+                None
+            }
+            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+                Handle::nil().value()
+            }
+        }
+
         write!(f, "#{{");
-        let mut procs = {
-            let mut procs: Vec<Box<Process>> = Vec::new();
-            let b: Box<Process> = Box::new(Printer::new(f));
-            procs.push(b);
-            procs
-        };
+        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
         let _ = map::reduce::reduce(prism, &mut procs, 0);
         write!(f, "}}")
-    }
-}
-
-struct Printer {
-    pub is_first: bool,
-    pub f: usize,
-}
-
-impl Printer {
-    pub fn new(f: &mut fmt::Formatter) -> Printer {
-        use std::mem::transmute;
-        unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
-    }
-}
-
-impl Process for Printer {
-    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
-        use std::mem::transmute;
-        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
-               "{}{}",
-               if self.is_first { self.is_first = false; "" } else { " " },
-               v);
-        None
-    }
-    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
-        Handle::nil().value()
     }
 }
 

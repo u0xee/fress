@@ -5,11 +5,11 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-extern crate fress_rust;
-use fress_rust::hash::*;
+extern crate fress;
+use fress::hash::*;
 
 fn main() {
-    use fress_rust::hash::keccak::hash_zero_message;
+    use fress::hash::keccak::hash_zero_message;
     hash_zero_message();
 
     /*

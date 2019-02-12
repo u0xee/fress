@@ -5,7 +5,9 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+use random::PI;
 pub mod keccak;
+
 
 pub fn hash_64(x: u64, byte_count: u32) -> u32 {
     let y = x << 8 | (byte_count as u64);
@@ -30,9 +32,6 @@ pub fn hash_256(x: u64, y: u64, z: u64, w: u64, byte_count: u32) -> u32 {
     let (a, b) = hash_raw_256(x, y, z, v);
     a as u32
 }
-
-pub const PI: [u64; 4] =
-    [0x243f6a88_85a308d3, 0x13198a2e_03707344, 0xa4093822_299f31d0, 0x082efa98_ec4e6c89];
 
 pub fn hash_raw_256(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
     a = a.wrapping_add(PI[0]); b = b.wrapping_add(PI[1]);

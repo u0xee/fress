@@ -82,7 +82,8 @@ impl Identification for Map {
 
 impl Distinguish for Map {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        // reduce over elements
+        // reduce over kv pairs
+        // sum pair hash codes. finalize
         unimplemented!()
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -96,7 +97,6 @@ impl Distinguish for Map {
 impl Aggregate for Map {
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
-        //println!("{:?}", Pop::from(guide.root[-1]));
         guide.count
     }
 
@@ -147,46 +147,38 @@ impl Associative for Map {
 impl Reversible for Map {}
 impl Sorted for Map {}
 
-// reduce, fold, into, iter, channels
-// edn,fressian->reduce
-
 impl Notation for Map {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        struct Printer {
+            pub is_first: bool,
+            pub f: usize,
+        }
+
+        impl Printer {
+            pub fn new(f: &mut fmt::Formatter) -> Printer {
+                use std::mem::transmute;
+                unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
+            }
+        }
+
+        impl Process for Printer {
+            fn ingest_kv(&mut self, process_stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+                use std::mem::transmute;
+                write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
+                       "{}{} {}",
+                       if self.is_first { self.is_first = false; "" } else { ", " },
+                       k, v);
+                None
+            }
+            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+                Handle::nil().value()
+            }
+        }
+
         write!(f, "{{");
-        let mut procs = {
-            let mut procs: Vec<Box<Process>> = Vec::new();
-            let b: Box<Process> = Box::new(Printer::new(f));
-            procs.push(b);
-            procs
-        };
+        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
         let _ = reduce::reduce(prism, &mut procs, 1);
         write!(f, "}}")
-    }
-}
-
-struct Printer {
-    pub is_first: bool,
-    pub f: usize,
-}
-
-impl Printer {
-    pub fn new(f: &mut fmt::Formatter) -> Printer {
-        use std::mem::transmute;
-        unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
-    }
-}
-
-impl Process for Printer {
-    fn ingest_kv(&mut self, process_stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
-        use std::mem::transmute;
-        write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
-               "{}{} {}",
-               if self.is_first { self.is_first = false; "" } else { ", " },
-               k, v);
-        None
-    }
-    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
-        Handle::nil().value()
     }
 }
 

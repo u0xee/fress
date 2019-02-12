@@ -7,7 +7,7 @@
 
 //! Algorithms for arrays.
 //!
-//! Sorting arrays.
+//! Sorting arrays. Stable sort. Heap sort.
 //! Algorithms on polynomials; convolution
 //! Algorithms on matrices; sum, multiply
 //! - linear algebra

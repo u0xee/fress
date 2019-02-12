@@ -1,5 +1,5 @@
 [package]
-name = "fress-rust"
+name = "fress"
 version = "0.1.0"
 authors = ["Cole Frederick <csp.frederick@gmail.com>"]
 description = "A cohesive fressian library for rust"

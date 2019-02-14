@@ -24,8 +24,65 @@ use Value;
 // iter
 // channel
 
+pub struct Proc { }
+impl Process for Proc {
+    fn ingest(&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
+        println!("Verve {}", v);
+        None
+    }
+}
+
+pub fn test_me() {
+    let mut procs: [Box<Process>; 1] = [Box::new(Proc { })];
+    for i in 0..20 {
+        let x = Value::from(i);
+        let _ = ingest(&mut procs, x);
+    }
+}
+
+
+fn top(stack: &mut [Box<Process>]) -> *mut Box<Process> {
+    stack.last_mut().unwrap() as *mut Box<Process>
+}
+
+pub fn ingest   (stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
+    unsafe { (*top(stack)).ingest(stack, v) }
+}
+pub fn inges    (stack: &mut [Box<Process>], v: &Value)            -> Option<Value> {
+    unsafe { (*top(stack)).inges(stack, v) }
+}
+pub fn ingest_kv(stack: &mut [Box<Process>], k:  Value, v:  Value) -> Option<Value> {
+    unsafe { (*top(stack)).ingest_kv(stack, k, v) }
+}
+pub fn inges_kv (stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+    unsafe { (*top(stack)).inges_kv(stack, k, v) }
+}
+pub fn last_call(stack: &mut [Box<Process>]) -> Value {
+    unsafe { (*top(stack)).last_call(stack) }
+}
+
 pub trait Process {
-    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+    fn ingest   (&mut self, stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
+        inges(stack, &v)
+    }
+    fn inges    (&mut self, stack: &mut [Box<Process>], v: &Value)            -> Option<Value> {
+        ingest(stack, v.split_out())
+    }
+    fn ingest_kv(&mut self, stack: &mut [Box<Process>], k:  Value, v:  Value) -> Option<Value> {
+        inges_kv(stack, &k, &v)
+    }
+    fn inges_kv (&mut self, stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+        ingest_kv(stack, k.split_out(), v.split_out())
+    }
+    fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+        let (_, rest) = stack.split_last_mut().unwrap();
+        last_call(rest)
+    }
+}
+
+/*
+pub trait Process_ {
+    fn ingest(&mut self, process_stack: &mut [Box<Process_>], v: &Value) -> Option<Value> {
         let (next, rest) = process_stack.split_last_mut().unwrap();
         next.ingest(rest, v)
     }
@@ -39,17 +96,17 @@ pub trait Process {
     }
 }
 
-pub fn ingest(process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+pub fn ingest2(process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
     let (top, rest) = process_stack.split_last_mut().unwrap();
     top.ingest(rest, v)
 }
 
-pub fn ingest_kv(process_stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+pub fn ingest2_kv(process_stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
     let (top, rest) = process_stack.split_last_mut().unwrap();
     top.ingest_kv(rest, k, v)
 }
 
-pub fn last_call(process_stack: &mut [Box<Process>]) -> Value {
+pub fn last_call2(process_stack: &mut [Box<Process>]) -> Value {
     let (top, rest) = process_stack.split_last_mut().unwrap();
     top.last_call(rest)
 }
@@ -71,7 +128,7 @@ impl<F: Fn(&Value) -> Value, Next: Process> Process for Map<F, Next> {
         self.next.last_call(process_stack)
     }
 }
-
+*/
 
 
 pub struct Xf<F> {

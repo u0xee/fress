@@ -8,7 +8,7 @@
 use super::*;
 use super::assoc::address;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, ingest_kv, last_call, Process, Transducer, Transducers};
+use transducer::{ingest, inges, ingest_kv, inges_kv, last_call, Process, Transducer, Transducers};
 
 pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut [Box<Process>],
                    has_vals: u32) -> Option<Value> {
@@ -16,10 +16,10 @@ pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut 
         let key = first_key.offset((i << has_vals) as i32);
         let x = key.line().star() as *const Value;
         let y = unsafe { &* x };
-        if let Some(ret) = if has_vals == 0 { ingest(process_stack, y) } else {
+        if let Some(ret) = if has_vals == 0 { inges(process_stack, y) } else {
             let w = key.offset(1).line().star() as *const Value;
             let z = unsafe { &* w };
-            ingest_kv(process_stack, y, z)
+            inges_kv(process_stack, y, z)
         } {
             return Some(ret);
         }

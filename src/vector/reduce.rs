@@ -7,20 +7,20 @@
 
 use super::*;
 use super::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, last_call, Process};
+use transducer::{ingest, inges, last_call, Process};
 
 pub struct Conjer {
     pub acc: Value,
 }
 impl Process for Conjer {
-    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+    fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
         use std::mem;
         let x = mem::replace(&mut self.acc, Handle::nil().value());
         let y = x.conj(v.split_out());
         mem::replace(&mut self.acc, y);
         None
     }
-    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+    fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
         use std::mem;
         mem::replace(&mut self.acc, Handle::nil().value())
     }
@@ -33,7 +33,7 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value 
         for i in 0..count {
             let x = guide.root.offset(i as i32).line().star() as *const Value;
             let y = unsafe { &* x };
-            if let Some(ret) = ingest(process_stack, y) {
+            if let Some(ret) = inges(process_stack, y) {
                 return ret;
             }
         }
@@ -44,7 +44,7 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value 
             for i in 0..TAIL_CAP {
                 let x = guide.root.offset(i as i32).line().star() as *const Value;
                 let y = unsafe { &* x };
-                if let Some(ret) = ingest(process_stack, y) {
+                if let Some(ret) = inges(process_stack, y) {
                     return ret;
                 }
             }
@@ -52,7 +52,7 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value 
             for i in 0..(count - tailoff) {
                 let x = tail.line_at(i).line().star() as *const Value;
                 let y = unsafe { &* x };
-                if let Some(ret) = ingest(process_stack, y) {
+                if let Some(ret) = inges(process_stack, y) {
                     return ret;
                 }
             }
@@ -83,7 +83,7 @@ pub fn reduce_tree(guide: Guide, tailoff: u32, process_stack: &mut [Box<Process>
     for i in 0..(guide.count - tailoff) {
         let x = tail.line_at(i).line().star() as *const Value;
         let y = unsafe { &* x };
-        if let Some(ret) = ingest(process_stack, y) {
+        if let Some(ret) = inges(process_stack, y) {
             return ret;
         }
     }
@@ -96,7 +96,7 @@ pub fn base_case(node: &NodeRecord, process_stack: &mut [Box<Process>]) -> Optio
         for j in 0..TAIL_CAP {
             let x = a_tail.line_at(j).line().star() as *const Value;
             let y = unsafe { &* x };
-            if let Some(ret) = ingest(process_stack, y) {
+            if let Some(ret) = inges(process_stack, y) {
                 return Some(ret);
             }
         }

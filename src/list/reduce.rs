@@ -7,7 +7,7 @@
 
 use super::*;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, last_call, Process};
+use transducer::{ingest, inges, last_call, Process};
 
 pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value {
     let guide = Guide::hydrate(prism);
@@ -16,7 +16,7 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value 
         for i in (0..count).rev() {
             let x = guide.root.offset(i as i32).line().star() as *const Value;
             let y = unsafe { &* x };
-            if let Some(ret) = ingest(process_stack, y) {
+            if let Some(ret) = inges(process_stack, y) {
                 return ret;
             }
         }
@@ -28,14 +28,14 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value 
             for i in (0..(count - tailoff)).rev() {
                 let x = tail.line_at(i).line().star() as *const Value;
                 let y = unsafe { &* x };
-                if let Some(ret) = ingest(process_stack, y) {
+                if let Some(ret) = inges(process_stack, y) {
                     return ret;
                 }
             }
             for i in (0..TAIL_CAP).rev() {
                 let x = guide.root.offset(i as i32).line().star() as *const Value;
                 let y = unsafe { &* x };
-                if let Some(ret) = ingest(process_stack, y) {
+                if let Some(ret) = inges(process_stack, y) {
                     return ret;
                 }
             }
@@ -51,7 +51,7 @@ pub fn reduce_tree(guide: Guide, tailoff: u32, process_stack: &mut [Box<Process>
     for i in (0..(guide.count - tailoff)).rev() {
         let x = tail.line_at(i).line().star() as *const Value;
         let y = unsafe { &* x };
-        if let Some(ret) = ingest(process_stack, y) {
+        if let Some(ret) = inges(process_stack, y) {
             return ret;
         }
     }
@@ -79,7 +79,7 @@ pub fn base_case(node: &NodeRecord, process_stack: &mut [Box<Process>]) -> Optio
         for j in (0..TAIL_CAP).rev() {
             let x = a_tail.line_at(j).line().star() as *const Value;
             let y = unsafe { &* x };
-            if let Some(ret) = ingest(process_stack, y) {
+            if let Some(ret) = inges(process_stack, y) {
                 return Some(ret);
             }
         }

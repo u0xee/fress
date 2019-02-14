@@ -141,7 +141,7 @@ impl Notation for Set {
         }
 
         impl Process for Printer {
-            fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
                 use std::mem::transmute;
                 write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
                        "{}{}",
@@ -149,7 +149,7 @@ impl Notation for Set {
                        v);
                 None
             }
-            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
                 Handle::nil().value()
             }
         }

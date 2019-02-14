@@ -88,31 +88,39 @@ impl Identification for Vector {
 
 impl Distinguish for Vector {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        struct X {
-            pub x: u64,
+        let guide = Guide::hydrate(prism);
+        if guide.has_hash() {
+            return guide.hash;
         }
-        impl Process for X {
-            fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
-                use random::cycle_abc;
+        use random::{PI, cycle_abc};
+        struct Pointer {
+            pub ptr: *mut u64,
+        }
+        impl Process for Pointer {
+            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
                 let h = v.hash() as u64;
-                self.x = cycle_abc(34, self.x + h);
+                unsafe {
+                    *self.ptr = cycle_abc(34, *self.ptr + h);
+                }
                 None
             }
-            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
-                use random::cycle_abc;
-                let ret = cycle_abc(191, self.x) as u32;
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
-        let y = X { x: 0 };
-        // start with type_code | count, cycle a few times
-        let mut procs: [Box<Process>; 1] = [Box::new(y)];
+        let mut y = cycle_abc(7, PI[321] + guide.count as u64);
+        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
-        unimplemented!()
+        let h = cycle_abc(210, y) as u32;
+        guide.set_hash(h).store().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         // basic checks
+        // if immediate, false
+        // if vector, structural compare
+        // if list, iterate pairwise
+        // if eduction, iterate pairwise
         // compare structurally down tree
         // like tandem tear_down's
         unimplemented!()
@@ -205,6 +213,8 @@ impl Notation for Vector {
     }
 
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        // conversion to and from &Formatter
+        // factor out Printer parts
         struct Printer {
             pub is_first: bool,
             pub f: usize,
@@ -217,8 +227,21 @@ impl Notation for Vector {
             }
         }
 
+        struct Filter { }
+
+        impl Process for Filter {
+            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+                if v.hash() % 5 != 0 {
+                    let (next, rest) = stack.split_last_mut().unwrap();
+                    next.inges(rest, v)
+                } else {
+                    None
+                }
+            }
+        }
+
         impl Process for Printer {
-            fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
                 use std::mem::transmute;
                 write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
                        "{}{}",
@@ -226,20 +249,19 @@ impl Notation for Vector {
                        v);
                 None
             }
-            fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
         write!(f, "[");
-        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
+        let mut procs: [Box<Process>; 2] = [
+            Box::new(Printer::new(f)),
+            Box::new(Filter {})];
         let _ = reduce::reduce(prism, &mut procs);
         write!(f, "]")
     }
 }
-
-// conversion to and from &Formatter
-// factor out Printer parts
 
 impl Numeral for Vector {}
 

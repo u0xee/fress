@@ -10,12 +10,12 @@ use fress::value::Value;
 use fress::handle::Handle;
 use fress::integral::Integral;
 use fress::transducer;
-use fress::transducer::{Process};
+use fress::transducer::{Process, test_me};
 use fress::value::{new_vector, new_list, new_map, new_set};
 
 pub struct Printer {}
 impl Process for Printer {
-    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+    fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
         println!("Hello: {}", v);
         None
     }
@@ -26,7 +26,7 @@ fn main() {
     ps.push(Box::new(Printer {}));
     for i in 0..25 {
         let x = Integral::new(i).handle().value();
-        transducer::ingest(&mut ps, &x);
+        transducer::inges(&mut ps, &x);
     }
 
     let y = Integral::new(7).handle().value();
@@ -34,18 +34,20 @@ fn main() {
     //let w = y + z;
     //println!("Goodbye: {}", w);
 
-
-    let mut v = new_map();
+    // TODO filter
+    let mut v = new_vector();
     for i in 0..100i64 {
-        v = v.assoc(Value::from(i), Value::from(i + 1));
-        //v = v.conj(Value::from(i));
+        //let w = new_vector().conj(Value::from(i + 1)).conj(Value::from(i + 2));
+        //v = v.assoc(Value::from(i), Value::from(i + 1));
+        v = v.conj(Value::from(i));
     }
     println!("Now v: {}", v);
 
     let cat = v.empty();
     println!("cat: {}", cat);
 
-    use fress::random::ABC;
-    println!("hash: {:?}", ABC[155]);
+    println!("hash: 0x{:08X}", Value::from(9).hash());
+
+    test_me();
 }
 

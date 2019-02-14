@@ -40,7 +40,7 @@ impl Guide {
     }
 
     pub fn set_hash(mut self, hash: u32) -> Guide {
-        self.hash = hash & !0x3;
+        self.hash = hash & !(0x1 << 31);
         self.has_hash_bit = 1;
         self
     }

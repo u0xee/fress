@@ -12,7 +12,7 @@ use transducer::{ingest, last_call, Process};
 pub struct Iter {
     pub x: usize,
 }
-
+/*
 pub fn iter(prism: AnchoredLine, process_stack: &mut [Box<Process>]) {
 
     unimplemented!()
@@ -140,4 +140,4 @@ pub fn child_record(top: &mut NodeRecord, last_tree_index: u32, s: Segment, last
     r
 }
 
-
+*/

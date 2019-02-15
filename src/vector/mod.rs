@@ -14,7 +14,7 @@ use memory::*;
 use dispatch::*;
 use value::*;
 use handle::Handle;
-use transducer::Process;
+use transducer::{Process, inges};
 
 pub mod guide;
 use self::guide::Guide;
@@ -125,7 +125,7 @@ impl Distinguish for Vector {
         // like tandem tear_down's
         unimplemented!()
     }
-    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering {
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         // cast other to vector, compare pairwise
         unimplemented!()
     }
@@ -232,8 +232,8 @@ impl Notation for Vector {
         impl Process for Filter {
             fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
                 if v.hash() % 5 != 0 {
-                    let (next, rest) = stack.split_last_mut().unwrap();
-                    next.inges(rest, v)
+                    let (_, rest) = stack.split_last_mut().unwrap();
+                    inges(rest, v)
                 } else {
                     None
                 }
@@ -255,9 +255,9 @@ impl Notation for Vector {
         }
 
         write!(f, "[");
-        let mut procs: [Box<Process>; 2] = [
+        let mut procs: [Box<Process>; 1] = [
             Box::new(Printer::new(f)),
-            Box::new(Filter {})];
+            /*Box::new(Filter {})*/];
         let _ = reduce::reduce(prism, &mut procs);
         write!(f, "]")
     }

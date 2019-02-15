@@ -24,6 +24,12 @@ use Value;
 // iter
 // channel
 
+// tree reduce(stack)
+// range, eduction reduce(stack)
+// fold -> reduce combine
+
+// vector tree, forward and reverse reduce
+
 pub struct Proc { }
 impl Process for Proc {
     fn ingest(&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
@@ -77,6 +83,26 @@ pub trait Process {
     fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
         let (_, rest) = stack.split_last_mut().unwrap();
         last_call(rest)
+    }
+}
+
+pub struct Pass { }
+impl Process for Pass {
+    fn ingest   (&mut self, stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
+        let (_, rest) = stack.split_last_mut().unwrap();
+        ingest(rest, v)
+    }
+    fn inges    (&mut self, stack: &mut [Box<Process>], v: &Value)            -> Option<Value> {
+        let (_, rest) = stack.split_last_mut().unwrap();
+        inges(rest, v)
+    }
+    fn ingest_kv(&mut self, stack: &mut [Box<Process>], k:  Value, v:  Value) -> Option<Value> {
+        let (_, rest) = stack.split_last_mut().unwrap();
+        ingest_kv(rest, k, v)
+    }
+    fn inges_kv (&mut self, stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+        let (_, rest) = stack.split_last_mut().unwrap();
+        inges_kv(rest, k, v)
     }
 }
 
@@ -185,7 +211,7 @@ mod tests {
     use super::*;
     #[test]
     fn map1() {
-        let m = Map { function: |x: &Value| x.add_one_test(), next: Pass {} };
+        //let m = Mapp { function: |x: &Value| x.add_one_test(), next: Pass {} };
         /*let t = Xf::new(move || {
             let b: Box<Process> = Box::new(m);
             b

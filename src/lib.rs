@@ -7,6 +7,9 @@
 
 //! A cohesive fressian library for rust
 
+pub mod array;
+pub mod atom;
+pub mod channel;
 pub mod dispatch;
 pub mod edn;
 pub mod float_point;
@@ -20,6 +23,7 @@ pub mod list;
 pub mod map;
 pub mod memory;
 pub mod random;
+pub mod range;
 pub mod rational;
 pub mod set;
 pub mod sorted_map;

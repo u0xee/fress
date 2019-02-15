@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use std::fmt;
+use std::cmp;
 use memory::*;
 use dispatch::*;
 use value::*;
@@ -33,6 +34,14 @@ impl Handle {
 
     pub fn fals() -> Handle {
         Handle::from(Handle::FALSE)
+    }
+
+    pub fn is_not(self) -> bool {
+        (self.unit.u() & 0x7) == 0x7
+    }
+
+    pub fn is_so(self) -> bool {
+        !self.is_not()
     }
 
     pub fn value(self) -> Value {
@@ -116,8 +125,26 @@ impl Handle {
             let prism = self.prism();
             let p = prism[0];
             mechanism::as_dispatch(&p).eq(prism, other.unit)
+        } else if other.is_ref() {
+            let prism = other.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).eq(prism, self.unit)
         } else {
             self.unit == other.unit
+        }
+    }
+
+    pub fn cmp(self, other: Handle) -> Option<cmp::Ordering> {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).cmp(prism, other.unit)
+        } else if other.is_ref() {
+            let prism = other.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).cmp(prism, self.unit)
+        } else {
+            self.unit.partial_cmp(&other.unit)
         }
     }
 
@@ -229,27 +256,122 @@ impl Handle {
     }
 
     pub fn add(self, rhs: Handle) -> Handle {
-        // dispatch if applicable, else
-        // primitive arithmetic.
-        // xxxxxxx0
-        // 00 dispatch first
-        // 01 dispatch first
-        // 10 dispatch second
-        // 11 primitive:
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            let elem = mechanism::as_dispatch(&p).add(prism, rhs.unit);
+            let sum = mechanism::as_dispatch(&p).add(prism, rhs.unit);
+            sum.handle()
         } else {
-
+            unimplemented!()
         }
-
-        unimplemented!("Handle add.")
     }
 
-    pub fn num(x: u32) -> Handle {
-        let y = x << 4;
-        Unit::from(y | 1).handle()
+    pub fn sub(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let diff = mechanism::as_dispatch(&p).subtract(prism, rhs.unit);
+            diff.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn mul(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let product = mechanism::as_dispatch(&p).multiply(prism, rhs.unit);
+            product.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn div(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let num = mechanism::as_dispatch(&p).divide(prism, rhs.unit);
+            num.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn rem(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let num = mechanism::as_dispatch(&p).remainder(prism, rhs.unit);
+            num.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn modulus(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let num = mechanism::as_dispatch(&p).modulus(prism, rhs.unit);
+            num.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn inc(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let x = mechanism::as_dispatch(&p).inc(prism);
+            x.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn dec(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let x = mechanism::as_dispatch(&p).dec(prism);
+            x.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn neg(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let x = mechanism::as_dispatch(&p).neg(prism);
+            x.handle()
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn bitand(self, rhs: Handle) -> Handle {
+        unimplemented!()
+    }
+
+    pub fn bitor(self, rhs: Handle) -> Handle {
+        unimplemented!()
+    }
+
+    pub fn bitxor(self, rhs: Handle) -> Handle {
+        unimplemented!()
+    }
+
+    pub fn shl(self, rhs: u32) -> Handle {
+        unimplemented!()
+    }
+
+    pub fn shr(self, rhs: u32) -> Handle {
+        unimplemented!()
     }
 }
 

@@ -9,7 +9,7 @@ use memory::*;
 pub mod mechanism;
 use std::fmt;
 use std::io;
-use std::cmp::Ordering;
+use std::cmp;
 
 /// A trait to dynamically dispatch methods on heap values
 pub trait Dispatch :
@@ -40,7 +40,7 @@ pub trait Notation {
 pub trait Distinguish {
     fn hash(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool { unimplemented!() }
-    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering { unimplemented!() }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<cmp::Ordering> { unimplemented!() }
 }
 
 pub trait Aggregate {
@@ -77,9 +77,11 @@ pub trait Numeral {
     fn dec(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn add(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
     fn subtract(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn neg(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 
     fn multiply(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
     fn divide(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+    fn remainder(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
     fn modulus(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
 }
 

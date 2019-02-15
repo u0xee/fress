@@ -8,6 +8,8 @@
 use std::fmt;
 use memory::*;
 use dispatch::*;
+use handle::Handle;
+use Value;
 
 pub static INTEGRAL_SENTINEL: u8 = 0;
 
@@ -19,13 +21,25 @@ impl Integral {
     pub fn new(x: i64) -> Unit {
         let s = Segment::new(if cfg!(target_pointer_width = "32") { 3 } else { 2 });
         s.set(0, mechanism::prism::<Integral>());
-        if cfg!(target_pointer_width = "32") {
-            s.set(1, Unit::from(x as i32));
-            s.set(2, Unit::from((x >> 32) as i32));
-        } else {
-            s.set(1, Unit::from(x));
-        }
+        store(s.line_at(0), x);
         s.unit()
+    }
+
+    pub fn new_value(x: i64) -> Value {
+        Integral::new(x).handle().value()
+    }
+
+    pub fn is_instance(h: Handle) -> bool {
+        h.is_ref() && h.type_sentinel() == (& INTEGRAL_SENTINEL) as *const u8
+    }
+}
+
+pub fn store(prism: AnchoredLine, x: i64) {
+    if cfg!(target_pointer_width = "32") {
+        prism.set(1, Unit::from(x as i32));
+        prism.set(2, Unit::from((x >> 32) as i32));
+    } else {
+        prism.set(1, Unit::from(x));
     }
 }
 
@@ -67,20 +81,21 @@ impl Distinguish for Integral {
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let c = self.cmp(prism, other);
-        c == Ordering::Equal
+        c.unwrap() == Ordering::Equal
     }
 
-    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering {
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if !o.is_ref() {
-            return Ordering::Greater
+            return Some(Ordering::Greater)
         }
         if o.type_sentinel() == (& INTEGRAL_SENTINEL) as *const u8 {
             let x = hydrate(prism);
-            let y = hydrate(other.handle().prism());
-            return x.cmp(&y)
+            let y = hydrate(o.prism());
+            return Some(x.cmp(&y))
         }
-        ((& INTEGRAL_SENTINEL) as *const u8).cmp(&o.type_sentinel())
+        let ret = ((& INTEGRAL_SENTINEL) as *const u8).cmp(&o.type_sentinel());
+        Some(ret)
     }
 }
 
@@ -104,9 +119,84 @@ impl Notation for Integral {
         write!(f, "Integral[{}]", x)
     }
 }
+
 impl Numeral for Integral {
+    fn inc(&self, prism: AnchoredLine) -> Unit {
+        let x = hydrate(prism);
+        let s = prism.segment();
+        if s.is_aliased() {
+            if s.unalias() == 0 {
+                Segment::free(s);
+            }
+            Integral::new(x + 1)
+        } else {
+            store(prism, x + 1);
+            s.unit()
+        }
+    }
+    fn dec(&self, prism: AnchoredLine) -> Unit {
+        let x = hydrate(prism);
+        let s = prism.segment();
+        if s.is_aliased() {
+            if s.unalias() == 0 {
+                Segment::free(s);
+            }
+            Integral::new(x - 1)
+        } else {
+            store(prism, x - 1);
+            s.unit()
+        }
+    }
+    fn neg(&self, prism: AnchoredLine) -> Unit {
+        unimplemented!()
+    }
     fn add(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        unimplemented!("YAAAAA")
+        let o = other.handle();
+        if Integral::is_instance(o) {
+            let x = hydrate(prism);
+            let y = hydrate(o.prism());
+            let z = x + y;
+            let s = prism.segment();
+            if s.is_aliased() {
+                if s.unalias() == 0 {
+                    Segment::free(s);
+                }
+                let r = o.prism().segment();
+                if r.is_aliased() {
+                    if r.unalias() == 0 {
+                        Segment::free(r);
+                    }
+                    Integral::new(z)
+                } else {
+                    store(o.prism(), z);
+                    r.unit()
+                }
+            } else {
+                store(prism, z);
+                let r = o.prism().segment();
+                if r.unalias() == 0 {
+                    Segment::free(r);
+                }
+                s.unit()
+            }
+        } else {
+            unimplemented!()
+        }
+    }
+    fn subtract(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        unimplemented!()
+    }
+    fn multiply(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        unimplemented!()
+    }
+    fn divide(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        unimplemented!()
+    }
+    fn remainder(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        unimplemented!()
+    }
+    fn modulus(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        unimplemented!()
     }
 }
 

@@ -57,15 +57,16 @@ impl Distinguish for String {
         unimplemented!()
     }
 
-    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Ordering {
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if !o.is_ref() {
-            return Ordering::Greater
+            return Some(Ordering::Greater)
         }
         if o.type_sentinel() == (& STRING_SENTINEL) as *const u8 {
             unimplemented!()
         }
-        ((& STRING_SENTINEL) as *const u8).cmp(&o.type_sentinel())
+        let ret = ((& STRING_SENTINEL) as *const u8).cmp(&o.type_sentinel());
+        Some(ret)
     }
 }
 

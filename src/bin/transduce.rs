@@ -25,29 +25,33 @@ fn main() {
     let mut ps: Vec<Box<Process>> = Vec::new();
     ps.push(Box::new(Printer {}));
     for i in 0..25 {
-        let x = Integral::new(i).handle().value();
+        let x = Integral::new_value(i);
         transducer::inges(&mut ps, &x);
     }
 
-    let y = Integral::new(7).handle().value();
-    let z = Integral::new(2).handle().value();
-    //let w = y + z;
-    //println!("Goodbye: {}", w);
+    let y = Integral::new_value(7);
+    let z = Integral::new_value(7);
+    let w = &y + &z;
+    println!("Sum: {}", -w);
+    println!("Compare: {}", y == z);
+    //println!("y = {}", y);
+    //println!("y.inc.inc = {}", y.split_out().inc().inc());
+    //println!("y.dec = {}", y.dec());
 
-    // TODO filter
-    let mut v = new_vector();
+    let mut v = new_map();
     for i in 0..100i64 {
-        //let w = new_vector().conj(Value::from(i + 1)).conj(Value::from(i + 2));
-        //v = v.assoc(Value::from(i), Value::from(i + 1));
-        v = v.conj(Value::from(i));
+        v = v.assoc(Value::from(i), Value::from(i + 1));
+        //v = v.conj(Value::from(i));
     }
     println!("Now v: {}", v);
-
+    let k = Value::from(25);
+    println!("Get out of v: {}", v[&k]);
+    println!("key is: {}", k);
     let cat = v.empty();
     println!("cat: {}", cat);
 
     println!("hash: 0x{:08X}", Value::from(9).hash());
 
-    test_me();
+    //test_me();
 }
 

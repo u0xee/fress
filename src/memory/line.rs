@@ -30,6 +30,7 @@ impl Line {
 
 impl From<Unit> for Line {
     fn from(u: Unit) -> Self {
+        assert!(u.is_even());
         Line { line: u.into() }
     }
 }

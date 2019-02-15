@@ -13,6 +13,8 @@ use memory::*;
 use handle::*;
 use dispatch::*;
 
+pub mod operators;
+
 pub struct Value {
     pub handle: Handle,
 }
@@ -73,6 +75,14 @@ impl Value {
         let v = self.handle().nth(idx) as *const Value;
         unsafe { &*v }
     }
+
+    pub fn inc(self) -> Value {
+        self.consume().inc().value()
+    }
+
+    pub fn dec(self) -> Value {
+        self.consume().dec().value()
+    }
 }
 
 impl From<&'static str> for Value {
@@ -85,13 +95,13 @@ impl From<&'static str> for Value {
 impl From<i64> for Value {
     fn from(x: i64) -> Self {
         use integral::Integral;
-        Integral::new(x).handle().value()
+        Integral::new_value(x)
     }
 }
 
 impl From<bool> for Value {
-    fn from(x: bool) -> Self {
-        unimplemented!()
+    fn from(x: bool) -> Value {
+        if x { Handle::tru().value() } else { Handle::fals().value() }
     }
 }
 
@@ -131,84 +141,6 @@ impl Clone for Value {
     }
 }
 
-impl ops::Add for Value {
-    type Output = Value;
-
-    fn add(self, rhs: Value) -> Self::Output {
-        self.consume().add(rhs.consume()).value()
-    }
-}
-
-impl ops::Sub for Value {
-    type Output = Value;
-
-    fn sub(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::Mul for Value {
-    type Output = Value;
-
-    fn mul(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::Div for Value {
-    type Output = Value;
-
-    fn div(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::Rem for Value {
-    fn rem(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::BitAnd for Value {
-    type Output = Value;
-
-    fn bitand(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::BitOr for Value {
-    type Output = Value;
-
-    fn bitor(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::BitXor for Value {
-    type Output = Value;
-
-    fn bitxor(self, rhs: Value) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::Shl<u32> for Value {
-    type Output = Value;
-
-    fn shl(self, rhs: u32) -> Self::Output {
-        unimplemented!()
-    }
-}
-
-impl ops::Shr<u32> for Value {
-    type Output = Value;
-
-    fn shr(self, rhs: u32) -> Self::Output {
-        unimplemented!()
-    }
-}
-
 impl PartialEq for Value {
     fn eq(&self, other: &Value) -> bool {
         self.handle().eq(other.handle())
@@ -217,15 +149,21 @@ impl PartialEq for Value {
 
 impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Value) -> Option<cmp::Ordering> {
-        unimplemented!()
+        self.handle().cmp(other.handle())
     }
 }
 
 impl<'a> ops::Index<&'a Value> for Value {
     type Output = Value;
-
     fn index(&self, index: &'a Value) -> &Value {
         self.get(index)
+    }
+}
+
+impl<'a> ops::Index<Value> for Value {
+    type Output = Value;
+    fn index(&self, index: Value) -> &Value {
+        self.index(&index)
     }
 }
 
@@ -236,7 +174,8 @@ mod test {
 
 // Important Traits:
 // Drop, Default, Display, Debug, Clone
-// math:    + - * / %
+// math:    + - * / % neg(-)
+// not: !
 // bitwise: & | ^ << >>
 // Index: v[k]
 // PartialEq:  == !=

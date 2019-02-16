@@ -10,19 +10,21 @@ use fress::value::Value;
 use fress::handle::Handle;
 use fress::integral::Integral;
 use fress::transducer;
-use fress::transducer::{Process, test_me};
-use fress::value::{new_vector, new_list, new_map, new_set};
+use fress::transducer::{Process};
+
 
 pub struct Printer {}
 impl Process for Printer {
-    fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+    fn inges(&mut self, _stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
         println!("Hello: {}", v);
         None
     }
 }
 
 fn main() {
+    // conj(x, y) x.conj(y)
     let mut ps: Vec<Box<Process>> = Vec::new();
+
     ps.push(Box::new(Printer {}));
     for i in 0..25 {
         let x = Integral::new_value(i);
@@ -32,13 +34,17 @@ fn main() {
     let y = Integral::new_value(7);
     let z = Integral::new_value(7);
     let w = &y + &z;
-    println!("Sum: {}", -w);
+
+    let option: Option<bool> = None;
+    let b: Value = option.into();
+    println!("b: {}", b);
+    println!("Sum: {}", w);
     println!("Compare: {}", y == z);
     //println!("y = {}", y);
     //println!("y.inc.inc = {}", y.split_out().inc().inc());
     //println!("y.dec = {}", y.dec());
 
-    let mut v = new_map();
+    let mut v = fress::map();
     for i in 0..100i64 {
         v = v.assoc(Value::from(i), Value::from(i + 1));
         //v = v.conj(Value::from(i));
@@ -53,5 +59,6 @@ fn main() {
     println!("hash: 0x{:08X}", Value::from(9).hash());
 
     //test_me();
+    //println!("Count: {}", v.count());
 }
 

@@ -14,12 +14,17 @@ use handle::*;
 use dispatch::*;
 
 pub mod operators;
+pub mod conversions;
 
 pub struct Value {
     pub handle: Handle,
 }
 
 impl Value {
+    pub fn nil()  -> Value { Handle::nil().value() }
+    pub fn tru()  -> Value { Handle::tru().value() }
+    pub fn fals() -> Value { Handle::fals().value() }
+
     fn consume(self) -> Handle {
         Handle::from(self)
     }
@@ -41,6 +46,15 @@ impl Value {
     pub fn conj(self, x: Value) -> Value {
         self.consume().conj(x.consume()).value()
     }
+    pub fn pop(self) -> (Value, Value) {
+        let (c, x) = self.consume().pop();
+        (c.value(), x.value())
+    }
+
+    pub fn peek(&self) -> &Value {
+        let v = self.handle().peek() as *const Value;
+        unsafe { &*v }
+    }
 
     pub fn count(&self) -> u32 {
         self.handle().count()
@@ -59,7 +73,9 @@ impl Value {
     }
 
     pub fn assoc(self, k: Value, v: Value) -> Value {
-        self.consume().assoc(k.consume(), v.consume()).value()
+        let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
+        displaced.retire();
+        c.value()
     }
 
     pub fn dissoc(self, k: &Value) -> Value {
@@ -76,12 +92,25 @@ impl Value {
         unsafe { &*v }
     }
 
+    pub fn meta(&self) -> &Value {
+        let v = self.handle().meta() as *const Value;
+        unsafe { &*v }
+    }
+
+    pub fn with_meta(self, m: Value) -> Value {
+        self.consume().with_meta(m.consume()).value()
+    }
+
     pub fn inc(self) -> Value {
         self.consume().inc().value()
     }
 
     pub fn dec(self) -> Value {
         self.consume().dec().value()
+    }
+
+    pub fn modulus(self, divisor: Value) -> Value {
+        self.consume().modulus(divisor.consume()).value()
     }
 }
 
@@ -102,6 +131,27 @@ impl From<i64> for Value {
 impl From<bool> for Value {
     fn from(x: bool) -> Value {
         if x { Handle::tru().value() } else { Handle::fals().value() }
+    }
+}
+
+impl Into<bool> for Value {
+    fn into(self) -> bool {
+        (&self).into()
+    }
+}
+
+impl<'a> Into<bool> for &'a Value {
+    fn into(self) -> bool {
+        self.handle().is_so()
+    }
+}
+
+impl<T: Into<Value>> From<Option<T>> for Value {
+    fn from(option: Option<T>) -> Value {
+        match option {
+            Some(t) => t.into(),
+            None    => Handle::nil().value(),
+        }
     }
 }
 
@@ -174,10 +224,10 @@ mod test {
 
 // Important Traits:
 // Drop, Default, Display, Debug, Clone
-// math:    + - * / % neg(-)
-// not: !
-// bitwise: & | ^ << >>
-// Index: v[k]
+// math:       + - * / % neg(-)
+// logical:    !
+// bitwise:    & | ^ << >>
+// Index:      v[k]
 // PartialEq:  == !=
 // PartialOrd: < <= => >
 // From: numbers, strings
@@ -216,24 +266,4 @@ mod test {
 //struct Integral {}
 //struct Rational {}
 //struct FloatPoint {}
-
-pub fn new_vector() -> Value {
-    use vector::Vector;
-    Vector::new_value()
-}
-
-pub fn new_list() -> Value {
-    use list::List;
-    List::new_value()
-}
-
-pub fn new_map() -> Value {
-    use map::Map;
-    Map::new_value()
-}
-
-pub fn new_set() -> Value {
-    use set::Set;
-    Set::new_value()
-}
 

@@ -5,20 +5,4 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-extern crate fress;
-use fress::value::Value;
-use fress::handle::Handle;
-use fress::vector::Vector;
-use fress::memory::segment;
-
-fn main() {
-    let (new_a, free_a) = segment::new_free_counts();
-
-    {
-        let (new_b, free_b) = segment::new_free_counts();
-        let new_diff = new_b - new_a;
-        let free_diff = free_b - free_a;
-        println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
-    }
-}
-
+use super::*;

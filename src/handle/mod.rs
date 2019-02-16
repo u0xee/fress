@@ -169,6 +169,17 @@ impl Handle {
         }
     }
 
+    pub fn peek(self) -> *const Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let elem = mechanism::as_dispatch(&p).peek(prism);
+            elem as *const Handle
+        } else {
+            unimplemented!()
+        }
+    }
+
     pub fn count(self) -> u32 {
         if self.is_ref() {
             let prism = self.prism();
@@ -199,24 +210,23 @@ impl Handle {
         }
     }
 
-    pub fn pop(self) -> Handle {
+    pub fn pop(self) -> (Handle, Handle) {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            let (v, _) = mechanism::as_dispatch(&p).pop(prism);
-            v.handle()
+            let (c, v) = mechanism::as_dispatch(&p).pop(prism);
+            (c.handle(), v.handle())
         } else {
             unimplemented!()
         }
     }
 
-    pub fn assoc(self, k: Handle, v: Handle) -> Handle {
+    pub fn assoc(self, k: Handle, v: Handle) -> (Handle, Handle) {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            let (v, replaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
-            replaced.handle().retire();
-            v.handle()
+            let (c, displaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
+            (c.handle(), displaced.handle())
         } else {
             unimplemented!()
         }
@@ -250,6 +260,27 @@ impl Handle {
             let p = prism[0];
             let elem = mechanism::as_dispatch(&p).nth(prism, idx);
             elem as *const Handle
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn meta(self) -> *const Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let elem = mechanism::as_dispatch(&p).meta(prism);
+            elem as *const Handle
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn with_meta(self, m: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).with_meta(prism, m.unit()).handle()
         } else {
             unimplemented!()
         }

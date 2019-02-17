@@ -88,8 +88,8 @@ pub fn shr(x: Value, shift: u32) -> Value { x >> shift }
 
 pub fn vector() -> Value { vector::Vector::new_value() }
 pub fn list()   -> Value { list::List::new_value() }
-pub fn map()    -> Value { map::Map::new_value() }
-pub fn set()    -> Value { set::Set::new_value() }
+pub fn hash_map()    -> Value { map::Map::new_value() }
+pub fn hash_set()    -> Value { set::Set::new_value() }
 pub fn sort_map() -> Value { unimplemented!() }
 pub fn sort_set() -> Value { unimplemented!() }
 
@@ -105,6 +105,7 @@ pub fn educe(red: u32, xf: u32) -> u32 { unimplemented!() }
 pub fn max_key(c: &Value, f: u32) -> &Value { unimplemented!() }
 pub fn min_key(c: &Value, f: u32) -> &Value { unimplemented!() }
 pub fn zipmap(ks: Value, vs: Value) -> Value { unimplemented!() }
+pub fn group_by(f: u32, red: u32) -> Value { unimplemented!() }
 
 pub fn is_number(v: &Value) -> bool { unimplemented!() }
 pub fn is_integral(v: &Value) -> bool { unimplemented!() }
@@ -119,17 +120,23 @@ pub fn is_vector(v: &Value) -> bool { unimplemented!() }
 pub fn is_list(v: &Value) -> bool { unimplemented!() }
 pub fn is_map(v: &Value) -> bool { unimplemented!() }
 pub fn is_set(v: &Value) -> bool { unimplemented!() }
+pub fn is_hash_map(v: &Value) -> bool { unimplemented!() }
+pub fn is_hash_set(v: &Value) -> bool { unimplemented!() }
 pub fn is_sort_map(v: &Value) -> bool { unimplemented!() }
 pub fn is_sort_set(v: &Value) -> bool { unimplemented!() }
 pub fn is_aggregate(v: &Value) -> bool { unimplemented!() }
 pub fn is_sequential(v: &Value) -> bool { unimplemented!() }
 pub fn is_associative(v: &Value) -> bool { unimplemented!() }
+pub fn is_inst(v: &Value) -> bool { unimplemented!() }
+pub fn is_uuid(v: &Value) -> bool { unimplemented!() }
 
 pub fn atom(v: Value) -> u64 { unimplemented!() }
 pub fn swap(a: u64, f: &Fn(Value) -> Value) -> Value { unimplemented!() }
+pub fn reset(a: u64, v: Value) -> Value { unimplemented!() }
 
 pub fn str(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn substr(s: Value, r: std::ops::Range<u32>) -> Value { unimplemented!() }
+pub fn str_split(s: Value, sep: Value) -> Value { unimplemented!() }
 pub fn trim(s: Value) -> Value { unimplemented!() }
 pub fn starts_with(s: &Value, t: &Value) -> bool { unimplemented!() }
 pub fn ends_with  (s: &Value, t: &Value) -> bool { unimplemented!() }
@@ -143,18 +150,31 @@ pub fn arr_sort_by(a: Value, key_fn: u32) -> Value { unimplemented!() }
 pub fn arr_rotate(a: Value, n: u32) -> Value { unimplemented!() }
 
 use transduce::{Transducer};
-use std::sync::Arc;
-pub fn drop(n: u32) -> Arc<Transducer> { unimplemented!() }
+pub fn drop(n: u32) -> Transducer { unimplemented!() }
 pub fn range(r: std::ops::Range<i64>) -> Value { unimplemented!() }
-// reducible. reduce(fn, xf, red) red could be an aggregate, eduction
 
-// transducers: keys, vals, iterate (a function), repeat, range, cycle
-// distinct, map, mapcat, filter, take-nth, dedupe, cat, concat, interleave, interpose
-// take, drop, take-while, drop-while, take-last, drop-last
-// partition, partition-by, split-at, split-with, replace, every? not-every? not-any?
-// sort, sort-by, group_by
-// spit, slurp, sha3, k12, read edn, read fressian,
-// predicates: inst? uuid?
+// reducible: repeat, cycle, range, iterate, repeatedly
+// transducers: keys, vals, map, filter, take, drop, cat, mapcat
+// distinct, dedupe, take-nth, concat, interleave, interpose, replace
+// take-while, drop-while, take-last, drop-last, sort
+// partition, partition-by, split-at, split-with, every? not-every? not-any?
+
+pub fn spit(filename: String, data: &Value) { unimplemented!() }
+pub fn slurp(filename: String) -> Value { unimplemented!() }
+pub fn sha3(filename: String) -> (u64, u64, u64, u64) { unimplemented!() }
+pub fn k12(filename: String, customization: String) -> (u64, u64, u64, u64) { unimplemented!() }
+
+pub fn reduced(v: Value) -> Value { unimplemented!() }
+pub fn is_reduced(v: &Value) -> bool { unimplemented!() }
+
+pub fn chan() -> u64 { unimplemented!() }
+pub fn chan_take(c: u64) -> Value { unimplemented!() }
+pub fn chan_put(c: u64, v: Value) { unimplemented!() }
+pub fn alts() { unimplemented!() }
+pub fn promise_chan() -> u64 { unimplemented!() }
+pub fn offer(c: u64, v: Value) { unimplemented!() }
+pub fn poll(c: u64) -> Value { unimplemented!() }
+
 
 pub mod agg {
     pub use super::{count, meta, with_meta, empty, conj, pop,
@@ -174,13 +194,14 @@ mod tests {
         let b = a.map(|&v| v.name()).filter(|&n| n == "fred").drop(3);
         let c = a.educe(mapp(|&v| v.name()));
         let d = filter(|&n| n == "fred");
-        let e = drop(3);
+        let e: Transducer = drop(3);
         let f: Value = set().drop(3);
         */
         // Eduction dispatches
         // Transducers and Reducible
         // range(4..8)
         // cycle
+        // into(c: Value, xf: Transducers, s: Value)
         // into(c, xf, sc)
         //   reduce(c, conj, xf, sc)
         //     ps: c = c.conj(v), xf->stack

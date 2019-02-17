@@ -6,59 +6,16 @@
 // You must not remove this notice, or any other, from this software.
 
 extern crate fress;
-use fress::value::Value;
-use fress::handle::Handle;
-use fress::integral::Integral;
-use fress::transducer;
-use fress::transducer::{Process};
+use fress::Value;
 
-
-pub struct Printer {}
-impl Process for Printer {
-    fn inges(&mut self, _stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
-        println!("Hello: {}", v);
-        None
-    }
-}
 
 fn main() {
-    // conj(x, y) x.conj(y)
-    let mut ps: Vec<Box<Process>> = Vec::new();
-
-    ps.push(Box::new(Printer {}));
-    for i in 0..25 {
-        let x = Integral::new_value(i);
-        transducer::inges(&mut ps, &x);
-    }
-
-    let y = Integral::new_value(7);
-    let z = Integral::new_value(7);
-    let w = &y + &z;
-
-    let option: Option<bool> = None;
-    let b: Value = option.into();
-    println!("b: {}", b);
-    println!("Sum: {}", w);
-    println!("Compare: {}", y == z);
-    //println!("y = {}", y);
-    //println!("y.inc.inc = {}", y.split_out().inc().inc());
-    //println!("y.dec = {}", y.dec());
-
-    let mut v = fress::map();
+    let mut v = fress::vector();
     for i in 0..100i64 {
-        v = v.assoc(Value::from(i), Value::from(i + 1));
-        //v = v.conj(Value::from(i));
+        v = v.conj(Value::from(i));
     }
-    println!("Now v: {}", v);
-    let k = Value::from(25);
-    println!("Get out of v: {}", v[&k]);
-    println!("key is: {}", k);
-    let cat = v.empty();
-    println!("cat: {}", cat);
-
-    println!("hash: 0x{:08X}", Value::from(9).hash());
-
-    //test_me();
-    //println!("Count: {}", v.count());
+    println!("v: {}", v);
+    v = v.with_meta(Value::from(true));
+    println!("v.meta: {}", v.meta());
 }
 

@@ -39,13 +39,21 @@ pub use value::Value;
 pub fn nil()  -> Value { Value::nil() }
 pub fn tru()  -> Value { Value::tru() }
 pub fn fals() -> Value { Value::fals() }
+pub fn is_nil(v: &Value) -> bool { v.is_nil() }
+pub fn is_true(v: &Value) -> bool { v.is_true() }
+pub fn is_false(v: &Value) -> bool { v.is_false() }
+pub fn is_not(v: &Value) -> bool { v.is_not() }
+pub fn is_so(v: &Value) -> bool { v.is_so() }
 pub fn not(v: &Value) -> Value { !v }
 pub fn split(v: Value) -> (Value, Value) { v.split() }
 pub fn split_out(v: &Value) -> Value { v.split_out() }
 pub fn hash(v: &Value) -> u32 { v.hash() }
-pub fn compare(a: &Value, b: &Value) -> Option<std::cmp::Ordering> { unimplemented!() }
+pub fn eq(a: &Value, b: &Value) -> bool { a == b }
+pub fn compare(a: &Value, b: &Value) -> Option<std::cmp::Ordering> { a.partial_cmp(b) }
 
 pub fn count(c: &Value) -> u32 { c.count() }
+pub fn is_empty(c: &Value) -> bool { c.count() == 0 }
+pub fn has_mass(c: &Value) -> bool { !is_empty(c) }
 pub fn meta(c: &Value) -> &Value { c.meta() }
 pub fn with_meta(c: Value, m: Value) -> Value { c.with_meta(m) }
 pub fn empty(c: &Value) -> Value { c.empty() }
@@ -53,6 +61,7 @@ pub fn conj(c: Value, v: Value) -> Value { c.conj(v) }
 pub fn pop(c: Value) -> (Value, Value) { c.pop() }
 pub fn peek(c: &Value) -> &Value { c.peek() }
 pub fn nth(c: &Value, idx: u32) -> &Value { c.nth(idx) }
+pub fn mth(c: &Value, idx: i32) -> &Value { unimplemented!() }
 pub fn assoc(c: Value, k: Value, v: Value) -> Value { c.assoc(k, v) }
 pub fn dissoc(c: Value, k: &Value) -> Value { c.dissoc(k) }
 pub fn contains(c: &Value, k: &Value) -> bool { c.contains(k) }
@@ -60,22 +69,92 @@ pub fn get<'a>(c: &'a Value, k: &Value) -> &'a Value { c.get(k) }
 
 pub fn inc(x: Value) -> Value { x.inc() }
 pub fn dec(x: Value) -> Value { x.dec() }
+pub fn max(x: Value, y: Value) -> Value { unimplemented!() }
+pub fn min(x: Value, y: Value) -> Value { unimplemented!() }
 pub fn neg(x: Value) -> Value { -x }
+pub fn abs(x: Value) -> Value { unimplemented!() }
+pub fn is_zero(x: &Value) -> bool { unimplemented!() }
+pub fn is_pos(x: &Value) -> bool { unimplemented!() }
+pub fn is_neg(x: &Value) -> bool { unimplemented!() }
 pub fn add(x: Value, y: Value) -> Value { x + y }
 pub fn sub(x: Value, y: Value) -> Value { x - y }
 pub fn mul(x: Value, y: Value) -> Value { x * y }
 pub fn div(x: Value, y: Value) -> Value { x / y }
+pub fn quot(x: Value, y: Value) -> Value { unimplemented!() }
 pub fn rem(x: Value, y: Value) -> Value { x % y }
 pub fn modulus(x: Value, y: Value) -> Value { x.modulus(y) }
 pub fn shl(x: Value, shift: u32) -> Value { x << shift }
 pub fn shr(x: Value, shift: u32) -> Value { x >> shift }
 
 pub fn vector() -> Value { vector::Vector::new_value() }
-pub fn list() -> Value { list::List::new_value() }
-pub fn set() -> Value { set::Set::new_value() }
-pub fn map() -> Value { map::Map::new_value() }
+pub fn list()   -> Value { list::List::new_value() }
+pub fn map()    -> Value { map::Map::new_value() }
+pub fn set()    -> Value { set::Set::new_value() }
+pub fn sort_map() -> Value { unimplemented!() }
+pub fn sort_set() -> Value { unimplemented!() }
 
+pub fn subvec(c: Value) -> Value { unimplemented!() }
+pub fn union(s: Value, t: Value) -> Value { unimplemented!() }
+pub fn difference(s: Value, t: Value) -> Value { unimplemented!() }
+pub fn intersection(s: Value, t: Value) -> Value { unimplemented!() }
+pub fn is_subset(s: &Value, t: &Value) -> bool { unimplemented!() }
+pub fn is_superset(s: &Value, t: &Value) -> bool { unimplemented!() }
+pub fn into(c: Value, xf: u32, red: u32) -> Value { unimplemented!() }
+pub fn reduce(red: u32, xf: u32, f: u32) -> Value { unimplemented!() }
+pub fn educe(red: u32, xf: u32) -> u32 { unimplemented!() }
+pub fn max_key(c: &Value, f: u32) -> &Value { unimplemented!() }
+pub fn min_key(c: &Value, f: u32) -> &Value { unimplemented!() }
+pub fn zipmap(ks: Value, vs: Value) -> Value { unimplemented!() }
 
+pub fn is_number(v: &Value) -> bool { unimplemented!() }
+pub fn is_integral(v: &Value) -> bool { unimplemented!() }
+pub fn is_rational(v: &Value) -> bool { unimplemented!() }
+pub fn is_float_point(v: &Value) -> bool { unimplemented!() }
+pub fn is_keyword(v: &Value) -> bool { unimplemented!() }
+pub fn is_symbol(v: &Value) -> bool { unimplemented!() }
+pub fn is_string(v: &Value) -> bool { unimplemented!() }
+pub fn is_boolean(v: &Value) -> bool { unimplemented!() }
+pub fn is_char(v: &Value) -> bool { unimplemented!() }
+pub fn is_vector(v: &Value) -> bool { unimplemented!() }
+pub fn is_list(v: &Value) -> bool { unimplemented!() }
+pub fn is_map(v: &Value) -> bool { unimplemented!() }
+pub fn is_set(v: &Value) -> bool { unimplemented!() }
+pub fn is_sort_map(v: &Value) -> bool { unimplemented!() }
+pub fn is_sort_set(v: &Value) -> bool { unimplemented!() }
+pub fn is_aggregate(v: &Value) -> bool { unimplemented!() }
+pub fn is_sequential(v: &Value) -> bool { unimplemented!() }
+pub fn is_associative(v: &Value) -> bool { unimplemented!() }
+
+pub fn atom(v: Value) -> u64 { unimplemented!() }
+pub fn swap(a: u64, f: &Fn(Value) -> Value) -> Value { unimplemented!() }
+
+pub fn str(s: Value, t: Value) -> Value { unimplemented!() }
+pub fn substr(s: Value, r: std::ops::Range<u32>) -> Value { unimplemented!() }
+pub fn trim(s: Value) -> Value { unimplemented!() }
+pub fn starts_with(s: &Value, t: &Value) -> bool { unimplemented!() }
+pub fn ends_with  (s: &Value, t: &Value) -> bool { unimplemented!() }
+pub fn name     (s: &Value) -> &str { unimplemented!() }
+pub fn namespace(s: &Value) -> &str { unimplemented!() }
+
+pub fn u64s(n: u32) -> Value { unimplemented!() }
+pub fn f64s(n: u32) -> Value { unimplemented!() }
+pub fn arr_sort(a: Value) -> Value { unimplemented!() }
+pub fn arr_sort_by(a: Value, key_fn: u32) -> Value { unimplemented!() }
+pub fn arr_rotate(a: Value, n: u32) -> Value { unimplemented!() }
+
+use transducer::{Transducer};
+use std::sync::Arc;
+pub fn drop(n: u32) -> Arc<Transducer> { unimplemented!() }
+pub fn range(r: std::ops::Range<i64>) -> Value { unimplemented!() }
+// reducible. reduce(fn, xf, red) red could be an aggregate, eduction
+
+// transducers: keys, vals, iterate (a function), repeat, range, cycle
+// distinct, map, mapcat, filter, take-nth, dedupe, cat, concat, interleave, interpose
+// take, drop, take-while, drop-while, take-last, drop-last
+// partition, partition-by, split-at, split-with, replace, every? not-every? not-any?
+// sort, sort-by, group_by
+// spit, slurp, sha3, k12, read edn, read fressian,
+// predicates: inst? uuid?
 
 pub mod agg {
     pub use super::{count, meta, with_meta, empty, conj, pop,
@@ -83,11 +162,26 @@ pub mod agg {
     pub use super::{vector, list, set, map};
 }
 pub mod num {
-    pub use super::{inc, dec, neg, add, sub, mul, div, rem, modulus, shl, shr};
+    pub use super::{inc, dec, neg, abs, add, sub, mul, div, rem, modulus, shl, shr};
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    fn x() {
+        let a = set();
+        let b = a.map(|&v| v.name()).filter(|&n| n == "fred").drop(3);
+        let c = a.educe(mapp(|&v| v.name()));
+        let d = filter(|&n| n == "fred");
+        let e = drop(3);
+        let f: Value = set().drop(3);
+        // Eduction dispatches
+        // Transducers and Reducible
+        // range(4..8)
+        // cycle
+        // into(c, xf, sc)
+        //   reduce(c, conj, xf, sc)
+        //     ps: c = c.conj(v), xf->stack
+        //     sc.reduce(ps)
+    }
 }

@@ -12,3 +12,20 @@
 //! Algorithms on matrices; sum, multiply
 //! - linear algebra
 
+// array:
+//   bignum: arithmetic +-*/%(pow)mod bitwise ^|&<<>>
+//   polynomial: evaluate, add, sub, convolve
+//   matrix: add, sub, multiply, linear algebra-rref
+
+pub struct BigIntegral {}
+
+pub fn convolve(a: &[f64], b: &[f64]) -> Box<[f64]> {
+    unimplemented!()
+}
+
+pub struct Matrix {}
+
+pub fn multiply(a: Matrix, b: Matrix) -> Matrix {
+    unimplemented!()
+}
+

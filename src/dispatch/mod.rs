@@ -6,7 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::*;
-use transducer::{Process};
+use transduce::{Process};
 pub mod mechanism;
 use std::fmt;
 use std::io;

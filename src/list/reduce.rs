@@ -7,7 +7,7 @@
 
 use super::*;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, inges, last_call, Process};
+use transduce::{ingest, inges, last_call, Process};
 
 pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value {
     let guide = Guide::hydrate(prism);

@@ -12,7 +12,7 @@ use value::*;
 use map;
 use handle;
 use handle::Handle;
-use transducer::{Process};
+use transduce::{Process};
 use vector::guide::Guide;
 
 pub static SET_SENTINEL: u8 = 0;

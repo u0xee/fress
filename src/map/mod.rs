@@ -13,7 +13,7 @@ use dispatch::*;
 use value::*;
 use handle;
 use handle::Handle;
-use transducer::{Process};
+use transduce::{Process};
 
 use vector::guide::Guide;
 pub mod pop;

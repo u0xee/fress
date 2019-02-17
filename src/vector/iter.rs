@@ -7,7 +7,7 @@
 
 use super::*;
 use super::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, last_call, Process};
+use transduce::{ingest, last_call, Process};
 
 pub struct Iter {
     pub x: usize,

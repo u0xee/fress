@@ -14,7 +14,7 @@ use memory::*;
 use dispatch::*;
 use value::*;
 use handle::Handle;
-use transducer::{Process, inges};
+use transduce::{Process, inges};
 
 pub mod guide;
 use self::guide::Guide;

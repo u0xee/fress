@@ -7,7 +7,7 @@
 
 use super::*;
 use super::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, inges, last_call, Process};
+use transduce::{ingest, inges, last_call, Process};
 
 pub struct Conjer {
     pub acc: Value,

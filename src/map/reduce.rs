@@ -8,7 +8,7 @@
 use super::*;
 use super::assoc::address;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transducer::{ingest, inges, ingest_kv, inges_kv, last_call, Process, Transducer, Transducers};
+use transduce::{ingest, inges, ingest_kv, inges_kv, last_call, Process, Transducer, Transducers};
 
 pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut [Box<Process>],
                    has_vals: u32) -> Option<Value> {

@@ -30,7 +30,7 @@ pub mod sorted_map;
 pub mod sorted_set;
 pub mod string;
 pub mod symbol;
-pub mod transducer;
+pub mod transduce;
 pub mod value;
 pub mod vector;
 
@@ -142,7 +142,7 @@ pub fn arr_sort(a: Value) -> Value { unimplemented!() }
 pub fn arr_sort_by(a: Value, key_fn: u32) -> Value { unimplemented!() }
 pub fn arr_rotate(a: Value, n: u32) -> Value { unimplemented!() }
 
-use transducer::{Transducer};
+use transduce::{Transducer};
 use std::sync::Arc;
 pub fn drop(n: u32) -> Arc<Transducer> { unimplemented!() }
 pub fn range(r: std::ops::Range<i64>) -> Value { unimplemented!() }
@@ -169,12 +169,14 @@ pub mod num {
 mod tests {
     use super::*;
     fn x() {
+        /*
         let a = set();
         let b = a.map(|&v| v.name()).filter(|&n| n == "fred").drop(3);
         let c = a.educe(mapp(|&v| v.name()));
         let d = filter(|&n| n == "fred");
         let e = drop(3);
         let f: Value = set().drop(3);
+        */
         // Eduction dispatches
         // Transducers and Reducible
         // range(4..8)

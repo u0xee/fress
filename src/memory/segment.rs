@@ -249,24 +249,26 @@ pub fn dealloc(line: Line, raw_cap: u32) {
 #[cfg(any(test, feature = "fuzz_segment_extra_cap"))]
 pub fn extra_cap() -> u32 {
     use fuzz;
+    use random::{uniform_f64, cycle, cycle_n, normal_f64};
     let (seed, log_tail) = fuzz::next_random();
-    let p = fuzz::uniform_f64(seed, fuzz::cycle(seed));
+    let p = uniform_f64(seed, cycle(seed));
     // fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'cap': {c}{tail}",
     if p < 0.67 {
-        (fuzz::normal_f64(fuzz::cycle_n(seed, 2)).abs() * 4.0) as u32
+        (normal_f64(cycle_n(seed, 2)).abs() * 4.0) as u32
     } else {
-        let seed2 = fuzz::cycle_n(seed, 2);
-        (fuzz::uniform_f64(seed2, fuzz::cycle(seed2)) * 30.0) as u32 + 10
+        let seed2 = cycle_n(seed, 2);
+        (uniform_f64(seed2, cycle(seed2)) * 30.0) as u32 + 10
     }
 }
 
 #[cfg(any(test, feature = "fuzz_segment_random_content"))]
 pub fn random_content(mut s: Segment, cap: u32) {
     use fuzz;
+    use random::{cycle};
     let (mut seed, log_tail) = fuzz::next_random();
     for i in 0..cap {
         s.anchor_line[1 + i] = seed.into();
-        seed = fuzz::cycle(seed);
+        seed = cycle(seed);
     }
     // fuzz::log
 }

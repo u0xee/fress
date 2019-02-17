@@ -10,7 +10,7 @@ use memory::*;
 use dispatch::*;
 use value::*;
 use handle::Handle;
-use transducer::Process;
+use transduce::Process;
 
 use vector;
 use vector::{BITS, TAIL_CAP, MASK};

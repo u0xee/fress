@@ -30,23 +30,6 @@ use Value;
 
 // vector tree, forward and reverse reduce
 
-pub struct Proc { }
-impl Process for Proc {
-    fn ingest(&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
-        println!("Verve {}", v);
-        None
-    }
-}
-
-pub fn test_me() {
-    let mut procs: [Box<Process>; 1] = [Box::new(Proc { })];
-    for i in 0..20 {
-        let x = Value::from(i);
-        let _ = ingest(&mut procs, x);
-    }
-}
-
-
 fn top(stack: &mut [Box<Process>]) -> *mut Box<Process> {
     stack.last_mut().unwrap() as *mut Box<Process>
 }
@@ -161,20 +144,19 @@ pub struct Xf<F> {
     pub new_process: F,
 }
 
-impl<F: 'static + Fn() -> Box<Process>> Transducer for Xf<F> {
+impl<F: 'static + Fn() -> Box<Process>> Transduce for Xf<F> {
     fn process(&self) -> Box<Process> {
         (self.new_process)()
     }
 }
 
 impl<F: 'static + Fn() -> Box<Process>> Xf<F> {
-    pub fn new(f: F) -> Arc<Transducer> {
-        Arc::new(Xf { new_process: f })
+    pub fn new(f: F) -> Transducer {
+        Transducer { t: Arc::new(Xf { new_process: f }) }
     }
 }
 
-
-pub trait Transducer {
+pub trait Transduce {
     fn process(&self) -> Box<Process>;
     fn transduce(&self, mut process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
         process_stack.push(self.process());
@@ -185,8 +167,20 @@ pub trait Transducer {
     }
 }
 
+#[derive(Clone)]
+pub struct Transducer {
+    pub t: Arc<Transduce>,
+}
+
+impl Transducer {
+    pub fn process(&self) -> Box<Process> { self.t.process() }
+    pub fn transduce(&self, process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
+        self.t.transduce(process_stack)
+    }
+}
+
 pub struct Transducers {
-    pub stack: Arc<Vec<Arc<Transducer>>>,
+    pub stack: Arc<Vec<Transducer>>,
 }
 
 impl Transducers {
@@ -194,7 +188,7 @@ impl Transducers {
         Transducers { stack: Vec::new().into() }
     }
 
-    pub fn add_transducer(&mut self, t: Arc<Transducer>) {
+    pub fn add_transducer(&mut self, t: Transducer) {
         Arc::make_mut(&mut self.stack).push(t)
     }
 
@@ -210,13 +204,8 @@ impl Transducers {
 mod tests {
     use super::*;
     #[test]
-    fn map1() {
-        //let m = Mapp { function: |x: &Value| x.add_one_test(), next: Pass {} };
-        /*let t = Xf::new(move || {
-            let b: Box<Process> = Box::new(m);
-            b
-        });
-        */
+    fn hello() {
+
     }
 }
 

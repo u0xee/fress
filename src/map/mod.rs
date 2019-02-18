@@ -48,7 +48,7 @@ impl Map {
             let s = Segment::new(3 + size(1));
             let prism = s.line_at(0);
             prism.set(0, mechanism::prism::<Map>());
-            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+            let g = Guide::hydrate_top_bot(prism, 0, 0);
             g
         };
         guide.root.set(-1, Pop::new().unit());

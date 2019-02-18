@@ -151,6 +151,9 @@ impl Aggregate for Vector {
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
         pop::pop(prism)
     }
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+        reduce::reduce(prism, process)
+    }
 }
 
 impl Sequential for Vector {

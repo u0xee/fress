@@ -12,6 +12,7 @@ use std::ops;
 use memory::*;
 use handle::*;
 use dispatch::*;
+use transduce::{Transducer, Transducers};
 
 pub mod operators;
 pub mod conversions;
@@ -117,6 +118,13 @@ impl Value {
 
     pub fn modulus(self, divisor: Value) -> Value {
         self.consume().modulus(divisor.consume()).value()
+    }
+
+    pub fn pour(self, xf: Transducers, sink: Value) -> Value {
+        let s = self.consume();
+        let ret = s.pour(xf, sink.consume()).value();
+        s.retire();
+        ret
     }
 }
 

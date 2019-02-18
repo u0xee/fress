@@ -10,6 +10,7 @@ use std::cmp;
 use memory::*;
 use dispatch::*;
 use value::*;
+use transduce::{Transducer, Transducers, Process};
 
 #[derive(Copy, Clone)]
 pub struct Handle {
@@ -37,7 +38,7 @@ impl Handle {
     }
 
     pub fn is_not(self) -> bool {
-        (self.unit.u() & 0x7) == 0x7
+        (self.unit.u() & 0xF) == 0x7
     }
 
     pub fn is_so(self) -> bool {
@@ -76,6 +77,40 @@ impl Handle {
 
     pub fn prism(self) -> AnchoredLine {
         self.segment().line_at(0)
+    }
+
+    pub fn reduce(self, stack: &mut [Box<Process>]) -> Value {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).reduce(prism, stack)
+        } else {
+            unimplemented!()
+        }
+    }
+
+    pub fn pour(self, xf: Transducers, sink: Handle) -> Handle {
+        struct Collect {
+            c: Handle,
+        }
+        impl Process for Collect {
+            fn ingest   (&mut self, stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
+                self.c = self.c.conj(Handle::from(v));
+                None
+            }
+            fn ingest_kv(&mut self, stack: &mut [Box<Process>], k:  Value, v:  Value) -> Option<Value> {
+                let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
+                displaced.retire();
+                self.c = c;
+                None
+            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+                self.c.value()
+            }
+        }
+        let stack: Vec<Box<Process>> = vec!(Box::new(Collect { c: sink }));
+        let mut stack2 = xf.apply(stack);
+        Handle::from(self.reduce(&mut stack2))
     }
 
     pub fn type_name(self) -> &'static str {

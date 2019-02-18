@@ -6,14 +6,27 @@
 // You must not remove this notice, or any other, from this software.
 
 extern crate fress;
+use fress::*;
 use fress::value::Value;
 use fress::handle::Handle;
 use fress::vector::Vector;
 use fress::memory::segment;
+use fress::transduce::Transducers;
+
+
+fn m() {
+    let v = vector().conj(Value::from(7)).conj(Value::from(7)).conj(Value::from(8))
+        .conj(nil()).conj(tru()).conj(fals());
+    println!("v: {}", v);
+    let mut xf = Transducers::new();
+    xf.add_transducer(filter());
+    let s = into(hash_set(), xf, v);
+    println!("s: {}", s);
+}
 
 fn main() {
     let (new_a, free_a) = segment::new_free_counts();
-
+    m();
     {
         let (new_b, free_b) = segment::new_free_counts();
         let new_diff = new_b - new_a;

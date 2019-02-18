@@ -156,6 +156,29 @@ impl<F: 'static + Fn() -> Box<Process>> Xf<F> {
     }
 }
 
+pub fn filter() -> Transducer {
+    struct Filter {}
+    impl Process for Filter {
+        fn ingest   (&mut self, stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
+            if v.is_so() {
+                let (_, rest) = stack.split_last_mut().unwrap();
+                ingest(rest, v)
+            } else {
+                None
+            }
+        }
+        fn inges    (&mut self, stack: &mut [Box<Process>], v: &Value)            -> Option<Value> {
+            if v.is_so() {
+                let (_, rest) = stack.split_last_mut().unwrap();
+                inges(rest, v)
+            } else {
+                None
+            }
+        }
+    }
+    Xf::new(|| Box::new(Filter {}))
+}
+
 pub trait Transduce {
     fn process(&self) -> Box<Process>;
     fn transduce(&self, mut process_stack: Vec<Box<Process>>) -> Vec<Box<Process>> {
@@ -199,6 +222,8 @@ impl Transducers {
         process_stack
     }
 }
+
+
 
 #[cfg(test)]
 mod tests {

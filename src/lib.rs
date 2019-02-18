@@ -35,6 +35,7 @@ pub mod value;
 pub mod vector;
 
 pub use value::Value;
+pub use transduce::{Transducer, Transducers};
 
 pub fn nil()  -> Value { Value::nil() }
 pub fn tru()  -> Value { Value::tru() }
@@ -99,7 +100,7 @@ pub fn difference(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn intersection(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn is_subset(s: &Value, t: &Value) -> bool { unimplemented!() }
 pub fn is_superset(s: &Value, t: &Value) -> bool { unimplemented!() }
-pub fn into(c: Value, xf: u32, red: u32) -> Value { unimplemented!() }
+pub fn into(sink: Value, xf: Transducers, source: Value) -> Value { source.pour(xf, sink) }
 pub fn reduce(red: u32, xf: u32, f: u32) -> Value { unimplemented!() }
 pub fn educe(red: u32, xf: u32) -> u32 { unimplemented!() }
 pub fn max_key(c: &Value, f: u32) -> &Value { unimplemented!() }
@@ -143,13 +144,21 @@ pub fn ends_with  (s: &Value, t: &Value) -> bool { unimplemented!() }
 pub fn name     (s: &Value) -> &str { unimplemented!() }
 pub fn namespace(s: &Value) -> &str { unimplemented!() }
 
-pub fn u64s(n: u32) -> Value { unimplemented!() }
+pub fn bools(n: u32) -> Value { unimplemented!() }
+pub fn i32s(n: u32) -> Value { unimplemented!() }
+pub fn i64s(n: u32) -> Value { unimplemented!() }
+pub fn f32s(n: u32) -> Value { unimplemented!() }
 pub fn f64s(n: u32) -> Value { unimplemented!() }
 pub fn arr_sort(a: Value) -> Value { unimplemented!() }
 pub fn arr_sort_by(a: Value, key_fn: u32) -> Value { unimplemented!() }
 pub fn arr_rotate(a: Value, n: u32) -> Value { unimplemented!() }
+pub fn u8s(n: u32) -> Value { unimplemented!() }
+pub fn u32s(n: u32) -> Value { unimplemented!() }
+pub fn u64s(n: u32) -> Value { unimplemented!() }
+pub fn varray(n: u32) -> Value { unimplemented!() }
 
-use transduce::{Transducer};
+
+pub fn filter() -> Transducer { transduce::filter() }
 pub fn drop(n: u32) -> Transducer { unimplemented!() }
 pub fn range(r: std::ops::Range<i64>) -> Value { unimplemented!() }
 

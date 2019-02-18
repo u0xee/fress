@@ -6,6 +6,8 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::*;
+use handle::Handle;
+use value::Value;
 use transduce::{Process};
 pub mod mechanism;
 use std::fmt;
@@ -53,7 +55,7 @@ pub trait Aggregate {
     fn peek(&self, prism: AnchoredLine) -> *const Unit { unimplemented!() }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { unimplemented!() }
     fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit { unimplemented!() }
-    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Unit { unimplemented!() }
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value { unimplemented!() }
     fn fold(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 

@@ -158,7 +158,8 @@ pub fn u64s(n: u32) -> Value { unimplemented!() }
 pub fn varray(n: u32) -> Value { unimplemented!() }
 
 
-pub fn filter() -> Transducer { transduce::filter() }
+pub fn filter(pred: fn(&Value) -> bool) -> Transducer { transduce::filter(pred) }
+pub fn take(n: u32) -> Transducer { unimplemented!() }
 pub fn drop(n: u32) -> Transducer { unimplemented!() }
 pub fn range(r: std::ops::Range<i64>) -> Value { unimplemented!() }
 
@@ -206,6 +207,7 @@ mod tests {
         let e: Transducer = drop(3);
         let f: Value = set().drop(3);
         */
+        // plan:
         // Eduction dispatches
         // Transducers and Reducible
         // range(4..8)

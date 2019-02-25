@@ -26,8 +26,15 @@ impl fmt::Debug for Unit {
     }
 }
 
-
 impl Unit {
+    pub fn bytes() -> u32 {
+        if cfg!(target_pointer_width = "32") { 4 } else { 8 }
+    }
+
+    pub fn zero() -> Unit {
+        Unit::from(0usize)
+    }
+
     pub fn is_even(&self) -> bool {
         self.word & 0x01 == 0
     }

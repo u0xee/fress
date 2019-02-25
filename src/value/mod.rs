@@ -193,6 +193,10 @@ impl fmt::Debug for Value {
     }
 }
 
+// derived?
+// unsafe impl Send for Value {}
+// unsafe impl Sync for Value {}
+
 impl default::Default for Value {
     fn default() -> Self {
         Handle::nil().value()

@@ -19,9 +19,35 @@ fn m() {
         .conj(nil()).conj(tru()).conj(fals());
     println!("v: {}", v);
     let mut xf = Transducers::new();
-    xf.add_transducer(filter());
+    xf.add_transducer(filter(|v| {
+        //let not_this = Value::from(8);
+        //v.eq(&not_this)
+        v.is_so()
+    }));
+    //let s = into(hash_set(), filter(|v| v.is_so()), v);
     let s = into(hash_set(), xf, v);
     println!("s: {}", s);
+
+    for i in -5..5 {
+        println!("{}", i % 3);
+    }
+
+    use fress::string::Str;
+    let h = Str::new_value_from_str("");
+    let t = Str::new_value_from_str("H");
+    println!("h == t: {}", h == t);
+    println!("h > t: {}", h > t);
+    println!("Here's a string: {}", h);
+    println!("Here's a hash: 0x{:08X}", h.hash());
+
+    let m = {
+        let k = Str::new_value_from_str("cats");
+        let val = Value::from(7);
+        let k2 = Str::new_value_from_str("dogs");
+        let val2 = Value::from(5);
+        hash_map().assoc(k, val).assoc(k2, val2)
+    };
+    println!("m: {}", m);
 }
 
 fn main() {

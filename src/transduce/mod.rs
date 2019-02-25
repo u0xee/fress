@@ -156,11 +156,11 @@ impl<F: 'static + Fn() -> Box<Process>> Xf<F> {
     }
 }
 
-pub fn filter() -> Transducer {
-    struct Filter {}
-    impl Process for Filter {
+pub fn filter(pred: fn(&Value) -> bool) -> Transducer {
+    struct Filter<G> { pred: G }
+    impl<G: Fn(&Value) -> bool> Process for Filter<G> {
         fn ingest   (&mut self, stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
-            if v.is_so() {
+            if (self.pred)(&v) {
                 let (_, rest) = stack.split_last_mut().unwrap();
                 ingest(rest, v)
             } else {
@@ -168,7 +168,7 @@ pub fn filter() -> Transducer {
             }
         }
         fn inges    (&mut self, stack: &mut [Box<Process>], v: &Value)            -> Option<Value> {
-            if v.is_so() {
+            if (self.pred)(v) {
                 let (_, rest) = stack.split_last_mut().unwrap();
                 inges(rest, v)
             } else {
@@ -176,7 +176,7 @@ pub fn filter() -> Transducer {
             }
         }
     }
-    Xf::new(|| Box::new(Filter {}))
+    Xf::new(move || Box::new(Filter { pred }))
 }
 
 pub trait Transduce {

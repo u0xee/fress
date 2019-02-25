@@ -11,6 +11,18 @@ use dispatch::*;
 use handle::Handle;
 use Value;
 
+// Numbers. immediate i60 (28), f60 (28). boxed integral, rational, float point.
+// Layout: i60I f60F, [prism guide{chunk_count} contents]
+// methods (on guide?) to get/set chunks by index (32/64, LE/BE)
+// inc dec, + -, * /, % mod, neg
+// zero? neg? pos?, type tests, modular exponentiation,
+
+// inc dec -> if(int) _ else fn_call to dispatch here
+// neg if imm
+// + - * / if both imm (x & y & 0x1) == 0x1 then _ else dispatch here
+// zero? neg? pos? -> special case imm
+
+
 pub static INTEGRAL_SENTINEL: u8 = 0;
 
 pub struct Integral {

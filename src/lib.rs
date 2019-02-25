@@ -17,6 +17,7 @@ pub mod fressian;
 pub mod fuzz;
 pub mod handle;
 pub mod hash;
+pub mod inst;
 pub mod integral;
 pub mod keyword;
 pub mod list;
@@ -31,6 +32,8 @@ pub mod sorted_set;
 pub mod string;
 pub mod symbol;
 pub mod transduce;
+pub mod uri;
+pub mod uuid;
 pub mod value;
 pub mod vector;
 

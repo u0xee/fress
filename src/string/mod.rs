@@ -7,9 +7,11 @@
 
 use std;
 use std::fmt;
+use std::io;
 use memory::*;
 use dispatch::*;
-use Value;
+use transduce::{Process};
+use value::Value;
 
 pub mod guide;
 use self::guide::Guide;
@@ -58,6 +60,10 @@ impl Dispatch for Str {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
         Segment::free(prism.segment())
+    }
+
+    fn unaliased(&self, prism: AnchoredLine) -> Unit {
+        unimplemented!()
     }
 }
 
@@ -134,7 +140,23 @@ impl Distinguish for Str {
     }
 }
 
-impl Aggregate for Str { }
+impl Aggregate for Str {
+    fn count(&self, prism: AnchoredLine) -> u32 {
+        unimplemented!()
+    }
+    fn empty(&self, prism: AnchoredLine) -> Unit {
+        unimplemented!()
+    }
+    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
+        unimplemented!()
+    }
+    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
+        unimplemented!()
+    }
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+        unimplemented!()
+    }
+}
 impl Sequential for Str { }
 impl Associative for Str { }
 impl Reversible for Str {}
@@ -143,6 +165,10 @@ impl Notation for Str {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
         write!(f, "\"{}\"", guide.str())
+    }
+
+    fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> {
+        unimplemented!()
     }
 }
 impl Numeral for Str {}

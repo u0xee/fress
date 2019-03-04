@@ -10,6 +10,8 @@ use memory::*;
 use dispatch::*;
 use value::Value;
 use handle::Handle;
+use string::Str;
+use string::guide::Guide;
 
 pub static SYMBOL_SENTINEL: u8 = 0;
 
@@ -18,14 +20,26 @@ pub struct Symbol {
 }
 
 impl Symbol {
-    pub fn new() -> Unit {
-        // take string
-        unimplemented!()
+    pub fn new(ns: &str, n: &str) -> Unit {
+        let needed = 1 /*prism*/ + Guide::units() + 2;
+        let s = Segment::new(needed);
+        let prism = s.line_at(0);
+        prism.set(0, mechanism::prism::<Symbol>());
+        let guide = Guide::hydrate_top_bot(prism, 0, 0);
+        guide.root.set(0, Str::new_from_str(ns));
+        guide.root.set(1, Str::new_from_str(n));
+        guide.store().segment().unit()
     }
 
-    pub fn new_from_str(source: &str) -> Unit {
-        // into string
-        unimplemented!()
+    pub fn new_name(n: &str) -> Unit {
+        let needed = 1 /*prism*/ + Guide::units() + 2;
+        let s = Segment::new(needed);
+        let prism = s.line_at(0);
+        prism.set(0, mechanism::prism::<Symbol>());
+        let guide = Guide::hydrate_top_bot(prism, 0, 0);
+        guide.root.set(0, Handle::nil().unit);
+        guide.root.set(1, Str::new_from_str(n));
+        guide.store().segment().unit()
     }
 }
 
@@ -59,6 +73,7 @@ impl Distinguish for Symbol {
         unimplemented!()
     }
 }
+// P G M? NS N
 impl Aggregate for Symbol { }
 impl Associative for Symbol { }
 impl Sequential for Symbol { }
@@ -66,6 +81,9 @@ impl Reversible for Symbol { }
 impl Sorted for Symbol { }
 impl Notation for Symbol {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let guide = Guide::hydrate(prism);
+        let ns = guide.root[0].handle();
+        let n = guide.root[1].handle();
         unimplemented!()
     }
 }

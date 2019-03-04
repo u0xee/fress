@@ -16,7 +16,8 @@
 //   bignum: arithmetic +-*/%(pow)mod bitwise ^|&<<>>
 //   polynomial: evaluate, add, sub, convolve
 //   matrix: add, sub, multiply, linear algebra-rref
-
+// instances: byte, bool, int, float, long, double, object (value?)
+//
 pub struct BigIntegral {}
 
 pub fn convolve(a: &[f64], b: &[f64]) -> Box<[f64]> {

@@ -10,25 +10,29 @@
 pub mod array;
 pub mod atom;
 pub mod channel;
+pub mod character;
 pub mod dispatch;
 pub mod edn;
 pub mod float_point;
 pub mod fressian;
 pub mod fuzz;
+pub mod graph;
 pub mod handle;
 pub mod hash;
 pub mod inst;
 pub mod integral;
 pub mod keyword;
+pub mod learn;
 pub mod list;
 pub mod map;
 pub mod memory;
 pub mod random;
 pub mod range;
 pub mod rational;
+pub mod regex;
 pub mod set;
-pub mod sorted_map;
-pub mod sorted_set;
+pub mod sort_map;
+pub mod sort_set;
 pub mod string;
 pub mod symbol;
 pub mod transduce;
@@ -138,6 +142,7 @@ pub fn atom(v: Value) -> u64 { unimplemented!() }
 pub fn swap(a: u64, f: &Fn(Value) -> Value) -> Value { unimplemented!() }
 pub fn reset(a: u64, v: Value) -> Value { unimplemented!() }
 
+pub fn str_new(source: &str) -> Value { string::Str::new_value_from_str(source) }
 pub fn str(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn substr(s: Value, r: std::ops::Range<u32>) -> Value { unimplemented!() }
 pub fn str_split(s: Value, sep: Value) -> Value { unimplemented!() }

@@ -13,6 +13,7 @@ pub mod channel;
 pub mod character;
 pub mod dispatch;
 pub mod edn;
+pub mod eval;
 pub mod float_point;
 pub mod fressian;
 pub mod fuzz;
@@ -26,6 +27,7 @@ pub mod learn;
 pub mod list;
 pub mod map;
 pub mod memory;
+pub mod queue;
 pub mod random;
 pub mod range;
 pub mod rational;
@@ -227,3 +229,6 @@ mod tests {
         //     sc.reduce(ps)
     }
 }
+
+
+// Rob Pike - Concurrency is not Parallelism// Golang Garbage collection// Tene - Garbage Collection// Click - x86 superscalar// Intel instruction throughput vs latency// Hoare - acm// unix paper

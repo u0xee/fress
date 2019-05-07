@@ -6,8 +6,5 @@
 // You must not remove this notice, or any other, from this software.
 
 
-// strongly connected components
-// minimum spanning tree
-// shortest paths
-// max flow
-
+// FIFO queue
+// priority queue

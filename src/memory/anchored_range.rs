@@ -26,6 +26,10 @@ impl AnchoredRange {
         self.seg
     }
 
+    pub fn anchored_line(&self) -> AnchoredLine {
+        AnchoredLine::new(self.seg, self.start)
+    }
+
     pub fn span(&self) -> u32 {
         self.end - self.start
     }

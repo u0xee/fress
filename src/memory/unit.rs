@@ -22,7 +22,7 @@ pub struct Unit {
 
 impl fmt::Debug for Unit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:#X} }}", self.word)
+        write!(f, "{:#X}", self.word)
     }
 }
 

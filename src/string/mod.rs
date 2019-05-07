@@ -80,36 +80,15 @@ impl Identification for Str {
 use std::cmp::Ordering;
 impl Distinguish for Str {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        if Unit::bytes() == 4 {
-            unimplemented!("32bit str hash")
-        }
+        use random::PI;
+        use hash::{mix_range, end};
+
         let guide = Guide::hydrate(prism);
         let unit_count = units_for(guide.count);
-        use random::PI;
-        let mut a: [u64; 4] = [PI[0], PI[1], PI[2], PI[3]];
-        let mut remain = unit_count;
-        while remain > 4 {
-            let idx = (unit_count - remain) as i32;
-            a[0] ^= guide.root[idx].u64();
-            a[1] ^= guide.root[idx + 1].u64();
-            a[2] ^= guide.root[idx + 2].u64();
-            a[3] ^= guide.root[idx + 3].u64();
-            {
-                use hash::mix;
-                let m = mix(a[0], a[1], a[2], a[3]);
-                a[0] = m.0; a[1] = m.1; a[2] = m.2; a[3] = m.3;
-            }
-            remain -= 4;
-        }
-        let idx = (unit_count - remain) as i32;
-        if remain > 0 { a[0] ^= guide.root[idx].u64(); }
-        if remain > 1 { a[1] ^= guide.root[idx + 1].u64(); }
-        if remain > 2 { a[2] ^= guide.root[idx + 2].u64(); }
-        if remain > 3 { a[3] ^= guide.root[idx + 3].u64(); }
         let h = {
-            use hash::{mix, end};
-            let m = mix(a[0], a[1], a[2], a[3]);
-            let (x, y) = end(m.0, m.1, m.2, m.3);
+            let a = mix_range(guide.root.span(unit_count),
+                              (PI[0], PI[1], PI[2], PI[3]));
+            let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
         guide.set_hash(h).store().hash

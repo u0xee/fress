@@ -148,6 +148,10 @@ impl Reversible for Map {}
 impl Sorted for Map {}
 
 impl Notation for Map {
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        self.edn(prism, f)
+    }
+
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,

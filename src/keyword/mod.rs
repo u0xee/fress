@@ -10,6 +10,8 @@ use memory::*;
 use dispatch::*;
 use value::Value;
 use handle::Handle;
+use symbol::guide::Guide;
+use symbol::units_for;
 
 pub static KEYWORD_SENTINEL: u8 = 0;
 
@@ -18,22 +20,30 @@ pub struct Keyword {
 }
 
 impl Keyword {
-    pub fn new() -> Unit {
-        // take string
-        unimplemented!()
+    pub fn new(name: &[u8], solidus_position: u32) -> Unit {
+        // TODO intern based on compile flag
+        Keyword::new_(name, solidus_position)
     }
 
-    pub fn new_from_str(source: &str) -> Unit {
-        // into string
-        unimplemented!()
+    pub fn new_(name: &[u8], solidus_position: u32) -> Unit {
+        let byte_count = name.len() as u32;
+        let content_count = units_for(byte_count);
+        let needed = 1 /*prism*/ + Guide::units() + content_count;
+        let s = Segment::new(needed);
+        let prism = s.line_at(0);
+        prism.set(0, mechanism::prism::<Keyword>());
+        let guide = Guide::new(prism, solidus_position, byte_count);
+        guide.root.set(content_count as i32 - 1, Unit::zero());
+        guide.byte_slice().copy_from_slice(name);
+        guide.store().segment().unit()
     }
 }
 
 impl Dispatch for Keyword {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
-        //Segment::free(prism.segment())
-        unimplemented!()
+        let guide = Guide::hydrate(prism);
+        Segment::free(guide.segment())
     }
 }
 
@@ -50,25 +60,64 @@ impl Identification for Keyword {
 use std::cmp::Ordering;
 impl Distinguish for Keyword {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        unimplemented!()
+        let guide = Guide::hydrate(prism);
+        if guide.has_hash() { return guide.hash; }
+
+        let h = {
+            use random::PI;
+            use hash::{mix, mix_range, end};
+            let iv: (u64, u64, u64, u64) = (PI[14], PI[15], PI[16], PI[17]);
+            let unit_count = units_for(guide.count);
+            let a = mix_range(guide.root.span(unit_count), iv);
+            let (x, _y) = end(a.0, a.1, a.2, a.3);
+            x as u32
+        };
+        guide.set_hash(h).store().hash
     }
+
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        unimplemented!()
+        let o = other.handle();
+        if o.is_ref() && o.type_sentinel() == (& KEYWORD_SENTINEL) as *const u8 {
+            let g = Guide::hydrate(prism);
+            let h = Guide::hydrate(o.prism());
+            return g.byte_slice() == h.byte_slice()
+        }
+        false
     }
+
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
-        unimplemented!()
+        let o = other.handle();
+        if !o.is_ref() {
+            return Some(Ordering::Greater)
+        }
+        if o.type_sentinel() != (& KEYWORD_SENTINEL) as *const u8 {
+            let ret = ((& KEYWORD_SENTINEL) as *const u8).cmp(&o.type_sentinel());
+            return Some(ret)
+        }
+        let g = Guide::hydrate(prism);
+        let h = Guide::hydrate(o.prism());
+        Some(g.str().cmp(&h.str()))
     }
 }
+
 impl Aggregate for Keyword { }
 impl Associative for Keyword { }
 impl Sequential for Keyword { }
 impl Reversible for Keyword { }
 impl Sorted for Keyword { }
+
 impl Notation for Keyword {
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let guide = Guide::hydrate(prism);
+        write!(f, "Keyword({})", guide.str())
+    }
+
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        unimplemented!()
+        let guide = Guide::hydrate(prism);
+        write!(f, "{}", guide.str())
     }
 }
+
 impl Numeral for Keyword { }
 
 #[cfg(test)]

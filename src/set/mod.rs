@@ -21,6 +21,10 @@ pub struct Set {
     prism: Unit,
 }
 
+// Set library:
+// intersection, union, difference, symmetric difference
+// disjoint?, subset?
+
 impl Set {
     pub fn new() -> Unit {
         let guide = {
@@ -127,6 +131,10 @@ impl Associative for Set {
 impl Reversible for Set {}
 impl Sorted for Set {}
 impl Notation for Set {
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        self.edn(prism, f)
+    }
+
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,

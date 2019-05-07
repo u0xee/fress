@@ -11,6 +11,8 @@
 //! Algorithms on polynomials; convolution
 //! Algorithms on matrices; sum, multiply
 //! - linear algebra
+//!
+//! Heap implementation
 
 // array:
 //   bignum: arithmetic +-*/%(pow)mod bitwise ^|&<<>>
@@ -18,6 +20,12 @@
 //   matrix: add, sub, multiply, linear algebra-rref
 // instances: byte, bool, int, float, long, double, object (value?)
 //
+
+// array definitions
+// header, like string/symbol etc, and pointer to primitive typed buffer
+// byte array to base64
+
+// heap sort, merge sort, quick sort
 pub struct BigIntegral {}
 
 pub fn convolve(a: &[f64], b: &[f64]) -> Box<[f64]> {

@@ -37,6 +37,10 @@ impl Handle {
         Handle::from(Handle::FALSE)
     }
 
+    pub fn is_nil(self) -> bool { self.unit == Handle::NIL }
+    pub fn is_true(self) -> bool { self.unit == Handle::TRUE }
+    pub fn is_false(self) -> bool { self.unit == Handle::FALSE }
+
     pub fn is_not(self) -> bool {
         (self.unit.u() & 0xF) == 0x7
     }
@@ -156,6 +160,7 @@ impl Handle {
     }
 
     pub fn eq(self, other: Handle) -> bool {
+        // TODO short circuit if units are identical
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -468,7 +473,15 @@ impl fmt::Debug for Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).debug(prism, f)
         } else {
-            write!(f, "Handle[0x{:X}]", self.unit.u())
+            if self.unit == Handle::NIL {
+                write!(f, "nil")
+            } else if self.unit == Handle::FALSE {
+                write!(f, "Boolean(false)")
+            } else if self.unit == Handle::TRUE {
+                write!(f, "Boolean(true)")
+            } else {
+                write!(f, "Handle[{}]", self.unit.u32() >> 4)
+            }
         }
     }
 }

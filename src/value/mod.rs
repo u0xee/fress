@@ -26,9 +26,9 @@ impl Value {
     pub fn tru()  -> Value { Handle::tru().value() }
     pub fn fals() -> Value { Handle::fals().value() }
 
-    pub fn is_nil(&self)   -> bool { self.handle().unit == Handle::NIL }
-    pub fn is_true(&self)  -> bool { self.handle().unit == Handle::TRUE }
-    pub fn is_false(&self) -> bool { self.handle().unit == Handle::FALSE }
+    pub fn is_nil(&self)   -> bool { self.handle().is_nil() }
+    pub fn is_true(&self)  -> bool { self.handle().is_true() }
+    pub fn is_false(&self) -> bool { self.handle().is_false() }
     pub fn is_not(&self) -> bool { self.handle().is_not() }
     pub fn is_so(&self) -> bool { !self.is_not() }
 

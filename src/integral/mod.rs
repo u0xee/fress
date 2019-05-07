@@ -44,6 +44,18 @@ impl Integral {
     pub fn is_instance(h: Handle) -> bool {
         h.is_ref() && h.type_sentinel() == (& INTEGRAL_SENTINEL) as *const u8
     }
+
+    pub fn parse(negate: bool, m: &[u8], promote: bool) -> Handle {
+        unimplemented!()
+    }
+
+    pub fn parse_hex(negate: bool, m: &[u8], promote: bool) -> Handle {
+        unimplemented!()
+    }
+
+    pub fn parse_radix(negate: bool, radix: u32, m: &[u8]) -> Option<Handle> {
+        unimplemented!()
+    }
 }
 
 pub fn store(prism: AnchoredLine, x: i64) {

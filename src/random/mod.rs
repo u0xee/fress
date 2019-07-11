@@ -301,3 +301,5 @@ pub const PI: [u64; 512] = [
     0xb6cbcf7c_cd769c2b, 0x53113ec0_1640e3d3, 0x38abbd60_2547adf0, 0xba38209c_f746ce76,
 ];
 
+
+// rand int

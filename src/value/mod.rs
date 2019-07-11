@@ -29,13 +29,10 @@ impl Value {
     pub fn is_nil(&self)   -> bool { self.handle().is_nil() }
     pub fn is_true(&self)  -> bool { self.handle().is_true() }
     pub fn is_false(&self) -> bool { self.handle().is_false() }
-    pub fn is_not(&self) -> bool { self.handle().is_not() }
-    pub fn is_so(&self) -> bool { !self.is_not() }
+    pub fn is_not(&self)   -> bool { self.handle().is_not() }
+    pub fn is_so(&self)    -> bool { !self.is_not() }
 
-    fn consume(self) -> Handle {
-        Handle::from(self)
-    }
-
+    fn consume(self) -> Handle { Handle::from(self) }
     fn handle(&self) -> Handle { self.handle }
 
     pub fn split(self) -> (Value, Value) {
@@ -50,9 +47,7 @@ impl Value {
         v.value()
     }
 
-    pub fn conj(self, x: Value) -> Value {
-        self.consume().conj(x.consume()).value()
-    }
+    pub fn conj(self, x: Value) -> Value { self.consume().conj(x.consume()).value() }
     pub fn pop(self) -> (Value, Value) {
         let (c, x) = self.consume().pop();
         (c.value(), x.value())
@@ -63,21 +58,10 @@ impl Value {
         unsafe { &*v }
     }
 
-    pub fn count(&self) -> u32 {
-        self.handle().count()
-    }
-
-    pub fn hash(&self) -> u32 {
-        self.handle().hash()
-    }
-
-    pub fn empty(&self) -> Value {
-        self.handle().empty().value()
-    }
-
-    pub fn contains(&self, k: &Value) -> bool {
-        self.handle().contains(k.handle())
-    }
+    pub fn count(&self) -> u32 { self.handle().count() }
+    pub fn hash(&self) -> u32 { self.handle().hash() }
+    pub fn empty(&self) -> Value { self.handle().empty().value() }
+    pub fn contains(&self, k: &Value) -> bool { self.handle().contains(k.handle()) }
 
     pub fn assoc(self, k: Value, v: Value) -> Value {
         let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
@@ -85,9 +69,7 @@ impl Value {
         c.value()
     }
 
-    pub fn dissoc(self, k: &Value) -> Value {
-        self.consume().dissoc(k.handle()).value()
-    }
+    pub fn dissoc(self, k: &Value) -> Value { self.consume().dissoc(k.handle()).value() }
 
     pub fn get(&self, k: &Value) -> &Value {
         let v = self.handle().get(k.handle()) as *const Value;
@@ -104,18 +86,10 @@ impl Value {
         unsafe { &*v }
     }
 
-    pub fn with_meta(self, m: Value) -> Value {
-        self.consume().with_meta(m.consume()).value()
-    }
+    pub fn with_meta(self, m: Value) -> Value { self.consume().with_meta(m.consume()).value() }
 
-    pub fn inc(self) -> Value {
-        self.consume().inc().value()
-    }
-
-    pub fn dec(self) -> Value {
-        self.consume().dec().value()
-    }
-
+    pub fn inc(self) -> Value { self.consume().inc().value() }
+    pub fn dec(self) -> Value { self.consume().dec().value() }
     pub fn modulus(self, divisor: Value) -> Value {
         self.consume().modulus(divisor.consume()).value()
     }
@@ -249,27 +223,6 @@ mod test {
 // PartialEq:  == !=
 // PartialOrd: < <= => >
 // From: numbers, strings
-
-// Value handle - bit patterns:
-//
-// !(handle | 0x08) => 0, boolean
-// 0xFFFFFFFFFFFFFFFF true
-// 0xFFFFFFFFFFFFFFF7 false
-//
-// End in 0b0111, logically negative
-// 0x0000000000000007 nil
-// 0xFFFFFFFFFFFFFFF7 false
-//
-// End in 0b011
-// 0xXXXXXXXX00000003 char
-// 0xXXXXXXXXXXXXXXLB string, L holds count
-//
-// End in 0b001
-// 0xXXXXXXXXXXXXXXX1 integral
-// 0xXXXXXXXXXXXXXXX9 FloatPoint
-//
-// Even handles (rightmost bit of 0) are pointers.
-// They point to segments that have a distributor as the first unit.
 
 //struct MapValue {}
 //struct SetValue {}

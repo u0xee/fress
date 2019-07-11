@@ -19,128 +19,76 @@ pub struct Handle {
 
 pub static STATIC_NIL: Unit = Handle::NIL;
 
-impl Handle {
-    pub const NIL: Unit = Unit { word: 0x07 };
+impl From<Unit> for Handle {
+    fn from(u: Unit) -> Self { Handle { unit: u } }
+}
 
+impl From<Value> for Handle {
+    fn from(v: Value) -> Self {
+        let ret = v.handle;
+        use std::mem::forget;
+        forget(v);
+        ret
+    }
+}
+
+impl Handle {
+    pub fn unit(self) -> Unit { self.unit }
+    pub fn segment(self) -> Segment { self.unit.segment() }
+    pub fn value(self) -> Value { Value { handle: self } }
+
+    pub const NIL: Unit = Unit { word: 0x07 };
     pub const TRUE: Unit = Unit { word: !0x00usize };
     pub const FALSE: Unit = Unit { word: !0x08usize };
 
-    pub fn nil() -> Handle {
-        Handle::from(Handle::NIL)
-    }
-
-    pub fn tru() -> Handle {
-        Handle::from(Handle::TRUE)
-    }
-
-    pub fn fals() -> Handle {
-        Handle::from(Handle::FALSE)
-    }
+    pub fn nil() -> Handle { Handle::from(Handle::NIL) }
+    pub fn tru() -> Handle { Handle::from(Handle::TRUE) }
+    pub fn fals() -> Handle { Handle::from(Handle::FALSE) }
 
     pub fn is_nil(self) -> bool { self.unit == Handle::NIL }
     pub fn is_true(self) -> bool { self.unit == Handle::TRUE }
     pub fn is_false(self) -> bool { self.unit == Handle::FALSE }
+    pub fn is_bool(self) -> bool { self.unit.u() | 0x8 == !0 }
+    pub fn is_flag(self) -> bool { self.unit.u() & 0x7 == 0x7 }
+    pub fn is_not(self) -> bool { self.unit.u() & 0xF == 0x7 }
+    pub fn is_so(self) -> bool { !self.is_not() }
 
-    pub fn is_not(self) -> bool {
-        (self.unit.u() & 0xF) == 0x7
-    }
+    fn tag(self) -> usize { self.unit.u() & 0xF }
+    pub fn is_imm_char(self) -> bool { self.tag() == 0x3 }
+    pub fn is_imm_int(self) -> bool { self.tag() == 0x1 }
+    pub fn is_imm_float(self) -> bool { self.tag() == 0x9 }
+}
 
-    pub fn is_so(self) -> bool {
-        !self.is_not()
-    }
+// !(handle | 0x08) => 0, boolean
+// 0xFFFFFFFFFFFFFFFF true
+// 0xFFFFFFFFFFFFFFF7 false
+//
+// End in 0b0111, logically negative
+// 0x0000000000000007 nil
+// 0xFFFFFFFFFFFFFFF7 false
+//
+// End in 0b011
+// 0xXXXXXXXX00000003 char
+// 0xXXXXXXXXXXXXXXLB string, L holds count
+//
+// End in 0b001
+// 0xXXXXXXXXXXXXXXX1 integral
+// 0xXXXXXXXXXXXXXXX9 FloatPoint
 
-    pub fn value(self) -> Value {
-        Value { handle: self }
-    }
-
-    pub fn unit(self) -> Unit {
-        self.unit
-    }
-
-    pub fn segment(self) -> Segment {
-        self.unit.segment()
-    }
-
-    pub fn is_ref(self) -> bool {
-        self.unit.is_even()
-    }
-
-    pub fn split(self) {
-        if self.is_ref() {
-            self.segment().alias()
-        }
-    }
-
+impl Handle {
+    pub fn is_ref(self) -> bool { self.unit.is_even() }
+    pub fn split(self) { if self.is_ref() { self.segment().alias() } }
     pub fn retire(self) {
-        if self.is_ref() {
-            if self.segment().unalias() == 0 {
-                self.tear_down()
-            }
+        if self.is_ref() && self.segment().unalias() == 0 {
+            self.tear_down()
         }
     }
+    pub fn prism(self) -> AnchoredLine { self.segment().line_at(0) }
 
-    pub fn prism(self) -> AnchoredLine {
-        self.segment().line_at(0)
-    }
-
-    pub fn reduce(self, stack: &mut [Box<Process>]) -> Value {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).reduce(prism, stack)
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn pour(self, xf: Transducers, sink: Handle) -> Handle {
-        struct Collect {
-            c: Handle,
-        }
-        impl Process for Collect {
-            fn ingest   (&mut self, stack: &mut [Box<Process>], v:  Value)            -> Option<Value> {
-                self.c = self.c.conj(Handle::from(v));
-                None
-            }
-            fn ingest_kv(&mut self, stack: &mut [Box<Process>], k:  Value, v:  Value) -> Option<Value> {
-                let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
-                displaced.retire();
-                self.c = c;
-                None
-            }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
-                self.c.value()
-            }
-        }
-        let stack: Vec<Box<Process>> = vec!(Box::new(Collect { c: sink }));
-        let mut stack2 = xf.apply(stack);
-        Handle::from(self.reduce(&mut stack2))
-    }
-
-    pub fn type_name(self) -> &'static str {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).type_name()
-        } else {
-            let v = self.unit.u();
-            if !(v | 0x8) == 0x0 {
-                return "Boolean"
-            }
-            if v == 0x7 {
-                return "Nil"
-            }
-            if (v & 0xF) == 0x3 {
-                return "Character"
-            }
-            if (v & 0xF) == 0x1 {
-                return "Integral"
-            }
-            if (v & 0xF) == 0x9 {
-                return "FloatPoint"
-            }
-            unreachable!("Bad value unit!: 0x{:016X}", v)
-        }
+    pub fn tear_down(self) {
+        let prism = self.prism();
+        let p = prism[0];
+        mechanism::as_dispatch(&p).tear_down(prism);
     }
 
     pub fn type_sentinel(self) -> *const u8 {
@@ -149,14 +97,23 @@ impl Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).type_sentinel()
         } else {
-            (self.unit.u() & 0xF) as *const u8
+            self.tag() as *const u8
         }
     }
 
-    pub fn tear_down(self) {
-        let prism = self.prism();
-        let p = prism[0];
-        mechanism::as_dispatch(&p).tear_down(prism);
+    pub fn type_name(self) -> &'static str {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).type_name()
+        } else {
+            if self.is_nil()       { return "Nil" }
+            if self.is_bool()      { return "Boolean" }
+            if self.is_imm_char()  { return "Character" }
+            if self.is_imm_int()   { return "Integral" }
+            if self.is_imm_float() { return "FloatPoint" }
+            unreachable!("Bad handle unit!: 0x{:016X}", self.unit.u())
+        }
     }
 
     pub fn eq(self, other: Handle) -> bool {
@@ -199,121 +156,13 @@ impl Handle {
         }
     }
 
-    pub fn empty(self) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).empty(prism).handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn peek(self) -> *const Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let elem = mechanism::as_dispatch(&p).peek(prism);
-            elem as *const Handle
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn count(self) -> u32 {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).count(prism)
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn contains(self, k: Handle) -> bool {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).contains(prism, k.unit())
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn conj(self, x: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).conj(prism, x.unit).handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn pop(self) -> (Handle, Handle) {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let (c, v) = mechanism::as_dispatch(&p).pop(prism);
-            (c.handle(), v.handle())
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn assoc(self, k: Handle, v: Handle) -> (Handle, Handle) {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let (c, displaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
-            (c.handle(), displaced.handle())
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn dissoc(self, k: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let v = mechanism::as_dispatch(&p).dissoc(prism, k.unit);
-            v.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn get(self, k: Handle) -> *const Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let v = mechanism::as_dispatch(&p).get(prism, k.unit);
-            v as *const Handle
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn nth(self, idx: u32) -> *const Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let elem = mechanism::as_dispatch(&p).nth(prism, idx);
-            elem as *const Handle
-        } else {
-            unimplemented!()
-        }
-    }
-
     pub fn meta(self) -> *const Handle {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
             let elem = mechanism::as_dispatch(&p).meta(prism);
             elem as *const Handle
-        } else {
-            unimplemented!()
-        }
+        } else { unimplemented!() }
     }
 
     pub fn with_meta(self, m: Handle) -> Handle {
@@ -321,128 +170,7 @@ impl Handle {
             let prism = self.prism();
             let p = prism[0];
             mechanism::as_dispatch(&p).with_meta(prism, m.unit()).handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn add(self, rhs: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let sum = mechanism::as_dispatch(&p).add(prism, rhs.unit);
-            sum.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn sub(self, rhs: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let diff = mechanism::as_dispatch(&p).subtract(prism, rhs.unit);
-            diff.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn mul(self, rhs: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let product = mechanism::as_dispatch(&p).multiply(prism, rhs.unit);
-            product.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn div(self, rhs: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let num = mechanism::as_dispatch(&p).divide(prism, rhs.unit);
-            num.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn rem(self, rhs: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let num = mechanism::as_dispatch(&p).remainder(prism, rhs.unit);
-            num.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn modulus(self, rhs: Handle) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let num = mechanism::as_dispatch(&p).modulus(prism, rhs.unit);
-            num.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn inc(self) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let x = mechanism::as_dispatch(&p).inc(prism);
-            x.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn dec(self) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let x = mechanism::as_dispatch(&p).dec(prism);
-            x.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn neg(self) -> Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let x = mechanism::as_dispatch(&p).neg(prism);
-            x.handle()
-        } else {
-            unimplemented!()
-        }
-    }
-
-    pub fn bitand(self, rhs: Handle) -> Handle {
-        unimplemented!()
-    }
-
-    pub fn bitor(self, rhs: Handle) -> Handle {
-        unimplemented!()
-    }
-
-    pub fn bitxor(self, rhs: Handle) -> Handle {
-        unimplemented!()
-    }
-
-    pub fn shl(self, rhs: u32) -> Handle {
-        unimplemented!()
-    }
-
-    pub fn shr(self, rhs: u32) -> Handle {
-        unimplemented!()
+        } else { unimplemented!() }
     }
 }
 
@@ -453,14 +181,19 @@ impl fmt::Display for Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).edn(prism, f)
         } else {
-            if self.unit == Handle::NIL {
-                write!(f, "nil")
-            } else if self.unit == Handle::FALSE {
-                write!(f, "false")
-            } else if self.unit == Handle::TRUE {
-                write!(f, "true")
+            if self.is_flag() {
+                let name = if self.is_nil() { "nil" }
+                    else if self.is_true() { "true" } else { "false" };
+                write!(f, "{}", name)
+            } else if self.is_imm_int() {
+                unimplemented!()
+            } else if self.is_imm_float() {
+                unimplemented!()
+            } else if self.is_imm_char() {
+                use character::Character;
+                Character::display(self.unit, f)
             } else {
-                write!(f, "{}", self.unit.u32() >> 4)
+                unreachable!("Bad handle unit!: 0x{:016X}", self.unit.u())
             }
         }
     }
@@ -473,31 +206,225 @@ impl fmt::Debug for Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).debug(prism, f)
         } else {
-            if self.unit == Handle::NIL {
-                write!(f, "nil")
-            } else if self.unit == Handle::FALSE {
-                write!(f, "Boolean(false)")
-            } else if self.unit == Handle::TRUE {
-                write!(f, "Boolean(true)")
-            } else {
-                write!(f, "Handle[{}]", self.unit.u32() >> 4)
-            }
+            write!(f, "{}<", self.type_name());
+            fmt::Display::fmt(self, f);
+            write!(f, ">")
         }
     }
 }
 
-impl From<Unit> for Handle {
-    fn from(u: Unit) -> Self {
-        Handle { unit: u }
+impl Handle {
+    pub fn empty(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).empty(prism).handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn peek(self) -> *const Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let elem = mechanism::as_dispatch(&p).peek(prism);
+            elem as *const Handle
+        } else { unimplemented!() }
+    }
+
+    pub fn count(self) -> u32 {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).count(prism)
+        } else { unimplemented!() }
+    }
+
+    pub fn contains(self, k: Handle) -> bool {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).contains(prism, k.unit())
+        } else { unimplemented!() }
+    }
+
+    pub fn conj(self, x: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).conj(prism, x.unit).handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn pop(self) -> (Handle, Handle) {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let (c, v) = mechanism::as_dispatch(&p).pop(prism);
+            (c.handle(), v.handle())
+        } else { unimplemented!() }
+    }
+
+    pub fn assoc(self, k: Handle, v: Handle) -> (Handle, Handle) {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let (c, displaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
+            (c.handle(), displaced.handle())
+        } else { unimplemented!() }
+    }
+
+    pub fn dissoc(self, k: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let v = mechanism::as_dispatch(&p).dissoc(prism, k.unit);
+            v.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn get(self, k: Handle) -> *const Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let v = mechanism::as_dispatch(&p).get(prism, k.unit);
+            v as *const Handle
+        } else { unimplemented!() }
+    }
+
+    pub fn nth(self, idx: u32) -> *const Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let elem = mechanism::as_dispatch(&p).nth(prism, idx);
+            elem as *const Handle
+        } else { unimplemented!() }
+    }
+
+    pub fn reduce(self, stack: &mut [Box<Process>]) -> Value {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).reduce(prism, stack)
+        } else { unimplemented!() }
+    }
+
+    pub fn pour(self, xf: Transducers, sink: Handle) -> Handle {
+        struct Collect {
+            c: Handle,
+        }
+        impl Process for Collect {
+            fn ingest   (&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
+                self.c = self.c.conj(Handle::from(v));
+                None
+            }
+            fn ingest_kv(&mut self, stack: &mut [Box<Process>], k: Value, v: Value)
+                         -> Option<Value> {
+                let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
+                displaced.retire();
+                self.c = c;
+                None
+            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { self.c.value() }
+        }
+        let stack: Vec<Box<Process>> = vec!(Box::new(Collect { c: sink }));
+        let mut stack2 = xf.apply(stack);
+        Handle::from(self.reduce(&mut stack2))
     }
 }
 
-impl From<Value> for Handle {
-    fn from(v: Value) -> Self {
-        let ret = v.handle;
-        use std::mem::forget;
-        forget(v);
-        ret
+impl Handle {
+    pub fn is_string(self) -> bool {
+        use string::STR_SENTINEL;
+        self.type_sentinel() == (& STR_SENTINEL) as *const u8
     }
+}
+
+impl Handle {
+    pub fn add(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let sum = mechanism::as_dispatch(&p).add(prism, rhs.unit);
+            sum.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn sub(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let diff = mechanism::as_dispatch(&p).subtract(prism, rhs.unit);
+            diff.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn mul(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let product = mechanism::as_dispatch(&p).multiply(prism, rhs.unit);
+            product.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn div(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let num = mechanism::as_dispatch(&p).divide(prism, rhs.unit);
+            num.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn rem(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let num = mechanism::as_dispatch(&p).remainder(prism, rhs.unit);
+            num.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn modulus(self, rhs: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let num = mechanism::as_dispatch(&p).modulus(prism, rhs.unit);
+            num.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn inc(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let x = mechanism::as_dispatch(&p).inc(prism);
+            x.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn dec(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let x = mechanism::as_dispatch(&p).dec(prism);
+            x.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn neg(self) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let x = mechanism::as_dispatch(&p).neg(prism);
+            x.handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn bitand(self, rhs: Handle) -> Handle { unimplemented!() }
+    pub fn bitor(self, rhs: Handle)  -> Handle { unimplemented!() }
+    pub fn bitxor(self, rhs: Handle) -> Handle { unimplemented!() }
+    pub fn shl(self, rhs: u32) -> Handle { unimplemented!() }
+    pub fn shr(self, rhs: u32) -> Handle { unimplemented!() }
 }
 

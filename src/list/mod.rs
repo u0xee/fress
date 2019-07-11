@@ -64,12 +64,35 @@ impl Identification for List {
 
 impl Distinguish for List {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        // reduce over elements
-        // FNV order dependent hash
-        unimplemented!()
+        let guide = Guide::hydrate(prism);
+        if guide.has_hash() {
+            return guide.hash;
+        }
+        use random::{PI, cycle_abc};
+        struct Pointer {
+            pub ptr: *mut u64,
+        }
+        impl Process for Pointer {
+            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+                let h = v.hash() as u64;
+                unsafe {
+                    *self.ptr = cycle_abc(34, *self.ptr + h);
+                }
+                None
+            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+                Handle::nil().value()
+            }
+        }
+
+        let mut y = cycle_abc(7, PI[321] + guide.count as u64);
+        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
+        let _ = reduce::reduce(prism, &mut procs);
+        let h = cycle_abc(210, y) as u32;
+        guide.set_hash(h).store().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        unimplemented!()
+        unimplemented!("List eq.")
     }
 }
 
@@ -92,6 +115,9 @@ impl Aggregate for List {
     }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
         vector::pop::pop(prism)
+    }
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+        reduce::reduce(prism, process)
     }
 }
 
@@ -125,6 +151,11 @@ impl Associative for List {
 impl Reversible for List {}
 impl Sorted for List {}
 impl Notation for List {
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "List|");
+        self.edn(prism, f);
+        write!(f, "|")
+    }
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,

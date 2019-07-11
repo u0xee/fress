@@ -34,7 +34,7 @@ impl Rational {
     }
 
     pub fn parse(negate: bool, top: &[u8], bot: &[u8]) -> Handle {
-        unimplemented!()
+        unimplemented!("Parsing a ratio.")
     }
 }
 

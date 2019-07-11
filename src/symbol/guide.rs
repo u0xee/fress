@@ -14,8 +14,8 @@ use memory::*;
 /// is there a hash, and is there meta data.
 
 /// ```
-/// Top 32 bits  [                              Hash  (32) ]
-/// Bottom bits  [ Hash? | Meta? | Solidus (8) | Count (8) ]
+/// Top 32 bits  [                      Hash  (32) ]
+/// Bottom bits  [ Meta? | Solidus (8) | Count (8) ]
 /// ```
 ///
 
@@ -23,7 +23,6 @@ use memory::*;
 pub struct Guide {
     pub hash: u32,
 
-    pub has_hash_bit: u32,
     pub has_meta_bit: u32,
     pub solidus: u32,
     pub count: u32,
@@ -33,29 +32,21 @@ pub struct Guide {
 }
 
 impl Guide {
-    pub fn units() -> u32 {
-        if cfg!(target_pointer_width = "32") { 2 } else { 1 }
-    }
+    pub fn units() -> u32 { if cfg!(target_pointer_width = "32") { 2 } else { 1 } }
 
-    pub fn segment(&self) -> Segment {
-        self.prism.segment()
-    }
+    pub fn segment(&self) -> Segment { self.prism.segment() }
 
     pub fn set_hash(mut self, hash: u32) -> Guide {
         self.hash = hash;
-        self.has_hash_bit = 1;
         self
     }
 
     pub fn clear_hash(mut self) -> Guide {
         self.hash = 0;
-        self.has_hash_bit = 0;
         self
     }
 
-    pub fn has_hash(&self) -> bool {
-        self.has_hash_bit == 1
-    }
+    pub fn has_hash(&self) -> bool { self.hash == 0 }
 
     pub fn set_meta(mut self) -> Guide {
         self.has_meta_bit = 1;
@@ -67,9 +58,7 @@ impl Guide {
         self
     }
 
-    pub fn has_meta(&self) -> bool {
-        self.has_meta_bit == 1
-    }
+    pub fn has_meta(&self) -> bool { self.has_meta_bit == 1 }
 
     pub fn meta_line(&self) -> AnchoredLine {
         self.prism.offset(1 + Guide::units() as i32)
@@ -85,24 +74,6 @@ impl Guide {
         if self.has_meta() {
             self.meta_line()[0].handle().retire();
         }
-    }
-
-    pub fn byte_slice(&self) -> &mut [u8] {
-        use std::slice::from_raw_parts_mut;
-        let p = self.root.line().star() as *mut u8;
-        unsafe {
-            from_raw_parts_mut(p, self.count as usize)
-        }
-    }
-
-    pub fn str(&self) -> &mut str {
-        use std::str::from_utf8_mut;
-        from_utf8_mut(self.byte_slice()).unwrap()
-    }
-
-    pub fn set_count(mut self, count: u32) -> Guide {
-        self.count = count;
-        self.clear_hash()
     }
 
     pub fn reroot(mut self) -> Guide {
@@ -122,27 +93,26 @@ impl Guide {
 
     pub fn hydrate_top_bot(prism: AnchoredLine, top: u32, bot: u32) -> Guide {
         let hash = top;
-        let has_hash_bit = (bot >> 31) & 0x1;
-        let has_meta_bit = (bot >> 30) & 0x1;
+        let has_meta_bit = (bot >> 31) & 0x1;
         let solidus = (bot >> 8) & 0xFF;
         let count = bot & 0xFF;
 
         let root_offset = 1 /*prism*/ + Guide::units() + has_meta_bit;
         let root = prism.offset(root_offset as i32);
 
-        Guide { hash, has_hash_bit, has_meta_bit, solidus, count, prism, root }
+        Guide { hash, has_meta_bit, solidus, count, prism, root }
     }
 
     pub fn new(prism: AnchoredLine, solidus_position: u32, byte_count: u32) -> Guide {
-        let root_offset = 1 /*prism*/ + Guide::units();
-        Guide { hash: 0, has_hash_bit: 0, has_meta_bit: 0, solidus: solidus_position,
+        let has_meta_bit = 0u32;
+        let root_offset = 1 /*prism*/ + Guide::units() + has_meta_bit;
+        Guide { hash: 0, has_meta_bit, solidus: solidus_position,
             count: byte_count, prism, root: prism.offset(root_offset as i32) }
     }
 
     pub fn store_at(&self, mut prism: AnchoredLine) {
         let top: u32 = self.hash;
-        let bot: u32 = (self.has_hash_bit << 31) | (self.has_meta_bit << 30) |
-            (self.solidus << 8) | self.count;
+        let bot: u32 = (self.has_meta_bit << 31) | (self.solidus << 8) | self.count;
         if cfg!(target_pointer_width = "32") {
             prism[1] = top.into();
             prism[2] = bot.into();
@@ -155,6 +125,24 @@ impl Guide {
     pub fn store(self) -> Guide {
         self.store_at(self.prism);
         self
+    }
+
+    pub fn byte_slice(&self) -> &mut [u8] {
+        use std::slice::from_raw_parts_mut;
+        let p = self.root.line().star() as *mut u8;
+        unsafe {
+            from_raw_parts_mut(p, self.count as usize)
+        }
+    }
+
+    pub fn str(&self) -> &mut str {
+        use std::str::from_utf8_mut;
+        from_utf8_mut(self.byte_slice()).unwrap()
+    }
+
+    pub fn set_count(mut self, count: u32) -> Guide {
+        self.count = count;
+        self.clear_hash()
     }
 }
 

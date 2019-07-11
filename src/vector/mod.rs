@@ -67,23 +67,15 @@ impl Vector {
 }
 
 impl Dispatch for Vector {
-    fn tear_down(&self, prism: AnchoredLine) {
-        tear_down::tear_down(prism);
-    }
-
+    fn tear_down(&self, prism: AnchoredLine) { tear_down::tear_down(prism); }
     fn unaliased(&self, prism: AnchoredLine) -> Unit {
         unaliased_root(Guide::hydrate(prism)).segment().unit()
     }
 }
 
 impl Identification for Vector {
-    fn type_name(&self) -> &'static str {
-        "Vector"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& VECTOR_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "Vector" }
+    fn type_sentinel(&self) -> *const u8 { (& VECTOR_SENTINEL) as *const u8 }
 }
 
 impl Distinguish for Vector {
@@ -115,7 +107,11 @@ impl Distinguish for Vector {
         let h = cycle_abc(210, y) as u32;
         guide.set_hash(h).store().hash
     }
+
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        // A | P G T? R R R R R R R R R R R
+        // hydrate guides. if hashes differ, or counts differ, not equal.
+        //
         // basic checks
         // if immediate, false
         // if vector, structural compare
@@ -123,11 +119,12 @@ impl Distinguish for Vector {
         // if eduction, iterate pairwise
         // compare structurally down tree
         // like tandem tear_down's
-        unimplemented!()
+        unimplemented!("Vector equality")
     }
+
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         // cast other to vector, compare pairwise
-        unimplemented!()
+        unimplemented!("Vector compare")
     }
 }
 
@@ -136,21 +133,11 @@ impl Aggregate for Vector {
         let guide = Guide::hydrate(prism);
         guide.count
     }
-    fn empty(&self, prism: AnchoredLine) -> Unit {
-        Vector::new()
-    }
-    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        conj::conj(prism, x)
-    }
-    fn meta(&self, prism: AnchoredLine) -> *const Unit {
-        meta::meta(prism)
-    }
-    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
-        meta::with_meta(prism, m)
-    }
-    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
-        pop::pop(prism)
-    }
+    fn empty(&self, prism: AnchoredLine) -> Unit { Vector::new() }
+    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit { conj::conj(prism, x) }
+    fn meta(&self, prism: AnchoredLine) -> *const Unit { meta::meta(prism) }
+    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { meta::with_meta(prism, m) }
+    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { pop::pop(prism) }
     fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
         reduce::reduce(prism, process)
     }
@@ -179,6 +166,10 @@ impl Reversible for Vector {}
 impl Sorted for Vector {}
 impl Notation for Vector {
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Vector|");
+        self.edn(prism, f);
+        write!(f, "|")
+        /*
         let guide= Guide::hydrate(prism);
         let hash = if !guide.has_hash() { "".to_string() } else {
             format!(" #x{:X}", guide.hash)
@@ -209,6 +200,7 @@ impl Notation for Vector {
             //write!(f, "]")
             write!(f, "]]\n")
         }
+        */
     }
 
     fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> {

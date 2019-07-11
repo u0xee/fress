@@ -25,6 +25,18 @@ impl Keyword {
         Keyword::new_(name, solidus_position)
     }
 
+    pub fn new_prefix_name(prefix: &[u8], name: &[u8]) -> Unit {
+        use std::str::from_utf8;
+        let b = format!(":{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
+        Keyword::new(b.as_bytes(), prefix.len() as u32 + 1)
+    }
+
+    pub fn new_from_name(name: &[u8]) -> Unit {
+        use std::str::from_utf8;
+        let b = format!(":{}", from_utf8(name).unwrap());
+        Keyword::new(b.as_bytes(), 0)
+    }
+
     pub fn new_(name: &[u8], solidus_position: u32) -> Unit {
         let byte_count = name.len() as u32;
         let content_count = units_for(byte_count);

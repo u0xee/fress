@@ -11,6 +11,8 @@ use dispatch::*;
 use handle::Handle;
 use Value;
 
+use integral::guide::Guide;
+
 // Numbers. immediate i60 (28), f60 (28). boxed integral, rational, float point.
 // Layout: i60I f60F, [prism guide{chunk_count} contents]
 // methods (on guide?) to get/set chunks by index (32/64, LE/BE)
@@ -30,15 +32,20 @@ pub struct FloatPoint {
 }
 
 impl FloatPoint {
-    pub fn new(x: i64) -> Unit {
-        let s = Segment::new(if cfg!(target_pointer_width = "32") { 3 } else { 2 });
-        s.set(0, mechanism::prism::<FloatPoint>());
-        store(s.line_at(0), x);
-        s.unit()
+    // TODO -0.0 read as 0.0
+    pub fn new(x: f64) -> Unit {
+        let guide = FloatPoint::blank();
+        store(guide.root, x);
+        guide.store().segment().unit()
     }
 
-    pub fn new_value(x: i64) -> Value {
-        FloatPoint::new(x).handle().value()
+    pub fn blank() -> Guide {
+        let needed = 1 /*prism*/ + Guide::units() + if cfg!(target_pointer_width = "32") { 2 } else { 1 };
+        let s = Segment::new(needed);
+        let prism = s.line_at(0);
+        prism.set(0, mechanism::prism::<FloatPoint>());
+        let guide = Guide::new(prism);
+        guide
     }
 
     pub fn is_instance(h: Handle) -> bool {
@@ -46,33 +53,70 @@ impl FloatPoint {
     }
 
     pub fn parse(negate: bool, whole: &[u8], part: &[u8], promote: bool) -> Handle {
-        unimplemented!()
+        use std::str::from_utf8;
+        let b = format!("{}.{}", from_utf8(whole).unwrap(), from_utf8(part).unwrap());
+        let mut x = b.parse::<f64>().unwrap();
+        if negate { x = -x; }
+        let guide = {
+            let g = FloatPoint::blank();
+            if promote { g.set_big() } else { g }
+        };
+        store(guide.root, x);
+        guide.store().segment().unit().handle()
     }
 
     pub fn parse_exp(negate: bool, whole: &[u8], part: &[u8],
                      exp_negate: bool, exp: &[u8], promote: bool) -> Handle {
-        unimplemented!()
+        use std::str::from_utf8;
+        let b = format!("{}.{}e{}{}", from_utf8(whole).unwrap(), from_utf8(part).unwrap(),
+                        if exp_negate { "-" } else { "" }, from_utf8(exp).unwrap());
+        let mut x = b.parse::<f64>().unwrap();
+        if negate { x = -x; }
+        let guide = {
+            let g = FloatPoint::blank();
+            if promote { g.set_big() } else { g }
+        };
+        store(guide.root, x);
+        guide.store().segment().unit().handle()
+    }
+
+    pub fn inf() -> Handle {
+        use std::f64::INFINITY;
+        FloatPoint::new(INFINITY).handle()
+    }
+
+    pub fn neg_inf() -> Handle {
+        use std::f64::NEG_INFINITY;
+        FloatPoint::new(NEG_INFINITY).handle()
+    }
+
+    pub fn not_a_number() -> Handle {
+        use std::f64::NAN;
+        FloatPoint::new(NAN).handle()
     }
 }
 
-pub fn store(prism: AnchoredLine, x: i64) {
+pub fn store(line: AnchoredLine, x: f64) {
+    use memory::unit::f64_into_u64;
+    let x = f64_into_u64(x);
     if cfg!(target_pointer_width = "32") {
-        prism.set(1, Unit::from(x as i32));
-        prism.set(2, Unit::from((x >> 32) as i32));
+        line.set(0, Unit::from(x as u32));
+        line.set(1, Unit::from((x >> 32) as u32));
     } else {
-        prism.set(1, Unit::from(x));
+        line.set(0, Unit::from(x));
     }
 }
 
-pub fn hydrate(prism: AnchoredLine) -> i64 {
-    if cfg!(target_pointer_width = "32") {
-        let low: u32 = prism[1].into();
-        let hi: u32 = prism[2].into();
-        let res = ((hi as u64) << 32) | (low as u64);
-        res as i64
+pub fn hydrate(line: AnchoredLine) -> f64 {
+    let x = if cfg!(target_pointer_width = "32") {
+        let low: u32 = line[0].into();
+        let hi:  u32 = line[1].into();
+        ((hi as u64) << 32) | (low as u64)
     } else {
-        prism[1].into()
-    }
+        line[0].u64()
+    };
+    use memory::unit::f64_from_u64;
+    f64_from_u64(x)
 }
 
 impl Dispatch for FloatPoint {
@@ -95,9 +139,16 @@ impl Identification for FloatPoint {
 use std::cmp::Ordering;
 impl Distinguish for FloatPoint {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        use hash::hash_64;
-        let x = hydrate(prism) as u64;
-        hash_64(x, 8)
+        let guide = Guide::hydrate(prism);
+        if guide.has_hash() { return guide.hash; }
+
+        let h = {
+            use hash::hash_64;
+            let x = hydrate(guide.root);
+            use memory::unit::f64_into_u64;
+            hash_64(f64_into_u64(x), 8)
+        };
+        guide.set_hash(h).store().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -111,9 +162,11 @@ impl Distinguish for FloatPoint {
             return Some(Ordering::Greater)
         }
         if o.type_sentinel() == (& FLOATPOINT_SENTINEL) as *const u8 {
-            let x = hydrate(prism);
-            let y = hydrate(o.prism());
-            return Some(x.cmp(&y))
+            let guide = Guide::hydrate(prism);
+            let guide2 = Guide::hydrate(o.prism());
+            let x = hydrate(guide.root);
+            let y = hydrate(guide2.root);
+            return x.partial_cmp(&y)
         }
         let ret = ((& FLOATPOINT_SENTINEL) as *const u8).cmp(&o.type_sentinel());
         Some(ret)
@@ -121,88 +174,46 @@ impl Distinguish for FloatPoint {
 }
 
 impl Aggregate for FloatPoint { }
-
 impl Sequential for FloatPoint { }
-
 impl Associative for FloatPoint { }
-
 impl Reversible for FloatPoint {}
 impl Sorted for FloatPoint {}
 
 impl Notation for FloatPoint {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let x = hydrate(prism);
-        write!(f, "{}", x)
+        let guide = Guide::hydrate(prism);
+        let x = hydrate(guide.root);
+        if x.is_finite() {
+            // TODO print 4. as 4.0
+            write!(f, "{}", x)
+        } else if x.is_nan() {
+            write!(f, "##NaN")
+        } else if x.is_positive() {
+            write!(f, "##Inf")
+        } else {
+            write!(f, "##-Inf")
+        }
     }
 
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let x = hydrate(prism);
-        write!(f, "FloatPoint[{}]", x)
+        write!(f, "FloatPoint[");
+        self.edn(prism, f);
+        write!(f, "]")
     }
 }
 
 impl Numeral for FloatPoint {
     fn inc(&self, prism: AnchoredLine) -> Unit {
-        let x = hydrate(prism);
-        let s = prism.segment();
-        if s.is_aliased() {
-            if s.unalias() == 0 {
-                Segment::free(s);
-            }
-            FloatPoint::new(x + 1)
-        } else {
-            store(prism, x + 1);
-            s.unit()
-        }
+        unimplemented!()
     }
     fn dec(&self, prism: AnchoredLine) -> Unit {
-        let x = hydrate(prism);
-        let s = prism.segment();
-        if s.is_aliased() {
-            if s.unalias() == 0 {
-                Segment::free(s);
-            }
-            FloatPoint::new(x - 1)
-        } else {
-            store(prism, x - 1);
-            s.unit()
-        }
+        unimplemented!()
     }
     fn neg(&self, prism: AnchoredLine) -> Unit {
         unimplemented!()
     }
     fn add(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        let o = other.handle();
-        if FloatPoint::is_instance(o) {
-            let x = hydrate(prism);
-            let y = hydrate(o.prism());
-            let z = x + y;
-            let s = prism.segment();
-            if s.is_aliased() {
-                if s.unalias() == 0 {
-                    Segment::free(s);
-                }
-                let r = o.prism().segment();
-                if r.is_aliased() {
-                    if r.unalias() == 0 {
-                        Segment::free(r);
-                    }
-                    FloatPoint::new(z)
-                } else {
-                    store(o.prism(), z);
-                    r.unit()
-                }
-            } else {
-                store(prism, z);
-                let r = o.prism().segment();
-                if r.unalias() == 0 {
-                    Segment::free(r);
-                }
-                s.unit()
-            }
-        } else {
-            unimplemented!()
-        }
+        unimplemented!()
     }
     fn subtract(&self, prism: AnchoredLine, other: Unit) -> Unit {
         unimplemented!()

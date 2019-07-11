@@ -65,15 +65,39 @@ impl Identification for Set {
 
 impl Distinguish for Set {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        // reduce over elements
-        // sum hash codes. finalize
-        unimplemented!()
+        let guide = Guide::hydrate(prism);
+        if guide.has_hash() {
+            return guide.hash;
+        }
+        use random::{PI, cycle_abc};
+        struct Pointer {
+            pub ptr: *mut u64,
+        }
+        impl Process for Pointer {
+            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+                let vh = v.hash() as u64;
+                let h = cycle_abc(181, (vh << 32) | vh);
+                unsafe {
+                    *self.ptr = (*self.ptr).wrapping_add(h);
+                }
+                None
+            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+                Handle::nil().value()
+            }
+        }
+
+        let mut y = cycle_abc(97, PI[487] + guide.count as u64);
+        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
+        let _ = map::reduce::reduce(prism, &mut procs, 0);
+        let h = cycle_abc(27, y) as u32;
+        guide.set_hash(h).store().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         // basic checks
         // compare structurally down tree
         // like tandem tear_down's
-        unimplemented!()
+        unimplemented!("Set eq.")
     }
 }
 
@@ -132,7 +156,9 @@ impl Reversible for Set {}
 impl Sorted for Set {}
 impl Notation for Set {
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        self.edn(prism, f)
+        write!(f, "Set|");
+        self.edn(prism, f);
+        write!(f, "|")
     }
 
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {

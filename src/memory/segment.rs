@@ -65,9 +65,7 @@ impl Segment {
         trace::free_END(s.anchor_line);
     }
 
-    pub fn capacity(&self) -> u32 {
-        self.anchor_line[0].anchor().capacity()
-    }
+    pub fn capacity(&self) -> u32 { self.anchor_line[0].anchor().capacity() }
 
     pub fn is_aliased(&self) -> bool {
         let real_ret = self.anchor_line[0].anchor().is_aliased();
@@ -85,7 +83,7 @@ impl Segment {
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.aliased();
-            let mut  x = *self;
+            let mut x = *self;
             x.anchor_line[0] = new_a.into();
         } else {
             unimplemented!()

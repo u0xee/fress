@@ -37,6 +37,7 @@ pub mod sort_map;
 pub mod sort_set;
 pub mod string;
 pub mod symbol;
+pub mod tagged;
 pub mod transduce;
 pub mod uri;
 pub mod uuid;

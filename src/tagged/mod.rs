@@ -14,20 +14,23 @@ use handle::Handle;
 pub mod guide;
 use self::guide::Guide;
 
-pub static SYMBOL_SENTINEL: u8 = 0;
+pub static TAGGED_SENTINEL: u8 = 0;
 
-pub struct Symbol {
+// A | P G S S S | P ...
+// G as [hash tag-len next]
+
+pub struct Tagged {
     prism: Unit,
 }
 
-impl Symbol {
+impl Tagged {
     pub fn new(name: &[u8], solidus_position: u32) -> Unit {
         let byte_count = name.len() as u32;
         let content_count = units_for(byte_count);
         let needed = 1 /*prism*/ + Guide::units() + content_count;
         let s = Segment::new(needed);
         let prism = s.line_at(0);
-        prism.set(0, mechanism::prism::<Symbol>());
+        prism.set(0, mechanism::prism::<Tagged>());
         let guide = Guide::new(prism, solidus_position, byte_count);
         guide.root.set(content_count as i32 - 1, Unit::zero());
         guide.byte_slice().copy_from_slice(name);
@@ -37,7 +40,7 @@ impl Symbol {
     pub fn new_prefix_name(prefix: &[u8], name: &[u8]) -> Unit {
         use std::str::from_utf8;
         let b = format!("{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
-        Symbol::new(b.as_bytes(), prefix.len() as u32)
+        Tagged::new(b.as_bytes(), prefix.len() as u32)
     }
 }
 
@@ -46,7 +49,7 @@ pub fn units_for(byte_count: u32) -> u32 {
     (byte_count + b - 1) >> c
 }
 
-impl Dispatch for Symbol {
+impl Dispatch for Tagged {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
         let guide = Guide::hydrate(prism);
@@ -55,13 +58,13 @@ impl Dispatch for Symbol {
     }
 }
 
-impl Identification for Symbol {
-    fn type_name(&self) -> &'static str { "Symbol" }
-    fn type_sentinel(&self) -> *const u8 { (& SYMBOL_SENTINEL) as *const u8 }
+impl Identification for Tagged {
+    fn type_name(&self) -> &'static str { "Tagged" }
+    fn type_sentinel(&self) -> *const u8 { (& TAGGED_SENTINEL) as *const u8 }
 }
 
 use std::cmp::Ordering;
-impl Distinguish for Symbol {
+impl Distinguish for Tagged {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() { return guide.hash; }
@@ -80,7 +83,7 @@ impl Distinguish for Symbol {
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.is_ref() && o.type_sentinel() == (& SYMBOL_SENTINEL) as *const u8 {
+        if o.is_ref() && o.type_sentinel() == (& TAGGED_SENTINEL) as *const u8 {
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o.prism());
             return g.byte_slice() == h.byte_slice()
@@ -93,8 +96,8 @@ impl Distinguish for Symbol {
         if !o.is_ref() {
             return Some(Ordering::Greater)
         }
-        if o.type_sentinel() != (& SYMBOL_SENTINEL) as *const u8 {
-            let ret = ((& SYMBOL_SENTINEL) as *const u8).cmp(&o.type_sentinel());
+        if o.type_sentinel() != (& TAGGED_SENTINEL) as *const u8 {
+            let ret = ((& TAGGED_SENTINEL) as *const u8).cmp(&o.type_sentinel());
             return Some(ret)
         }
         let g = Guide::hydrate(prism);
@@ -103,7 +106,7 @@ impl Distinguish for Symbol {
     }
 }
 
-impl Aggregate for Symbol {
+impl Aggregate for Tagged {
     fn meta(&self, prism: AnchoredLine) -> *const Unit {
         let guide = Guide::hydrate(prism);
         if guide.has_meta() {
@@ -118,12 +121,12 @@ impl Aggregate for Symbol {
     }
 }
 
-impl Sequential for Symbol { }
-impl Associative for Symbol { }
-impl Reversible for Symbol { }
-impl Sorted for Symbol { }
+impl Sequential for Tagged { }
+impl Associative for Tagged { }
+impl Reversible for Tagged { }
+impl Sorted for Tagged { }
 
-impl Notation for Symbol {
+impl Notation for Tagged {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
         write!(f, "{}", guide.str())
@@ -131,11 +134,11 @@ impl Notation for Symbol {
 
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
-        write!(f, "Symbol[{}]", guide.str())
+        write!(f, "Tagged[{}]", guide.str())
     }
 }
 
-impl Numeral for Symbol { }
+impl Numeral for Tagged { }
 
 #[cfg(test)]
 mod tests {

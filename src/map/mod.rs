@@ -82,15 +82,41 @@ impl Identification for Map {
 
 impl Distinguish for Map {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        // reduce over kv pairs
-        // sum pair hash codes. finalize
-        unimplemented!()
+        let guide = Guide::hydrate(prism);
+        if guide.has_hash() {
+            return guide.hash;
+        }
+        use random::{PI, cycle_abc};
+        struct Pointer {
+            pub ptr: *mut u64,
+        }
+        impl Process for Pointer {
+            fn inges_kv(&mut self, stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+                let kh = k.hash() as u64;
+                let vh = v.hash() as u64;
+                let h = cycle_abc(256, (kh << 32) | vh);
+                unsafe {
+                    *self.ptr = (*self.ptr).wrapping_add(h);
+                }
+                None
+            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+                Handle::nil().value()
+            }
+        }
+
+        let mut y = cycle_abc(58, PI[123] + guide.count as u64);
+        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
+        let _ = reduce::reduce(prism, &mut procs, 1);
+        let h = cycle_abc(179, y) as u32;
+        guide.set_hash(h).store().hash
     }
+
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         // basic checks
         // compare structurally down tree
         // like tandem tear_down's
-        unimplemented!()
+        unimplemented!("Map eq.")
     }
 }
 
@@ -149,7 +175,9 @@ impl Sorted for Map {}
 
 impl Notation for Map {
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        self.edn(prism, f)
+        write!(f, "Map|");
+        self.edn(prism, f);
+        write!(f, "|")
     }
 
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
@@ -221,6 +249,8 @@ pub fn divide_by_bits(x: u32) -> u32 {
         divide_by_five(x)
     }
 }
+
+// TODO assoc-in (recursive assoc)
 
 #[cfg(test)]
 mod tests {

@@ -33,13 +33,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
     let mut i = 0usize;
     let mut ready = Handle::NIL;
     let mut string_ready = false;
-    if !reader.pending.is_empty() {
-        if reader.pending.top().0 == Pending::Comment {
-            unimplemented!("partial comment")
-        }
-        if reader.pending.top().0 == Pending::String {
-            unimplemented!("partial string")
-        }
+    if !reader.pending.is_empty() && reader.pending.top().0 == Pending::String {
+        let partial = reader.pending.top().1;
     }
     'top: loop { 'ready: loop {
         if string_ready { string_ready = false; break 'ready; }
@@ -60,6 +55,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 match res {
                     Ok(h) => {
                         ready = h.unit();
+                        reader.counter.add(sym.len() as u32);
                         i += sym.len();
                         break 'ready;
                     },
@@ -83,6 +79,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                     use set::Set;
                     let h = Set::new();
                     reader.pending.push(Pending::Set, h);
+                    reader.counter.add(2);
                     i += 2;
                     continue 'top;
                 }
@@ -114,6 +111,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                     match symbolic_numbers(reader, bytes, i) {
                         ReadResult::Ok { bytes_used, value } => {
                             ready = value;
+                            reader.counter.add(bytes_used);
                             i += bytes_used as usize;
                             break 'ready;
                         },
@@ -137,6 +135,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                         },
                     }
                 } else {
+                    // TODO
                     // |"hello there\|
                     // |"hello th\u03|
                     // copy into new partial string and return NeedMore
@@ -149,6 +148,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 match character(reader, bytes, i) {
                     ReadResult::Ok { bytes_used, value } => {
                         ready = value;
+                        reader.counter.add(bytes_used);
                         i += bytes_used as usize;
                         break 'ready;
                     },
@@ -162,9 +162,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                     reader.counter.newline();
                     continue 'top;
                 } else {
-                    reader.pending.push(Pending::Comment, Handle::NIL);
-                    reader.counter.add((bytes.len() - i) as u32);
-                    return more(reader, bytes, 0)
+                    return more(reader, bytes, bytes.len() - i)
                 }
             }
             // '`^@~
@@ -183,6 +181,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 use map::Map;
                 let h = Map::new();
                 reader.pending.push(Pending::Map, h);
+                reader.counter.add(1);
                 i += 1;
                 continue 'top;
             } else {
@@ -191,6 +190,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                     Pending::Map | Pending::Set => {
                         ready = u;
                         reader.pending.pop();
+                        reader.counter.add(1);
                         i += 1;
                         break 'ready;
                     },
@@ -205,6 +205,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 use vector::Vector;
                 let h = Vector::new();
                 reader.pending.push(Pending::Vector, h);
+                reader.counter.add(1);
                 i += 1;
                 continue 'top;
             } else {
@@ -212,6 +213,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 if let Pending::Vector = p {
                     ready = u;
                     reader.pending.pop();
+                    reader.counter.add(1);
                     i += 1;
                     break 'ready;
                 } else {
@@ -223,6 +225,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             if c == b'(' {
                 let h = List::new();
                 reader.pending.push(Pending::List, h);
+                reader.counter.add(1);
                 i += 1;
                 continue 'top;
             } else {
@@ -235,6 +238,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                         rev.unit()
                     };
                     reader.pending.pop();
+                    reader.counter.add(1);
                     i += 1;
                     break 'ready;
                 } else {
@@ -248,10 +252,9 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             if reader.pending.is_empty() {
                 return ReadResult::Ok { bytes_used: i as u32, value: ready };
             } else {
-                let (p, x) = reader.pending.top();
-                match p {
+                match reader.pending.top_case() {
                     Pending::Tagged  => {
-                        println!("___#{} {}", x.handle(), ready.handle());
+                        println!("___#{} {}", reader.pending.top_unit().handle(), ready.handle());
                         unimplemented!("Processing a tagged element.")
                     },
                     Pending::Discard => {
@@ -260,23 +263,24 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                     },
                     Pending::Map     => { reader.pending.push(Pending::Mapping, ready) },
                     Pending::Mapping => {
-                        let (k, v) = (x, ready);
+                        let (k, v) = (reader.pending.top_unit().handle(), ready.handle());
                         reader.pending.pop();
-                        let (_, n) = reader.pending.top();
-                        let (m, displaced) = n.handle().assoc(k.handle(), v.handle());
-                        if !displaced.is_nil() {
-                            // TODO
-                            return err(reader, format!("Duplicate key in map"))
-                        }
+                        let n = reader.pending.top_unit().handle();
+                        let (m, displaced) = n.assoc(k, v);
                         reader.pending.set_top(m.unit());
+                        if !displaced.is_nil() {
+                            let s = format!("Duplicate mapping to both {} and {}.", displaced, v);
+                            displaced.retire();
+                            return err(reader, s)
+                        }
                     },
                     Pending::Namespace => {
-                        x.handle().retire();
+                        reader.pending.top_unit().handle().retire();
                         reader.pending.pop();
                         continue 'reready;
                     },
                     _ => { // Vector List Set
-                        let h = x.handle().conj(ready.handle());
+                        let h = reader.pending.top_unit().handle().conj(ready.handle());
                         reader.pending.set_top(h.unit());
                     },
                 }
@@ -287,13 +291,10 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
 }
 
 // TODO
-// tagged
-// restart comment, string
+// tagged -> metadata
+// restart string
 // inst, uuid
-// counter
-// memory free
-// float print (with dot!)
-// float read (tolerate _, as with int)
+// non ascii - counter
 
 pub fn prefix_map(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
     if (i + 2) >= bytes.len() {
@@ -319,6 +320,7 @@ pub fn prefix_map(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult 
                                         #:weather{{:high 58, :low 42}}.", from_utf8(prefix).unwrap()))
         } else {
             let j = i + 2 /*#:*/ + prefix.len();
+            reader.counter.add(2 + prefix.len() as u32);
             if let Some(printing) = not_whitespace_index(&bytes[j..], &mut reader.counter) {
                 if bytes[j + printing] == b'{' {
                     use edn::reader::immediate_both;
@@ -357,13 +359,18 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             use symbol::Symbol;
             let h = Symbol::new(tag_sym, solidus as u32);
             reader.pending.push(Pending::Tagged, h);
+            // TODO reader.counter.add(tag_sym.len() as u32 + 1);
             return ReadResult::Ok { bytes_used: tag_sym.len() as u32 + 1, value: Handle::NIL }
         } else {
             if tag_sym.len() < 6 {
                 if tag_sym == b"inst" {
+                    // TODO reader.counter.add(5);
+                    // search ahead for open quote
+                    // find end quote
                     unimplemented!("inst literal parsing")
                 }
                 if tag_sym == b"uuid" {
+                    // TODO reader.counter.add(5);
                     unimplemented!("uuid literal parsing")
                 }
                 if tag_sym == b"nil" || tag_sym == b"true" || tag_sym == b"false" {
@@ -374,6 +381,7 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             use symbol::Symbol;
             let h = Symbol::new(tag_sym, 0);
             reader.pending.push(Pending::Tagged, h);
+            // TODO reader.counter.add(tag_sym.len() as u32 + 1);
             return ReadResult::Ok { bytes_used: tag_sym.len() as u32 + 1, value: Handle::NIL }
         }
     } else {

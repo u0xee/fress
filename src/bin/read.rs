@@ -58,6 +58,7 @@ fn n() {
                         match r {
                             ReadResult::Ok { bytes_used, value } => {
                                 println!("bytes_used: {}, {}", bytes_used, value.handle());
+                                value.handle().retire();
                             },
                             _ => {
                                 println!("{:?}", r);

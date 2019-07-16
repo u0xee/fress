@@ -42,7 +42,7 @@ impl Guide {
         self
     }
 
-    pub fn has_hash(&self) -> bool { self.hash == 0 }
+    pub fn has_hash(&self) -> bool { self.hash != 0 }
 
     pub fn reroot(mut self) -> Guide {
         let root_offset = 1 /*prism*/ + Guide::units();

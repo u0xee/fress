@@ -27,6 +27,7 @@ Sorted +
 Numeral {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
     fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn logical_value(&self, prism: AnchoredLine) -> AnchoredLine { prism }
 }
 
 pub trait Identification {

@@ -46,7 +46,7 @@ impl Guide {
         self
     }
 
-    pub fn has_hash(&self) -> bool { self.hash == 0 }
+    pub fn has_hash(&self) -> bool { self.hash != 0 }
 
     pub fn set_meta(mut self) -> Guide {
         self.has_meta_bit = 1;

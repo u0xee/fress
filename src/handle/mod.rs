@@ -116,8 +116,16 @@ impl Handle {
         }
     }
 
+    pub fn logical_value(self) -> AnchoredLine {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).logical_value(prism)
+        } else { unimplemented!() }
+    }
+
     pub fn eq(self, other: Handle) -> bool {
-        // TODO short circuit if units are identical
+        if self.unit == other.unit { return true; }
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -127,7 +135,7 @@ impl Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).eq(prism, self.unit)
         } else {
-            self.unit == other.unit
+            false
         }
     }
 
@@ -336,6 +344,14 @@ impl Handle {
     pub fn is_string(self) -> bool {
         use string::STR_SENTINEL;
         self.type_sentinel() == (& STR_SENTINEL) as *const u8
+    }
+    pub fn is_vector(self) -> bool {
+        use vector::VECTOR_SENTINEL;
+        self.type_sentinel() == (& VECTOR_SENTINEL) as *const u8
+    }
+    pub fn is_list(self) -> bool {
+        use list::LIST_SENTINEL;
+        self.type_sentinel() == (& LIST_SENTINEL) as *const u8
     }
 }
 

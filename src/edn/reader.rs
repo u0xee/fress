@@ -34,7 +34,6 @@ pub enum Pending {
     Set,    // match closing }
     Tagged, // read next, interpret(?) based on tag
     Discard, // read next, retire
-    Comment,
     String,
 }
 
@@ -101,6 +100,14 @@ impl PendingStack {
         if self.is_empty() { panic!("Empty reader stack") }
         let t = self.count - 1;
         (self.labels[t], self.boxes[t])
+    }
+    pub fn top_case(&self) -> Pending {
+        if self.is_empty() { panic!("Empty reader stack") }
+        self.labels[self.count - 1]
+    }
+    pub fn top_unit(&self) -> Unit {
+        if self.is_empty() { panic!("Empty reader stack") }
+        self.boxes[self.count - 1]
     }
     pub fn default_ns(&self) -> Option<Unit> {
         if self.count < 2 { return None; }

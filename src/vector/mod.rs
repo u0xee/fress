@@ -96,9 +96,7 @@ impl Distinguish for Vector {
                 }
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
-                Handle::nil().value()
-            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { Handle::nil().value() }
         }
 
         let mut y = cycle_abc(7, PI[321] + guide.count as u64);
@@ -109,17 +107,23 @@ impl Distinguish for Vector {
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        // A | P G T? R R R R R R R R R R R
-        // hydrate guides. if hashes differ, or counts differ, not equal.
-        //
-        // basic checks
-        // if immediate, false
-        // if vector, structural compare
-        // if list, iterate pairwise
-        // if eduction, iterate pairwise
-        // compare structurally down tree
-        // like tandem tear_down's
-        unimplemented!("Vector equality")
+        let o = other.handle();
+        if o.is_ref() {
+            let o_prism = o.logical_value();
+            if prism[0] == o_prism[0] {
+                eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism))
+            } else {
+                use list::LIST_SENTINEL;
+                let p = prism[0];
+                if mechanism::as_dispatch(&p).type_sentinel() == (& LIST_SENTINEL) as *const u8 {
+                    unimplemented!()
+                } else {
+                    false
+                }
+            }
+        } else {
+            false
+        }
     }
 
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {

@@ -20,6 +20,7 @@ pub mod pop;
 use self::pop::Pop;
 pub mod assoc;
 use self::assoc::unaliased_root;
+pub mod eq;
 pub mod get;
 pub mod reduce;
 pub mod tear_down;
@@ -100,9 +101,7 @@ impl Distinguish for Map {
                 }
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
-                Handle::nil().value()
-            }
+            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { Handle::nil().value() }
         }
 
         let mut y = cycle_abc(58, PI[123] + guide.count as u64);
@@ -113,10 +112,17 @@ impl Distinguish for Map {
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        // basic checks
-        // compare structurally down tree
-        // like tandem tear_down's
-        unimplemented!("Map eq.")
+        let o = other.handle();
+        if o.is_ref() {
+            let o_prism = o.logical_value();
+            if prism[0] == o_prism[0] {
+                eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 1)
+            } else {
+                false
+            }
+        } else {
+            false
+        }
     }
 }
 

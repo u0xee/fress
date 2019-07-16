@@ -91,8 +91,25 @@ impl Distinguish for List {
         let h = cycle_abc(210, y) as u32;
         guide.set_hash(h).store().hash
     }
+
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        unimplemented!("List eq.")
+        let o = other.handle();
+        if o.is_ref() {
+            let o_prism = o.logical_value();
+            if prism[0] == o_prism[0] {
+                vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism))
+            } else {
+                use vector::VECTOR_SENTINEL;
+                let p = prism[0];
+                if mechanism::as_dispatch(&p).type_sentinel() == (& VECTOR_SENTINEL) as *const u8 {
+                    unimplemented!()
+                } else {
+                    false
+                }
+            }
+        } else {
+            false
+        }
     }
 }
 

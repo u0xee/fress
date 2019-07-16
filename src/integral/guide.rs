@@ -48,9 +48,7 @@ impl Guide {
         self
     }
 
-    pub fn has_hash(&self) -> bool {
-        self.hash == 0
-    }
+    pub fn has_hash(&self) -> bool { self.hash != 0 }
 
     pub fn set_big(mut self) -> Guide {
         self.is_big_bit = 1;

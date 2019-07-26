@@ -86,7 +86,9 @@ impl Str {
                         }
                     },
                     _ => {
-                        Segment::free(guide.segment());
+                        let seg = guide.segment();
+                        seg.unalias();
+                        Segment::free(seg);
                         use std::char::from_u32;
                         return Err(format!("Bad string escape (\\{}). To include a backslash in a \
                                             string, use a double backslash (\\\\).",
@@ -123,13 +125,8 @@ impl Dispatch for Str {
 }
 
 impl Identification for Str {
-    fn type_name(&self) -> &'static str {
-        "String"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& STR_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "String" }
+    fn type_sentinel(&self) -> *const u8 { (& STR_SENTINEL) as *const u8 }
 }
 
 use std::cmp::Ordering;
@@ -200,6 +197,7 @@ impl Sorted for Str {}
 impl Notation for Str {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
+        // TODO clojure doesn't support escaped single quotes like \'
         write!(f, "{:?}", guide.str())
     }
 

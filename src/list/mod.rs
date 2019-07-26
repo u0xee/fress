@@ -53,13 +53,8 @@ impl Dispatch for List {
 }
 
 impl Identification for List {
-    fn type_name(&self) -> &'static str {
-        "List"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& LIST_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "List" }
+    fn type_sentinel(&self) -> *const u8 { (& LIST_SENTINEL) as *const u8 }
 }
 
 impl Distinguish for List {
@@ -100,7 +95,7 @@ impl Distinguish for List {
                 vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism))
             } else {
                 use vector::VECTOR_SENTINEL;
-                let p = prism[0];
+                let p = o_prism[0];
                 if mechanism::as_dispatch(&p).type_sentinel() == (& VECTOR_SENTINEL) as *const u8 {
                     unimplemented!()
                 } else {

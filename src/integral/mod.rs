@@ -57,6 +57,9 @@ impl Integral {
     }
 
     pub fn parse(negate: bool, m: &[u8], promote: bool) -> Handle {
+        if promote {
+            return big_int(negate, m)
+        }
         let mut x = 0i64;
         for b in m.iter() {
             if *b == b'_' {
@@ -74,6 +77,7 @@ impl Integral {
     }
 
     pub fn parse_hex(negate: bool, m: &[u8], promote: bool) -> Handle {
+        if promote { unimplemented!() }
         let mut x = 0i64;
         for b in m.iter() {
             if *b == b'_' {
@@ -139,13 +143,8 @@ impl Dispatch for Integral {
 }
 
 impl Identification for Integral {
-    fn type_name(&self) -> &'static str {
-        "Integral"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& INTEGRAL_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "Integral" }
+    fn type_sentinel(&self) -> *const u8 { (& INTEGRAL_SENTINEL) as *const u8 }
 }
 
 use std::cmp::Ordering;
@@ -243,6 +242,67 @@ impl Numeral for Integral {
     fn modulus(&self, prism: AnchoredLine, other: Unit) -> Unit {
         unimplemented!()
     }
+}
+
+// big int as string
+use string;
+pub static BIGINT_SENTINEL: u8 = 0;
+pub struct BigInt {
+    prism: Unit,
+}
+impl Dispatch for BigInt {
+    fn tear_down(&self, prism: AnchoredLine) {
+        // segment has 0 aliases
+        prism[1].handle().retire();
+        Segment::free(prism.segment())
+    }
+}
+impl Identification for BigInt {
+    fn type_name(&self) -> &'static str { "BigInt" }
+    fn type_sentinel(&self) -> *const u8 { (& BIGINT_SENTINEL) as *const u8 }
+}
+impl Distinguish for BigInt {
+    fn hash(&self, prism: AnchoredLine) -> u32 {
+        prism[1].handle().hash()
+    }
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        let o = other.handle();
+        if o.type_sentinel() != (& BIGINT_SENTINEL) as *const u8 {
+            false
+        } else {
+            let s = prism.get(1).handle();
+            let os = o.prism().get(1).handle();
+            s.eq(os)
+        }
+    }
+}
+impl Aggregate for BigInt { }
+impl Sequential for BigInt { }
+impl Associative for BigInt { }
+impl Reversible for BigInt {}
+impl Sorted for BigInt {}
+impl Notation for BigInt {
+    fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        let guide = string::guide::Guide::hydrate(prism[1].handle().prism());
+        write!(f, "{}", guide.str())
+    }
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BigInt[");
+        self.edn(prism, f);
+        write!(f, "]")
+    }
+}
+impl Numeral for BigInt {}
+pub fn big_int(negate: bool, m: &[u8]) -> Handle {
+    use std::str::from_utf8;
+    let temp = format!("{}{}N", if negate { "-" } else { "" }, from_utf8(m).unwrap());
+    let t = string::Str::new_from_str(&temp).unit();
+    let needed = 1 /*prism*/ + 1 /*string*/;
+    let s = Segment::new(needed);
+    let prism = s.line_at(0);
+    prism.set(0, mechanism::prism::<BigInt>());
+    prism.set(1, t);
+    s.unit().handle()
 }
 
 #[cfg(test)]

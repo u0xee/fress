@@ -32,7 +32,6 @@ pub struct FloatPoint {
 }
 
 impl FloatPoint {
-    // TODO -0.0 read as 0.0
     pub fn new(x: f64) -> Unit {
         let guide = FloatPoint::blank();
         store(guide.root, x);
@@ -55,6 +54,7 @@ impl FloatPoint {
     pub fn parse(negate: bool, whole: &[u8], part: &[u8], promote: bool) -> Handle {
         use std::str::from_utf8;
         let b = format!("{}.{}", from_utf8(whole).unwrap(), from_utf8(part).unwrap());
+        if promote { unimplemented!() }
         let mut x = b.parse::<f64>().unwrap();
         if negate { x = -x; }
         let guide = {
@@ -70,6 +70,7 @@ impl FloatPoint {
         use std::str::from_utf8;
         let b = format!("{}.{}e{}{}", from_utf8(whole).unwrap(), from_utf8(part).unwrap(),
                         if exp_negate { "-" } else { "" }, from_utf8(exp).unwrap());
+        if promote { unimplemented!() }
         let mut x = b.parse::<f64>().unwrap();
         if negate { x = -x; }
         let guide = {
@@ -127,13 +128,8 @@ impl Dispatch for FloatPoint {
 }
 
 impl Identification for FloatPoint {
-    fn type_name(&self) -> &'static str {
-        "FloatPoint"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& FLOATPOINT_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "FloatPoint" }
+    fn type_sentinel(&self) -> *const u8 { (& FLOATPOINT_SENTINEL) as *const u8 }
 }
 
 use std::cmp::Ordering;
@@ -184,8 +180,11 @@ impl Notation for FloatPoint {
         let guide = Guide::hydrate(prism);
         let x = hydrate(guide.root);
         if x.is_finite() {
-            // TODO print 4. as 4.0
-            write!(f, "{}", x)
+            if x.floor() == x {
+                write!(f, "{}.0", x)
+            } else {
+                write!(f, "{}", x)
+            }
         } else if x.is_nan() {
             write!(f, "##NaN")
         } else if x.is_positive() {

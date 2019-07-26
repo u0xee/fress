@@ -94,10 +94,17 @@ impl Distinguish for Set {
         guide.set_hash(h).store().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        // basic checks
-        // compare structurally down tree
-        // like tandem tear_down's
-        unimplemented!("Set eq.")
+        let o = other.handle();
+        if o.is_ref() {
+            let o_prism = o.logical_value();
+            if prism[0] == o_prism[0] {
+                map::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 0)
+            } else {
+                false
+            }
+        } else {
+            false
+        }
     }
 }
 

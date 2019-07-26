@@ -89,11 +89,13 @@ pub fn parse_symbol_keyword(s: &[u8], default: Option<&[u8]>) -> Result<Handle, 
             if s == b"true"  { return Ok(Handle::tru()) }
             if s == b"false" { return Ok(Handle::fals()) }
         }
-        let after_sign = if sign(s[0]) { 1 } else { 0 };
-        if s[after_sign] == b'.' && after_sign + 1 < s.len() && digit(s[after_sign + 1]) {
-            return Err(format!("Not a valid token ({}). Floating point numbers must \
+        if s.len() > 1 {
+            let after_sign = if sign(s[0]) { 1 } else { 0 };
+            if s[after_sign] == b'.' && after_sign + 1 < s.len() && digit(s[after_sign + 1]) {
+                return Err(format!("Not a valid token ({}). Floating point numbers must \
                                 have a digit before the point, like 0.1 or +1.42.",
-                               from_utf8(s).unwrap()))
+                                   from_utf8(s).unwrap()))
+            }
         }
         use symbol::Symbol;
         if let Some(d) = default {

@@ -187,6 +187,7 @@ impl Notation for Map {
     }
 
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO print in prefix map form
         struct Printer {
             pub is_first: bool,
             pub f: usize,

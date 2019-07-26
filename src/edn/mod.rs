@@ -94,16 +94,21 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 }
                 if hit(d, ALPHABET) {
                     match tagged(reader, bytes, i) {
-                        ReadResult::Ok { bytes_used, .. } => {
+                        ReadResult::Ok { bytes_used, value } => {
                             i += bytes_used as usize;
-                            continue 'top;
+                            if value.handle().is_nil() {
+                                continue 'top;
+                            } else {
+                                ready = value;
+                                break 'ready;
+                            }
                         },
                         res => { return res },
                     }
                 }
                 if d == b'_' {
                     reader.pending.push_discard();
-                    reader.counter.add(2); // TODO
+                    reader.counter.add(2);
                     i += 2;
                     continue 'top;
                 }
@@ -135,13 +140,12 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                         },
                     }
                 } else {
-                    // TODO
                     // |"hello there\|
                     // |"hello th\u03|
                     // copy into new partial string and return NeedMore
                     //reader.partial = Some(Partial::Str(handle));
                     //return ReadResult::NeedMore { bytes_not_used: not_used }
-                    unimplemented!()
+                    return more(reader, bytes, bytes.len() - i)
                 }
             }
             if c == b'\\' {
@@ -254,8 +258,11 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             } else {
                 match reader.pending.top_case() {
                     Pending::Tagged  => {
-                        println!("___#{} {}", reader.pending.top_unit().handle(), ready.handle());
-                        unimplemented!("Processing a tagged element.")
+                        use tagged::Tagged;
+                        let tag = Tagged::new(reader.pending.top_unit().handle(), ready.handle());
+                        reader.pending.pop();
+                        ready = tag;
+                        continue 'reready;
                     },
                     Pending::Discard => {
                         ready.handle().retire();
@@ -291,10 +298,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
 }
 
 // TODO
-// tagged -> metadata
-// restart string
-// inst, uuid
-// non ascii - counter
+// unicode in: string, symbol, char
+// maintaining counter position
 
 pub fn prefix_map(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
     if (i + 2) >= bytes.len() {
@@ -359,29 +364,65 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             use symbol::Symbol;
             let h = Symbol::new(tag_sym, solidus as u32);
             reader.pending.push(Pending::Tagged, h);
-            // TODO reader.counter.add(tag_sym.len() as u32 + 1);
+            // reader.counter.add(tag_sym.len() as u32 + 1);
             return ReadResult::Ok { bytes_used: tag_sym.len() as u32 + 1, value: Handle::NIL }
         } else {
             if tag_sym.len() < 6 {
                 if tag_sym == b"inst" {
-                    // TODO reader.counter.add(5);
-                    // search ahead for open quote
-                    // find end quote
-                    unimplemented!("inst literal parsing")
+                    if let Some(relative) = not_whitespace_index(&bytes[(i + 1 + 4)..], &mut reader.counter) {
+                        let j = i + 1 + 4 + relative;
+                        if let Some(close) = string_end_quote_index(&bytes[j..], &mut reader.counter) {
+                            let inst_content = &bytes[(j + 1)..(j + close)];
+                            use inst::Inst;
+                            return match Inst::new_parsed(inst_content) {
+                                Err(msg) => { err(reader, msg) },
+                                Ok(h) => {
+                                    // #inst "1980-11-14T07:22:41Z"
+                                    // i     j                    j+close
+                                    // 5 + relative + close + 1
+                                    let bytes_used = (1 + 4 + relative + close + 1) as u32;
+                                    ReadResult::Ok { bytes_used, value: h.unit() }
+                                }
+                            };
+                        } else {
+                            // Needmore
+                            unimplemented!()
+                        }
+                    } else {
+                        // NeedMore
+                        unimplemented!()
+                    }
                 }
                 if tag_sym == b"uuid" {
-                    // TODO reader.counter.add(5);
-                    unimplemented!("uuid literal parsing")
+                    if let Some(relative) = not_whitespace_index(&bytes[(i + 1 + 4)..], &mut reader.counter) {
+                        let j = i + 1 + 4 + relative;
+                        if let Some(close) = string_end_quote_index(&bytes[j..], &mut reader.counter) {
+                            let uuid_content = &bytes[(j + 1)..(j + close)];
+                            use uuid::Uuid;
+                            return match Uuid::new_parsed(uuid_content) {
+                                Err(msg) => { err(reader, msg) },
+                                Ok(h) => {
+                                    let bytes_used = (1 + 4 + relative + close + 1) as u32;
+                                    ReadResult::Ok { bytes_used, value: h.unit() }
+                                }
+                            };
+                        } else {
+                            // Needmore
+                            unimplemented!()
+                        }
+                    } else {
+                        // NeedMore
+                        unimplemented!()
+                    }
                 }
                 if tag_sym == b"nil" || tag_sym == b"true" || tag_sym == b"false" {
-                    return err(reader, format!("Bad reader tag. \
-                                               Tag must be a valid symbol (not true/false/nil)."))
+                    return err(reader, format!("Bad reader tag. Tag must be a valid symbol (not true/false/nil)."))
                 }
             }
             use symbol::Symbol;
             let h = Symbol::new(tag_sym, 0);
             reader.pending.push(Pending::Tagged, h);
-            // TODO reader.counter.add(tag_sym.len() as u32 + 1);
+            // reader.counter.add(tag_sym.len() as u32 + 1);
             return ReadResult::Ok { bytes_used: tag_sym.len() as u32 + 1, value: Handle::NIL }
         }
     } else {
@@ -582,10 +623,12 @@ pub fn line_feed_index(s: &[u8]) -> Option<usize> {
 }
 
 pub fn not_whitespace_index(s: &[u8], c: &mut Counter) -> Option<usize> {
+    let mut cnt = *c;
     for i in 0..s.len() {
         let si = s[i];
-        if si == b'\n' { c.newline() } else { c.add(1) }
+        if si == b'\n' { cnt.newline() } else { cnt.add(1) }
         if !whitespace(si) {
+            *c = cnt;
             return Some(i)
         }
     }
@@ -593,11 +636,13 @@ pub fn not_whitespace_index(s: &[u8], c: &mut Counter) -> Option<usize> {
 }
 
 pub fn string_end_quote_index(s: &[u8], c: &mut Counter) -> Option<usize> {
+    let mut cnt = *c;
     // unroll groups of four
     for i in 1..s.len() {
         let si = s[i];
-        if si == b'\n' { c.newline() } else { c.add(1) }
+        if si == b'\n' { cnt.newline() } else { cnt.add(1) }
         if si == b'"' && s[i - 1] != b'\\' {
+            *c = cnt;
             return Some(i)
         }
     }

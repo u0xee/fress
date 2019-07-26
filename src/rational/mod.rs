@@ -18,15 +18,14 @@ pub struct Rational {
 }
 
 impl Rational {
-    pub fn new(x: i64) -> Unit {
-        let s = Segment::new(if cfg!(target_pointer_width = "32") { 3 } else { 2 });
+    pub fn new(top: i64, bot: i64) -> Unit {
+        // A | P T B
+        let s = Segment::new(if cfg!(target_pointer_width = "32") { 5 } else { 3 });
         s.set(0, mechanism::prism::<Rational>());
-        store(s.line_at(0), x);
+        store(s.line_at(0), top);
+        let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
+        store(s.line_at(next), bot);
         s.unit()
-    }
-
-    pub fn new_value(x: i64) -> Value {
-        Rational::new(x).handle().value()
     }
 
     pub fn is_instance(h: Handle) -> bool {
@@ -34,7 +33,22 @@ impl Rational {
     }
 
     pub fn parse(negate: bool, top: &[u8], bot: &[u8]) -> Handle {
-        unimplemented!("Parsing a ratio.")
+        let mut x = 0i64;
+        for b in top.iter() {
+            if *b == b'_' {
+                continue
+            }
+            x = x * 10 + (*b - b'0') as i64;
+        }
+        let mut y = 0i64;
+        for b in bot.iter() {
+            if *b == b'_' {
+                continue
+            }
+            y = y * 10 + (*b - b'0') as i64;
+        }
+        if negate { x = -x; }
+        Rational::new(x, y).handle()
     }
 }
 
@@ -66,40 +80,32 @@ impl Dispatch for Rational {
 }
 
 impl Identification for Rational {
-    fn type_name(&self) -> &'static str {
-        "Rational"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& RATIONAL_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "Rational" }
+    fn type_sentinel(&self) -> *const u8 { (& RATIONAL_SENTINEL) as *const u8 }
 }
 
 use std::cmp::Ordering;
 impl Distinguish for Rational {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        use hash::hash_64;
         let x = hydrate(prism) as u64;
-        hash_64(x, 8)
+        let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
+        let y = hydrate(prism.offset(next)) as u64;
+        use hash::hash_128;
+        hash_128(x, y, 16)
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
-        let c = self.cmp(prism, other);
-        c.unwrap() == Ordering::Equal
-    }
-
-    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
-        if !o.is_ref() {
-            return Some(Ordering::Greater)
-        }
         if o.type_sentinel() == (& RATIONAL_SENTINEL) as *const u8 {
-            let x = hydrate(prism);
-            let y = hydrate(o.prism());
-            return Some(x.cmp(&y))
+            let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
+            let x =  hydrate(prism);
+            let y =  hydrate(prism.offset(next));
+            let oprism = o.prism();
+            let ox = hydrate(oprism);
+            let oy = hydrate(oprism.offset(next));
+            return x == ox && y == oy
         }
-        let ret = ((& RATIONAL_SENTINEL) as *const u8).cmp(&o.type_sentinel());
-        Some(ret)
+        false
     }
 }
 
@@ -114,95 +120,20 @@ impl Sorted for Rational {}
 
 impl Notation for Rational {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let x = hydrate(prism);
-        write!(f, "{}", x)
+        let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
+        let x =  hydrate(prism);
+        let y =  hydrate(prism.offset(next));
+        write!(f, "{}/{}", x, y)
     }
 
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let x = hydrate(prism);
-        write!(f, "Rational[{}]", x)
+        write!(f, "Rational[");
+        self.edn(prism, f);
+        write!(f, "]")
     }
 }
 
-impl Numeral for Rational {
-    fn inc(&self, prism: AnchoredLine) -> Unit {
-        let x = hydrate(prism);
-        let s = prism.segment();
-        if s.is_aliased() {
-            if s.unalias() == 0 {
-                Segment::free(s);
-            }
-            Rational::new(x + 1)
-        } else {
-            store(prism, x + 1);
-            s.unit()
-        }
-    }
-    fn dec(&self, prism: AnchoredLine) -> Unit {
-        let x = hydrate(prism);
-        let s = prism.segment();
-        if s.is_aliased() {
-            if s.unalias() == 0 {
-                Segment::free(s);
-            }
-            Rational::new(x - 1)
-        } else {
-            store(prism, x - 1);
-            s.unit()
-        }
-    }
-    fn neg(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-    fn add(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        let o = other.handle();
-        if Rational::is_instance(o) {
-            let x = hydrate(prism);
-            let y = hydrate(o.prism());
-            let z = x + y;
-            let s = prism.segment();
-            if s.is_aliased() {
-                if s.unalias() == 0 {
-                    Segment::free(s);
-                }
-                let r = o.prism().segment();
-                if r.is_aliased() {
-                    if r.unalias() == 0 {
-                        Segment::free(r);
-                    }
-                    Rational::new(z)
-                } else {
-                    store(o.prism(), z);
-                    r.unit()
-                }
-            } else {
-                store(prism, z);
-                let r = o.prism().segment();
-                if r.unalias() == 0 {
-                    Segment::free(r);
-                }
-                s.unit()
-            }
-        } else {
-            unimplemented!()
-        }
-    }
-    fn subtract(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn multiply(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn divide(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn remainder(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn modulus(&self, prism: AnchoredLine, other: Unit) -> Unit {
-        unimplemented!()
-    }
-}
+impl Numeral for Rational { }
 
 #[cfg(test)]
 mod tests {

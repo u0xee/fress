@@ -62,6 +62,9 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
         let end = s.len() - if promote { 1 } else { 0 };
         &s[start..end]
     };
+    if body[0] == b'0' && body.len() > 1 && hit(body[1], BASE_16) {
+        return Err(format!("Numbers (other than 0) can't start with a 0 ({}).", from_utf8(s).unwrap()))
+    }
     if let Some(d) = after_base10(body) {
         let db = lowercase(body[d]);
         if db == b'.' {

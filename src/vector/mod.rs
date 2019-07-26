@@ -114,7 +114,7 @@ impl Distinguish for Vector {
                 eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism))
             } else {
                 use list::LIST_SENTINEL;
-                let p = prism[0];
+                let p = o_prism[0];
                 if mechanism::as_dispatch(&p).type_sentinel() == (& LIST_SENTINEL) as *const u8 {
                     unimplemented!()
                 } else {

@@ -198,6 +198,7 @@ impl Notation for Str {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
         // TODO clojure doesn't support escaped single quotes like \'
+        // https://doc.rust-lang.org/src/core/fmt/mod.rs.html#1956-1974
         write!(f, "{:?}", guide.str())
     }
 

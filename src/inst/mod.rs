@@ -23,13 +23,8 @@ pub struct Inst {
     prism: Unit,
 }
 
-pub fn sign(b: u8) -> bool {
-    b == b'+' || b == b'-'
-}
-
-pub fn digit(b: u8) -> bool {
-    b.wrapping_sub(b'0') < 10
-}
+pub fn sign(b: u8) -> bool { b == b'+' || b == b'-' }
+pub fn digit(b: u8) -> bool { b.wrapping_sub(b'0') < 10 }
 
 pub fn all_digits(s: &[u8]) -> bool {
     for i in s.iter() {
@@ -38,13 +33,9 @@ pub fn all_digits(s: &[u8]) -> bool {
     true
 }
 
-pub fn dig(b: u8) -> u32 {
-    (b - b'0') as u32
-}
+pub fn dig(b: u8) -> u32 { (b - b'0') as u32 }
 
-pub fn ascii(b: u8) -> bool {
-    (b & 0x80) == 0x00
-}
+pub fn ascii(b: u8) -> bool { (b & 0x80) == 0x00 }
 
 pub fn read_nano(s: &[u8]) -> u32 {
     let mut x = 0u32;

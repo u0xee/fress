@@ -298,8 +298,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
 }
 
 // TODO
-// unicode in: string, symbol, char
 // maintaining counter position
+// unicode in: string, symbol, char
 
 pub fn prefix_map(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
     if (i + 2) >= bytes.len() {

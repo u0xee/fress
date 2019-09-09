@@ -15,10 +15,8 @@ use memory::*;
 /// is the representation compact (no info unit), and is there meta data.
 /// So a collection's count resides in the 30 lowest order bits.
 
-/// ```
-/// Top 32 bits  [                     Hash  (32) ]
-/// Bottom bits  [ Compact? | Meta? |  Count (30) ]
-/// ```
+/// `Top 32 bits  [                     Hash  (32) ]`
+/// `Bottom bits  [ Compact? | Meta? |  Count (30) ]`
 ///
 
 #[derive(Copy, Clone, Debug)]

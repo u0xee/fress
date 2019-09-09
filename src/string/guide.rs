@@ -12,10 +12,8 @@ use memory::*;
 /// The two highest order bits of the bottom 32 bits represent two booleans:
 /// is there a hash, and is there meta data.
 
-/// ```
-/// Top 32 bits  [ Hash  (32) ]
-/// Bottom bits  [ Count (16) ]
-/// ```
+/// `Top 32 bits  [ Hash  (32) ]`
+/// `Bottom bits  [ Count (16) ]`
 ///
 
 #[derive(Copy, Clone, Debug)]

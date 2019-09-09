@@ -12,12 +12,10 @@ use memory::*;
 /// The two highest order bits of the bottom 32 bits represent two booleans:
 /// is there a hash, and is there meta data.
 
-/// ```
-/// Top 32 bits  [ Hash  (32) ]
-/// Bottom bits  [ Fraction (32) ]
-///              [ Year-Month-Day (23) ]
-///              [ Hour-Min-Sec Offset-Hour-Min (29) ]
-/// ```
+/// `Top 32 bits  [ Hash  (32) ]`
+/// `Bottom bits  [ Fraction (32) ]`
+/// `             [ Year-Month-Day (23) ]`
+/// `             [ Hour-Min-Sec Offset-Hour-Min (29) ]`
 ///
 
 

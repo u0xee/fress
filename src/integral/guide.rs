@@ -11,10 +11,8 @@ use memory::*;
 /// The top 32 bits contain the hash, the bottom 32 bits tell if the number is arbitrary
 /// precision, and if so, how many units hold the significant bits.
 
-/// ```
-/// Top 32 bits  [                    Hash  (32) ]
-/// Bottom bits  [ Big? | Significant units (16) ]
-/// ```
+/// `Top 32 bits  [                    Hash  (32) ]`
+/// `Bottom bits  [ Big? | Significant units (16) ]`
 ///
 
 

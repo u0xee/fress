@@ -1,4 +1,4 @@
-= `fress-rust`
+= `fress`
 
 == License
 

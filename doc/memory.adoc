@@ -1,4 +1,4 @@
-= Memory in fress-rust
+= Memory in fress
 
 The smallest unit of memory is called a Unit.
 A Unit is the size of a machine word. A machine word

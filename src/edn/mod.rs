@@ -15,6 +15,7 @@ pub mod name;
 pub mod reader;
 use self::reader::{EdnReader, ReadResult, Pending, Counter};
 
+
 pub fn err(reader: &mut EdnReader, msg: String) -> ReadResult {
     let res = ReadResult::Error { location: reader.counter, message: msg };
     reader.counter.clear();

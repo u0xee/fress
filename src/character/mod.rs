@@ -30,8 +30,14 @@ impl Character {
         Character::new(from_u32(b as u32).unwrap())
     }
 
-    pub fn from_four_hex(s: &[u8]) -> Handle {
-        Character::new(four_hex_to_char(s))
+    pub fn from_four_hex(s: &[u8]) -> Handle { Character::new(four_hex_to_char(s)) }
+
+    pub fn prism(v: Handle) -> Option<AnchoredLine> {
+        if v.type_sentinel() == (& CHARACTER_SENTINEL) as *const u8 {
+            Some(v.logical_value())
+        } else {
+            None
+        }
     }
 
     pub fn display(c: Unit, f: &mut fmt::Formatter) -> fmt::Result {
@@ -73,9 +79,7 @@ pub fn four_hex_to_char(s: &[u8]) -> char {
     from_u32(code).unwrap()
 }
 
-fn lowercase_hex(b: u8) -> u8 {
-    if b <= b'Z' { b + 32 } else { b }
-}
+fn lowercase_hex(b: u8) -> u8 { if b <= b'Z' { b + 32 } else { b } }
 
 fn hex_digit(b: u8) -> u32 {
     if b <= b'9' {
@@ -83,6 +87,12 @@ fn hex_digit(b: u8) -> u32 {
     } else {
         (lowercase_hex(b) - b'a') as u32 + 10
     }
+}
+
+pub fn as_char(prism: AnchoredLine) -> char {
+    let (_h, c) = hydrate(prism);
+    use std::char::from_u32;
+    from_u32(c).unwrap()
 }
 
 impl Dispatch for Character {
@@ -93,13 +103,8 @@ impl Dispatch for Character {
 }
 
 impl Identification for Character {
-    fn type_name(&self) -> &'static str {
-        "Character"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& CHARACTER_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "Character" }
+    fn type_sentinel(&self) -> *const u8 { (& CHARACTER_SENTINEL) as *const u8 }
 }
 
 impl Notation for Character {

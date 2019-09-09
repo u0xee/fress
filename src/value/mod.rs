@@ -7,6 +7,7 @@
 
 use std::cmp;
 use std::fmt;
+use std::str::FromStr;
 use std::default;
 use std::ops;
 use memory::*;
@@ -47,6 +48,7 @@ impl Value {
         v.value()
     }
 
+    pub fn type_name(&self) -> &'static str { self.handle().type_name() }
     pub fn conj(self, x: Value) -> Value { self.consume().conj(x.consume()).value() }
     pub fn pop(self) -> (Value, Value) {
         let (c, x) = self.consume().pop();
@@ -102,47 +104,6 @@ impl Value {
     }
 }
 
-impl From<&'static str> for Value {
-    fn from(s: &'static str) -> Self {
-        // read edn string
-        unimplemented!()
-    }
-}
-
-impl From<i64> for Value {
-    fn from(x: i64) -> Self {
-        use integral::Integral;
-        Integral::new_value(x)
-    }
-}
-
-impl From<bool> for Value {
-    fn from(x: bool) -> Value {
-        if x { Handle::tru().value() } else { Handle::fals().value() }
-    }
-}
-
-impl Into<bool> for Value {
-    fn into(self) -> bool {
-        (&self).into()
-    }
-}
-
-impl<'a> Into<bool> for &'a Value {
-    fn into(self) -> bool {
-        self.handle().is_so()
-    }
-}
-
-impl<T: Into<Value>> From<Option<T>> for Value {
-    fn from(option: Option<T>) -> Value {
-        match option {
-            Some(t) => t.into(),
-            None    => Handle::nil().value(),
-        }
-    }
-}
-
 impl From<Handle> for Value {
     fn from(h: Handle) -> Self {
         Value { handle: h }
@@ -170,6 +131,9 @@ impl fmt::Debug for Value {
 // derived?
 // unsafe impl Send for Value {}
 // unsafe impl Sync for Value {}
+// index with i32, Value, &str ?
+// partialEq with i32, &str
+// iterator, intoiterator
 
 impl default::Default for Value {
     fn default() -> Self {

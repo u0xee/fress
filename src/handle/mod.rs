@@ -49,7 +49,7 @@ impl Handle {
     pub fn is_true(self) -> bool { self.unit == Handle::TRUE }
     pub fn is_false(self) -> bool { self.unit == Handle::FALSE }
     pub fn is_bool(self) -> bool { self.unit.u() | 0x8 == !0 }
-    pub fn is_flag(self) -> bool { self.unit.u() & 0x7 == 0x7 }
+    pub fn is_flag(self) -> bool { self.unit.u() & 0x7 == 0x7 } // bool or nil
     pub fn is_not(self) -> bool { self.unit.u() & 0xF == 0x7 }
     pub fn is_so(self) -> bool { !self.is_not() }
 
@@ -352,6 +352,10 @@ impl Handle {
     pub fn is_list(self) -> bool {
         use list::LIST_SENTINEL;
         self.type_sentinel() == (& LIST_SENTINEL) as *const u8
+    }
+    pub fn is_char(self) -> bool {
+        use character::CHARACTER_SENTINEL;
+        self.type_sentinel() == (& CHARACTER_SENTINEL) as *const u8
     }
 }
 

@@ -43,9 +43,13 @@ pub mod uri;
 pub mod uuid;
 pub mod value;
 pub mod vector;
+pub mod wasm;
 
 pub use value::Value;
 pub use transduce::{Transducer, Transducers};
+
+#[no_mangle]
+pub extern fn fress_nil() -> usize { 7 }
 
 pub fn nil()  -> Value { Value::nil() }
 pub fn tru()  -> Value { Value::tru() }
@@ -61,6 +65,7 @@ pub fn split_out(v: &Value) -> Value { v.split_out() }
 pub fn hash(v: &Value) -> u32 { v.hash() }
 pub fn eq(a: &Value, b: &Value) -> bool { a == b }
 pub fn compare(a: &Value, b: &Value) -> Option<std::cmp::Ordering> { a.partial_cmp(b) }
+pub fn type_name(v: &Value) -> &'static str { v.type_name() }
 
 pub fn count(c: &Value) -> u32 { c.count() }
 pub fn is_empty(c: &Value) -> bool { c.count() == 0 }
@@ -72,7 +77,7 @@ pub fn conj(c: Value, v: Value) -> Value { c.conj(v) }
 pub fn pop(c: Value) -> (Value, Value) { c.pop() }
 pub fn peek(c: &Value) -> &Value { c.peek() }
 pub fn nth(c: &Value, idx: u32) -> &Value { c.nth(idx) }
-pub fn mth(c: &Value, idx: i32) -> &Value { unimplemented!() }
+pub fn mth(c: &Value, idx: i32) -> &Value { unimplemented!() } // modular nth
 pub fn assoc(c: Value, k: Value, v: Value) -> Value { c.assoc(k, v) }
 pub fn dissoc(c: Value, k: &Value) -> Value { c.dissoc(k) }
 pub fn contains(c: &Value, k: &Value) -> bool { c.contains(k) }
@@ -87,6 +92,7 @@ pub fn abs(x: Value) -> Value { unimplemented!() }
 pub fn is_zero(x: &Value) -> bool { unimplemented!() }
 pub fn is_pos(x: &Value) -> bool { unimplemented!() }
 pub fn is_neg(x: &Value) -> bool { unimplemented!() }
+pub fn is_nat(x: &Value) -> bool { !is_neg(x) }
 pub fn add(x: Value, y: Value) -> Value { x + y }
 pub fn sub(x: Value, y: Value) -> Value { x - y }
 pub fn mul(x: Value, y: Value) -> Value { x * y }
@@ -97,10 +103,12 @@ pub fn modulus(x: Value, y: Value) -> Value { x.modulus(y) }
 pub fn shl(x: Value, shift: u32) -> Value { x << shift }
 pub fn shr(x: Value, shift: u32) -> Value { x >> shift }
 
-pub fn vector() -> Value { vector::Vector::new_value() }
-pub fn list()   -> Value { list::List::new_value() }
-pub fn hash_map()    -> Value { map::Map::new_value() }
-pub fn hash_set()    -> Value { set::Set::new_value() }
+pub fn read(source: &str) -> Result<Value, String> { source.parse() }
+
+pub fn vector()   -> Value { vector::Vector::new_value() }
+pub fn list()     -> Value { list::List::new_value() }
+pub fn hash_map() -> Value { map::Map::new_value() }
+pub fn hash_set() -> Value { set::Set::new_value() }
 pub fn sort_map() -> Value { unimplemented!() }
 pub fn sort_set() -> Value { unimplemented!() }
 
@@ -145,7 +153,7 @@ pub fn atom(v: Value) -> u64 { unimplemented!() }
 pub fn swap(a: u64, f: &Fn(Value) -> Value) -> Value { unimplemented!() }
 pub fn reset(a: u64, v: Value) -> Value { unimplemented!() }
 
-pub fn str_new(source: &str) -> Value { string::Str::new_value_from_str(source) }
+pub fn str_new(source: &str) -> Value { source.into() }
 pub fn str(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn substr(s: Value, r: std::ops::Range<u32>) -> Value { unimplemented!() }
 pub fn str_split(s: Value, sep: Value) -> Value { unimplemented!() }
@@ -230,6 +238,3 @@ mod tests {
         //     sc.reduce(ps)
     }
 }
-
-
-// Rob Pike - Concurrency is not Parallelism// Golang Garbage collection// Tene - Garbage Collection// Click - x86 superscalar// Intel instruction throughput vs latency// Hoare - acm// unix paper

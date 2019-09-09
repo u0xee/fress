@@ -44,4 +44,4 @@ through down the stack in absence of an explicit implementation.
 A Process will call one or more methods on the Process below
 it in the stack, in order to drive the overall process forward.
 
-link:fress_rust/transducer/index.html[Transducer rustdoc module]
+link:fress/transduce/index.html[Transducer rustdoc module]

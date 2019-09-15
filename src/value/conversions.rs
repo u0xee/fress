@@ -142,7 +142,12 @@ impl<T: Into<Value>> From<Option<T>> for Value {
 // vector, array, slice
 impl<T: Into<Value>> From<Vec<T>> for Value {
     fn from(val: Vec<T>) -> Value {
-        unimplemented!()
+        use vector::Vector;
+        let mut v = Vector::new_value();
+        for x in val.into_iter() {
+            v = v.conj(x.into());
+        }
+        v
     }
 }
 

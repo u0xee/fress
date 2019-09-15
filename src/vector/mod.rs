@@ -170,9 +170,8 @@ impl Reversible for Vector {}
 impl Sorted for Vector {}
 impl Notation for Vector {
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Vector|");
-        self.edn(prism, f);
-        write!(f, "|")
+        write!(f, "Vector");
+        self.edn(prism, f)
         /*
         let guide= Guide::hydrate(prism);
         let hash = if !guide.has_hash() { "".to_string() } else {

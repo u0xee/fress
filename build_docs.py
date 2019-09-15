@@ -31,20 +31,26 @@ def generate_html_from_asciidoc(dir, out_dir):
 
 
 def build_project(args):
-    print('==== Creating rustdoc pages')
     subprocess.run(["cargo", "doc"])
     generate_html_from_asciidoc(doc_dir, target_dir)
 
+def build_adoc(args):
+    generate_html_from_asciidoc(doc_dir, target_dir)
 
 # Main parser
 parser = argparse.ArgumentParser(description='Builds AsciiDoc and rustdoc web pages.')
-parser.set_defaults(func=lambda args: parser.print_usage())
+parser.set_defaults(func=build_project)
 subparsers = parser.add_subparsers(help='action to perform')
 
 # Build subparser
 build_parser = subparsers.add_parser('build', description='Build project docs',
                                      help='Build AsciiDoc and rustdoc web pages (-h for options)')
 build_parser.set_defaults(func=build_project)
+
+# AsciiDoc subparser
+adoc_parser = subparsers.add_parser('adoc', description='Build project asciidocs',
+                                     help='Build AsciiDoc web pages (-h for options)')
+adoc_parser.set_defaults(func=build_adoc)
 
 
 # Parse and dispatch

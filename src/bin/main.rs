@@ -7,12 +7,29 @@
 
 extern crate fress;
 use fress::*;
-use fress::value::Value;
 use fress::handle::Handle;
 use fress::vector::Vector;
 use fress::memory::segment;
 use fress::transduce::Transducers;
 
+/*
+        let a = set();
+        let b = a.map(|&v| v.name()).filter(|&n| n == "fred").drop(3);
+        let c = a.educe(mapp(|&v| v.name()));
+        let d = filter(|&n| n == "fred");
+        let e: Transducer = drop(3);
+        let f: Value = set().drop(3);
+        */
+// plan:
+// Eduction dispatches
+// Transducers and Reducible
+// range(4..8)
+// cycle
+// into(c: Value, xf: Transducers, s: Value)
+// into(c, xf, sc)
+//   reduce(c, conj, xf, sc)
+//     ps: c = c.conj(v), xf->stack
+//     sc.reduce(ps)
 
 fn m() {
     let v = vector().conj(Value::from(7)).conj(Value::from(7)).conj(Value::from(8))
@@ -50,9 +67,14 @@ fn m() {
     println!("m: {}", m);
 }
 
+fn n() {
+    let x = read("[1, 2, 3]").unwrap();
+    println!("x is {}", x);
+}
+
 fn main() {
     let (new_a, free_a) = segment::new_free_counts();
-    m();
+    n();
     {
         let (new_b, free_b) = segment::new_free_counts();
         let new_diff = new_b - new_a;

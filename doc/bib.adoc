@@ -1,0 +1,6 @@
+[bibliography]
+== References
+- [[[Wilson95]]] Wilson, Paul R., et al. "Dynamic storage allocation: A survey and critical review."
+  International Workshop on Memory Management. Springer, Berlin, Heidelberg, 1995.
+  https://scholar.google.com/scholar_lookup?author=Wilson&title=Dynamic%20storage%20allocation[search^]
+- [[[Tarjan85]]] Andre Tarjan. Amortized Computational Complexity. 1985

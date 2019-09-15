@@ -1,0 +1,45 @@
+= A Library of Values: Persistent Data Structures using Explicit Aliasing
+Cole Frederick
+v0.5, 2019-09-01
+:doctype: article
+:imagesdir: images
+:toc: left
+:sourcedir: ../src
+:keywords: persistent, data structures
+:source-highlighter: prettify
+
+Persistent data structures _are the crux of_ functional programming.
+We find here a rich history; and an opportunity to apply it.
+An age-old concept is incarnated as a modern-day _library_,
+a set of recipes for persistent data structures,
+compatible with a variety of languages and computing environments.
+
+[abstract]
+== Abstract
+Programming with _values_ has many advantages over programming with _places_.
+Where place-oriented constructs struggle :-( values convey, persist, endure and share with ease.
+Code using places is by necessity _imperative_, a source of incidental complexity. Values overcome this problem.
+Where place-oriented constructs aim to manipulate _computing substrate_, value constructs aim to manipulate _information_.
+Many languages have spotty implementations of values, leaving programmers with a toolbox full of hammers.
+Languages and runtimes often support numbers and strings as values, but don’t have _aggregate_ values.
+Aggregates are necessary tools.
+Aggregate values are implemented with _persistent data structures_, most notably as trees that can share (_alias_) their components.
+Runtime-dynamic aliasing like this requires runtime-dynamic memory recycling.
+Aliasing and unaliasing can be _implicit_, where recycling happens in periodic sweeps,
+or _explicit_, where recycling happens upon an explicit unaliasing event.
+Currently, the most complete value implementations are integrated with some particular recycling runtime.
+I aim to provide values to programmers in many languages, with persistent data structures using explicit aliasing.
+These structures can be _driven_ by a runtime as rich as _C_, by exposing an _opaque pointer_ resource model.
+
+image::logo/shield.svg[fress logo,60, align="center"]
+
+include::intro-and-goals.adoc[]
+
+.build_docs.py
+[source,python]
+----
+include::../build_docs.py[lines=1..20]
+----
+
+include::bib.adoc[]
+

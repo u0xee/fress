@@ -204,37 +204,3 @@ pub fn promise_chan() -> u64 { unimplemented!() }
 pub fn offer(c: u64, v: Value) { unimplemented!() }
 pub fn poll(c: u64) -> Value { unimplemented!() }
 
-
-pub mod agg {
-    pub use super::{count, meta, with_meta, empty, conj, pop,
-                    peek, nth, assoc, dissoc, contains, get};
-    pub use super::{vector, list, set, map};
-}
-pub mod num {
-    pub use super::{inc, dec, neg, abs, add, sub, mul, div, rem, modulus, shl, shr};
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    fn x() {
-        /*
-        let a = set();
-        let b = a.map(|&v| v.name()).filter(|&n| n == "fred").drop(3);
-        let c = a.educe(mapp(|&v| v.name()));
-        let d = filter(|&n| n == "fred");
-        let e: Transducer = drop(3);
-        let f: Value = set().drop(3);
-        */
-        // plan:
-        // Eduction dispatches
-        // Transducers and Reducible
-        // range(4..8)
-        // cycle
-        // into(c: Value, xf: Transducers, s: Value)
-        // into(c, xf, sc)
-        //   reduce(c, conj, xf, sc)
-        //     ps: c = c.conj(v), xf->stack
-        //     sc.reduce(ps)
-    }
-}

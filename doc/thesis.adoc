@@ -1,12 +1,6 @@
-= A Library of Values: Persistent Data Structures using Explicit Aliasing
+= image:logo/shield.svg[fress logo,50] A Library of Values: Persistent Data Structures using Explicit Aliasing
 Cole Frederick
 v0.5, 2019-09-01
-:doctype: article
-:imagesdir: images
-:toc: left
-:sourcedir: ../src
-:keywords: persistent, data structures
-:source-highlighter: prettify
 
 Persistent data structures _are the crux of_ functional programming.
 We find here a rich history; and an opportunity to apply it.
@@ -23,23 +17,386 @@ Where place-oriented constructs aim to manipulate _computing substrate_, value c
 Many languages have spotty implementations of values, leaving programmers with a toolbox full of hammers.
 Languages and runtimes often support numbers and strings as values, but don’t have _aggregate_ values.
 Aggregates are necessary tools.
-Aggregate values are implemented with _persistent data structures_, most notably as trees that can share (_alias_) their components.
+Aggregate values are implemented with _persistent data structures_,
+most notably as trees that can share (_alias_) their components.
 Runtime-dynamic aliasing like this requires runtime-dynamic memory recycling.
 Aliasing and unaliasing can be _implicit_, where recycling happens in periodic sweeps,
 or _explicit_, where recycling happens upon an explicit unaliasing event.
 Currently, the most complete value implementations are integrated with some particular recycling runtime.
 I aim to provide values to programmers in many languages, with persistent data structures using explicit aliasing.
-These structures can be _driven_ by a runtime as rich as _C_, by exposing an _opaque pointer_ resource model.
+These structures can be _driven_ by a runtime as rich as _C_, by exposing an opaque pointer _resource model_.
 
-image::logo/shield.svg[fress logo,60, align="center"]
+== Welcome, Wayfarer!
+"It was a dark, and stormy night..."
+-- Dad, Story Opening
 
-include::intro-and-goals.adoc[]
+*Representing information in computers* is our aim,
+in order to empower humans with _leverage_ over information.
+The result of my work is an information model, a sort of information "engine",
+meant to be useful to people, in a variety of computing environments.
+This "working model" consists of recipes, detailed instructions for representing information in a computer.
+These recipes form a cohesive system; something a person can _use_ to process information, a tool.
+This information tool (or perhaps tool _kit_) is compatible with existing technology;
+it works with what we have today.
 
-.build_docs.py
-[source,python]
+=== Stakeholders
+My life experience shapes what I want, from this tool and its design.
+Reflecting my own journey, the major stakeholders and the intended audiences are:
+
+* Learners -- those beginning to program computers
+* Teachers -- those who would help another learn to program
+* Professional programmers -- whose work involves programming
+* Organizations of pros -- nonprofit or for, that commission programming work
+* Customers of orgs -- the decision-makers who appraise an organization's output
+
+.With great power...
+Countless hours, learning countless systems; weeks, months, years, elbow to elbow with learners, problem solving.
+Computer systems vary widely in design.
+Given a problem, the programmer is free to make myriad programs that would solve it, all different.
+These myriad programs are not equivalent, however!
+As they vary in design, they vary in size and complexity, cost to develop and maintain.
+For projects of short lifespan or small scope, the choice hardly matters.
+But for many projects, the programmer profits by considering design _options_.
+
+.A program is not a black box
+Orgs _invest_ in building long-lived computer systems, functioning for years after creation.
+These systems may take multiple programmers to build, and are maintained by different programmers over time.
+Orgs adapt existing systems to new circumstances, extend systems with new functionality, and reuse parts across systems.
+Accordingly, decision-makers in an org care deeply about system design, as do their customers.
+Customers (businesses or individuals) want to work with orgs whose systems _stand over time_.
+They don't want to learn (the hard way) that an org's systems are difficult or expensive to maintain;
+bugs may linger, features may lag, and rising cost of maintenance foreshadows abandonment, system collapse.
+For any substantial commissioned program, the stakeholders care about _how_ it works, not just _what_ it does.
+
+This information toolkit is _simple_, _systematic_, and _wieldy_.
+
+=== Simple
+Simple means the components are separated vigorously, unentangled, independent.
+When two things are complected (entangled), you can't consider them separately.
+You can't think about one without thinking about both.
+Imagine if every time you started the microwave
+
+* simple
+** unentangled, independent, not complected
+** combinatorial burden,
+** Understanding is base to everything else
+** Growing, fixing, learning
+
+=== Systematic
+** encompassing scope
+** info lifecycle, mem, disk, other programs (system building)
+** cohesive
+
+=== Wieldy
+** it's a dig
+** make "at hand"
+** ease of navigation, learning
+** concerns like presentation, exploration
+** its about accessibility
+
+The result of my work is meant to be a simple system for wielding information.
+
+=== Constraints
+* dev time, my time
+* relative independence among
+** hardware architecture
+** operating system
+** language and runtime
+* library vs framework
+* understandable by humans
+* good aggregates, sort of the linchpin
+
+=== Context
+Fundamentally, this tool will be used by a person programming.
+
+* Library of basic functions, collection of base recipes for processing info
+** Constructors for info
+** Transforms on info
+** Read/write info from bytes
+
+== Information
+Abstract view of the model supported by this project.
+
+=== Values vs Objects
+What are they and how are they different?
+
+== Solution Strategy
+Summary of the fundamental decisions and solution strategies that shape the architecture.
+Can include technology, top-level decomposition,
+approaches to achieve top quality goals and relevant organizational decisions.
+
+.Hardest problem: Memory
+* memory to represent info
+* trees with memory aliasing for aggregate info
+* implicit vs explicit aliasing
+** pros and cons
+
+=== Exchange (consume) Semantics
+Semantics of interfaces which logically "consume" their input.
+
+* Dataflow languages
+* Clojure transients
+* Ownership semantics
+
+=== Library vs Framework
+Differences in these two (fluid) roles.
+
+== Schematics
+=== Building-Blocks View
+The building block view shows the static decomposition of the system into building blocks
+(modules, components, subsystems, classes, interfaces, packages, libraries, frameworks,
+layers, partitions, tiers, functions, macros, operations, datas structures, …) as well as
+their dependencies (relationships, associations, …)
+
+This view is mandatory for every architecture documentation. In analogy to a house this is the floor plan.
+
+==== Motivation
+Maintain an overview of your source code by making its structure understandable through abstraction.
+
+This allows you to communicate with your stakeholder on an abstract level without disclosing implementation details.
+
+==== Form
+The building block view is a hierarchical collection of black boxes and white boxes (see figure below)
+and their descriptions.
+
+=== Runtime View
+The runtime view describes concrete behavior and interactions of the system’s building blocks in
+form of scenarios from the following areas:
+
+* important use cases or features: how do building blocks execute them?
+* interactions at critical external interfaces: how do building blocks cooperate with users and neighbouring systems?
+* operation and administration: launch, start-up, stop error and exception scenarios.
+
+NOTE: The main criterion for the choice of possible scenarios (sequences, workflows) is their
+architectural relevancy. It is not important to describe a large number of scenarios. You should
+rather document a representative selection.
+
+==== Motivation
+You should understand how (instances of) building blocks of your system perform their job
+and communicate at runtime. You will mainly capture scenarios in your documentation to
+communicate your architecture to stakholders that are less willing or able to read and
+understand the static models (building block view, deployment view).
+
+==== Form
+There are many notations for describing scenarios, e.g.
+
+* numbered list of steps (in natural language)
+* activity diagrams or flow charts
+* sequence diagrams
+* BPMN or EPCs (event process chains)
+* state machines
+
+=== Deployment View
+The deployment view describes:
+
+the technical infrastructure used to execute your system, with infrastructure elements like geographical
+locations, environments, computers, processors, channels and net topologies as well as other infrastructure
+elements and the mapping of (software) building blocks to that infrastructure elements.
+Often systems are executed in different environments, e.g. development environment, test environment,
+production environment. In such cases you should document all relevant environments.
+
+Especially document the deployment view when your software is executed as distributed system with more
+then one computer, processor, server or container or when you design and construct your own hardware
+processors and chips.
+
+From a software perspective it is sufficient to capture those elements of the infrastructure that are
+needed to show the deployment of your building blocks. Hardware architects can go beyond that and
+describe the infrastructure to any level of detail they need to capture.
+
+==== Motivation
+Software does not run without hardware. This underlying infrastructure can and will influence your system
+and/or some cross-cutting concepts. Therefore, you need to know the infrastructure.
+
+==== Form
+Maybe the highest level deployment diagram is already contained in section 3.2. as technical context
+with your own infrastructure as ONE black box. In this section you will zoom into this black box using
+additional deployment diagrams.
+
+== Crosscutting Concepts
+This section describes overall, principal regulations and solution ideas that are relevant in multiple parts
+(→ cross-cutting) of your system. Such concepts are often related to multiple building blocks.
+They include many different topics, such as
+
+* domain models
+* architecture patterns or design patterns
+* rules for using specific technology
+* principal, often technical decisions of overall decisions
+* implementation rules
+
+=== Motivation
+Concepts form the basis for conceptual integrity (consistency, homogeneity) of the architecture.
+Thus, they are an important contribution to achieve inner qualities of your system.
+
+Some of these concepts cannot be assigned to individual building blocks (e.g. security or safety).
+This is the place in the template that we provided for a cohesive specification of such concepts.
+
+=== Form
+The form can be varied:
+
+* concept papers with any kind of structure
+* cross-cutting model excerpts or scenarios using notations of the architecture views
+* sample implementations,especially for technical concepts
+* reference to typical usage of standard frameworks (e.g. using Hibernate for object/relational mapping)
+
+=== Structure
+A potential (but not mandatory) structure for this section could be:
+
+* Domain concepts
+* User Experience concepts (UX)
+* Safety and security concepts
+* Architecture and design patterns
+* “Under-the-hood” concepts
+* Development concepts
+* Operational concepts
+
+== Architectural Decisions
+Important, expensive, large scale or risky architecture decisions including rationals.
+With “decisions” we mean selecting one alternative based on given criteria.
+
+Please use your judgement to decide whether an architectural decision should be documented here in
+this central section or whether you better document it locally (e.g. within the white box template of
+one building block). Avoid redundant texts. Refer to section 4, where you captured the most important
+decisions of your architecture already.
+
+=== Motivation
+Stakeholders of your system should be able to comprehend and retrace your decisions.
+
+=== Form
+list or table, ordered by importance and consequences or more detailed in form of separate sections per decision
+
+=== Object layout
+Layout of objects in memory.
+
+=== Tree layout design
+* Batching memory (cache hardware)
+* tails, trailers
+
+=== Hashing and Pseudo Random
+A section on the considerations around hashing for in-memory object organization (in associative data structures).
+
+== Quality Requirements
+This section contains all quality requirements as quality tree with scenarios.
+The most important ones have already been described in section 1.2. (quality goals)
+
+Here you can also capture quality requirements with lesser priority, which will not create
+high risks when they are not fully achieved.
+
+=== Motivation
+Since quality requirements will have a lot of influence on architectural decisions you
+should know for every stakeholder what is really important to them, concrete and measurable.
+
+== Risks and Technical Debt
+A list of identified technical risks or technical debts, ordered by priority
+
+=== Motivation
+"Risk management is project management for grown-ups"
+-- Tim Lister, Atlantic Systems Guild.
+
+This should be your motto for systematic detection and evaluation of risks and technical debts
+in the architecture, which will be needed by management stakeholders (e.g. project managers, product owners)
+as part of the overall risk analysis and measurement planning.
+
+=== Form
+List of risks and/or technical debts, probably including suggested measures to minimize,
+mitigate or avoid risks or reduce technical debts.
+
+== Templates
+Linking to rustdoc.
+link:fress/transduce/index.html[Transducer rustdoc]
+
+Link to section.
+<<_quality_requirements>> is a great section!!
+And a citation to the bibliography <<Ackerman82>>, as you can see.
+
+.An image
+image::vector-5.png[vector diagram,400]
+
+.A little table
+|===
+| Hello | world!
+| Some  | wonder
+|===
+
+.Code sample
+[source,ruby]
 ----
-include::../build_docs.py[lines=1..20]
+puts "Hello, World!"
 ----
 
+:sourcedir: ../src
+
+.Included external file
+[source,rust]
+----
+include::{sourcedir}/atom/mod.rs[lines=8..-1]
+----
+
+.Using callouts in code
+[source,clojure]
+----
+(defn say-hello
+  [name] <1>
+  (let [x (str "Hello, " name)] <2>
+    (println x))) <3>
+----
+<1> Accepts a single param
+<2> Compute the string
+<3> Print it
+
+.Paragraph using little code names
+Hello there, we should talk about `Value` before we go any further.
+
+:env-github: sure-thing
+
+ifdef::env-github[]
+This content is for GitHub only.
+endif::env-github[]
+
+:!env-github:
+
+ifdef::env-github[]
+This content is for GitHub only.
+endif::env-github[]
+
+////
+Comment inside the adoc itself, this will NOT be rendered!
+////
+
+.My title
+====
+Example case, story, self-contained
+====
+
+.My title
+****
+Sidebar for some content.
+****
+
+// Can be TIP NOTE IMPORTANT WARNING CAUTION
+[NOTE]
+====
+A note called out from the regular text flow.
+====
+
+TIP: Here's a tip.
+
+WARNING: Here's a warning.
+
+IMPORTANT: Here's an important.
+
+CAUTION: Here's a caution.
+
+[glossary]
+include::glossary.adoc[]
+
+[bibliography]
 include::bib.adoc[]
 
+[appendix]
+include::topic/hardware.adoc[]
+
+[appendix]
+include::topic/big-O.adoc[]
+
+[appendix]
+include::topic/supplement.adoc[]

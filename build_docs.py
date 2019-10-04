@@ -23,9 +23,36 @@ def find_files(d, find_args=None):
 
 
 def generate_html_from_asciidoc(dir, out_dir):
-    adocs = find_files(dir, ['-name', '*.adoc'])
-    command = ['asciidoctor', '--destination-dir', out_dir]
+    adocs = find_files(dir, ['-name', 'thesis.adoc'])
+    # adocs = find_files(dir, ['-name', '*.adoc'])
+    command = ['asciidoctor',
+               '--destination-dir', out_dir,
+               '-a', 'doctype=article',
+               '-a', 'stylesheet=style.css',
+               '-a', 'stylesdir=anc',
+               '-a', 'imagesdir=images',
+               '-a', 'docinfo=shared',
+               '-a', 'docinfodir=images/favicon',
+               '-a', 'icons=font',
+               '-a', 'toc=left',
+               '-a', 'source-highlighter=prettify']
     command.extend(adocs)
+    print('Running: {}'.format(' '.join(command)))
+    subprocess.run(command)
+
+
+def copy_images():
+    command = ['cp', '--recursive', '--update',
+               doc_dir + '/images', target_dir]
+    print('Running: {}'.format(' '.join(command)))
+    subprocess.run(command)
+
+
+def copy_favicons():
+    command = ['cp', '--update']
+    #command.append(doc_dir + '/images/favicon/favicon-32x32.png')
+    command.extend(find_files(doc_dir + '/images/favicon'))
+    command.append(target_dir)
     print('Running: {}'.format(' '.join(command)))
     subprocess.run(command)
 
@@ -33,9 +60,13 @@ def generate_html_from_asciidoc(dir, out_dir):
 def build_project(args):
     subprocess.run(["cargo", "doc"])
     generate_html_from_asciidoc(doc_dir, target_dir)
+    copy_images()
+    copy_favicons()
 
 def build_adoc(args):
     generate_html_from_asciidoc(doc_dir, target_dir)
+    copy_images()
+    copy_favicons()
 
 # Main parser
 parser = argparse.ArgumentParser(description='Builds AsciiDoc and rustdoc web pages.')
@@ -56,3 +87,6 @@ adoc_parser.set_defaults(func=build_adoc)
 # Parse and dispatch
 args = parser.parse_args()
 args.func(args)
+
+# 100.20.252.216
+# http, html,

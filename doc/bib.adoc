@@ -1,6 +1,28 @@
-[bibliography]
-== References
-- [[[Wilson95]]] Wilson, Paul R., et al. "Dynamic storage allocation: A survey and critical review."
+== Bibliography
+:scholar: https://scholar.google.com/scholar_lookup?
+* [[[Ackerman77]]] Ackerman, William B. A structure memory for data flow computers. No. MIT/LCS/TR-186.
+  Massachusetts Institute of Technology, Cambridge Lab for Computer Science, 1977.
+  {scholar}author=Ackerman&title=structure%20memory%20data%20flow%20computers[search^]
+
+* [[[Ackerman79]]] Ackerman, William B., and Jack B. Dennis. VAL: A Value-Oriented Algorithmic Language (Preliminary Reference Manual).
+  No. MIT/LCS/TR-218. Massachusetts Institute of Technology, Cambridge Lab for Computer Science, 1979.
+  {scholar}author=Ackerman&title=val%20value%20oriented%20algorithmic%20language[search^]
+
+* [[[Ackerman82]]] Ackerman, William B. "Data flow languages." Computer; (United States) 2 (1982).
+  {scholar}author=Ackerman&title=Data%20flow%20languages[search^]
+
+* [[[Ackerman84]]] Ackerman, William Beekley. Efficient implementation of applicative languages. PhD Diss.
+  Massachusetts Institute of Technology, 1984.
+  {scholar}author=Ackerman&title=Efficient%20implementation%20applicative%20languages[search^]
+
+* [[[Appel87]]] Appel, Andrew W. "Garbage collection can be faster than stack allocation."
+  Information Processing Letters 25.4 (1987): 275-279.
+  {scholar}author=appel&title=garbage%20collection%20can%20be%20faster%20than%20stack%20allocation[search^]
+
+* [[[Vanderburg]]] Vanderburg, Glenn. "Real Software Engineering."
+  QCon San Francisco 2012. https://www.infoq.com/presentations/Software-Engineering[source^]
+
+* [[[Wilson95]]] Wilson, Paul R., et al. "Dynamic storage allocation: A survey and critical review."
   International Workshop on Memory Management. Springer, Berlin, Heidelberg, 1995.
-  https://scholar.google.com/scholar_lookup?author=Wilson&title=Dynamic%20storage%20allocation[search^]
-- [[[Tarjan85]]] Andre Tarjan. Amortized Computational Complexity. 1985
+  {scholar}author=Wilson&title=Dynamic%20storage%20allocation[search^]
+

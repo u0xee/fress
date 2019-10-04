@@ -7,6 +7,7 @@
 
 //! A cohesive fressian library for rust
 
+
 pub mod array;
 pub mod atom;
 pub mod channel;

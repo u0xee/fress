@@ -1,10 +1,20 @@
 = fress
 
-== Welcome, Wayfarer!
-(letter feeling)
+fress is a toolkit for processing information with computers.
 
-* A toolkit for processing information
-* Direct to websites, homepage, repository, rustdoc
+* Home page: https://www.fress.io
+** Code docs: https://www.fress.io/fress
+* Repository: https://github.com/u0xee/fress
+
+== Welcome, Wayfarer!
+This project is named fress. It is software (instructions for a computer) that
+can be used to process information. The home page (listed above) is a good place
+to learn about the project.
+
+Here in this repository (the project files), you will find:
+
+* Source code in link:src[]
+
 * whats here, whats not (repo vs websites, video, etc)
 ** document sources, rust source, directory layout
 * things to do
@@ -13,6 +23,15 @@
 ** asciidoc
 
 == License
+Below, and in every source code file, you will find a license notice. Briefly:
+
+* don't sue me
+* don't remove the license notices
+* don't steal my work (by claiming you did it, or by implying you did it)
+
+You can still copy, modify, and redistribute this work (build on top of my work),
+as long as you make it clear that you are building on top of my work.
+
 ----
 Copyright (c) Cole Frederick. All rights reserved.
 The use and distribution terms for this software are covered by the
@@ -21,3 +40,4 @@ which can be found in the file epl-v10.html at the root of this distribution.
 By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 You must not remove this notice, or any other, from this software.
 ----
+

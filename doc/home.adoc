@@ -1,4 +1,4 @@
-= image:banner-io.svg[fress,260] image:bars.svg[menu,50,float="right",link="#toc"]
+= image:banner-io.svg[fress,260] image:bars.svg[menu,40,float="right",link="#toc"]
 :toc: macro
 :title: fress.io
 
@@ -9,14 +9,16 @@ image:people.svg[people,50] [small]#purposely# [big]#understandable#
 [.pitch]
 image:cycle.svg[cycle,50] [small]#whole information# [big]#lifecycle#
 
-'''
-
-[.out-links]
-image:book.svg[thesis,40] Jump to link:thesis.html[my thesis]
-[.out-links]
-image:notes.svg[notation,40] Learn information *notation* https://www.fress.in[fress.in]
-[.out-links]
-image:dev.svg[dev,40] Find developer resources https://www.fress.dev[fress.dev]
+[cols="3*^",frame=topbot,grid=none,options="header"]
+|===
+| image:book.svg[thesis,65] +
+link:thesis.html[My thesis]
+| image:notes.svg[thesis,65] +
+https://www.fress.in[fress.in]
+| image:dev.svg[thesis,65] +
+https://www.fress.dev[fress.dev]
+| Project white paper | Notation for information | Programming with fress
+|===
 
 toc::[]
 

@@ -415,7 +415,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #preamble>.sectionbody>.paragraph.pitch p {
   font-size: 16pt;
   font-family: 'Averia Serif Libre', sans-serif;
-  line-height: 250%;
+  line-height: 270%;
   color: #404040;
   padding-left: 10px;
 }

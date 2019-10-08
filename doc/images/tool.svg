@@ -23,14 +23,14 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1710"
-     inkscape:window-height="1135"
+     inkscape:window-width="2166"
+     inkscape:window-height="1314"
      id="namedview16033"
      showgrid="false"
      inkscape:zoom="9.2549019"
-     inkscape:cx="48.392178"
+     inkscape:cx="33.265059"
      inkscape:cy="49.059993"
-     inkscape:window-x="2130"
+     inkscape:window-x="1674"
      inkscape:window-y="57"
      inkscape:window-maximized="0"
      inkscape:current-layer="svg8" />
@@ -49,7 +49,7 @@
     </rdf:RDF>
   </metadata>
   <path
-     style="opacity:1;fill:#363843;fill-opacity:1;stroke:none;stroke-width:0.07437794;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     style="opacity:1;fill:#313848;fill-opacity:1;stroke:none;stroke-width:0.07437794;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
      d="M 5.4333237,1.1194654 H 20.191791 c 2.442536,0 4.40891,1.9663736 4.40891,4.4089092 V 20.286842 c 0,2.442535 -1.966374,4.408909 -4.40891,4.408909 H 5.4333237 c -2.4425357,0 -4.4089093,-1.966374 -4.4089093,-4.408909 V 5.5283746 c 0,-2.4425356 1.9663736,-4.4089092 4.4089093,-4.4089092 z"
      id="rect2480"
      inkscape:connector-curvature="0" />

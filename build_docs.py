@@ -6,7 +6,6 @@ import subprocess
 import shutil
 import sys
 
-
 src_dir = 'src'
 doc_dir = 'doc'
 target_dir = 'target/doc'
@@ -22,37 +21,38 @@ def find_files(d, find_args=None):
     return [str(f, 'utf-8') for f in ret]
 
 
+asciidoc_base = ['asciidoctor',
+                 '-a', 'stylesheet=style.css',
+                 '-a', 'stylesdir=anc',
+                 '-a', 'imagesdir=images',
+                 '-a', 'docinfo=shared',
+                 '-a', 'sectanchors',
+                 '-a', 'docinfodir=images/favicon',
+                 '-a', 'icons=font',
+                 '-a', 'source-highlighter=prettify',
+                 '-a', 'doctype=article']
+
+
 def generate_html_from_asciidoc(dir, out_dir):
-    adocs = find_files(dir, ['-name', 'thesis.adoc'])
+    thesis = find_files(dir, ['-name', 'thesis.adoc'])
+    home = find_files(dir, ['-name', 'home.adoc'])
+    home_in = find_files(dir, ['-name', 'home-in.adoc'])
     # adocs = find_files(dir, ['-name', '*.adoc'])
-    command = ['asciidoctor',
-               '--destination-dir', out_dir,
-               '-a', 'doctype=article',
-               '-a', 'stylesheet=style.css',
-               '-a', 'stylesdir=anc',
-               '-a', 'imagesdir=images',
-               '-a', 'docinfo=shared',
-               '-a', 'docinfodir=images/favicon',
-               '-a', 'icons=font',
-               '-a', 'toc=left',
-               '-a', 'source-highlighter=prettify']
-    command.extend(adocs)
+    command = asciidoc_base + ['--destination-dir', out_dir]
     print('Running: {}'.format(' '.join(command)))
-    subprocess.run(command)
+    subprocess.run(command + ['-a', 'toc=left'] + thesis)
+    subprocess.run(command + home)
+    subprocess.run(command + home_in)
 
 
 def copy_images():
-    command = ['cp', '--recursive', '--update',
-               doc_dir + '/images', target_dir]
+    command = ['rsync', '-r', doc_dir + '/images', target_dir]
     print('Running: {}'.format(' '.join(command)))
     subprocess.run(command)
 
 
 def copy_favicons():
-    command = ['cp', '--update']
-    #command.append(doc_dir + '/images/favicon/favicon-32x32.png')
-    command.extend(find_files(doc_dir + '/images/favicon'))
-    command.append(target_dir)
+    command = ['rsync', '-r', doc_dir + '/images/favicon/', target_dir]
     print('Running: {}'.format(' '.join(command)))
     subprocess.run(command)
 
@@ -63,10 +63,12 @@ def build_project(args):
     copy_images()
     copy_favicons()
 
+
 def build_adoc(args):
     generate_html_from_asciidoc(doc_dir, target_dir)
     copy_images()
     copy_favicons()
+
 
 # Main parser
 parser = argparse.ArgumentParser(description='Builds AsciiDoc and rustdoc web pages.')
@@ -88,5 +90,7 @@ adoc_parser.set_defaults(func=build_adoc)
 args = parser.parse_args()
 args.func(args)
 
-# 100.20.252.216
-# http, html,
+# top priority todos
+#homepage
+
+

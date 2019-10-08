@@ -410,3 +410,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 .print-only{display:block!important}
 .hide-for-print{display:none!important}
 .show-for-print{display:inherit!important}}
+
+#preamble>.sectionbody>.paragraph.pitch:first-of-type p,
+#preamble>.sectionbody>.paragraph.pitch p {
+  font-size: 16pt;
+  font-family: 'Averia Serif Libre', sans-serif;
+  line-height: 250%;
+  color: #404040;
+  padding-left: 10px;
+}
+
+#preamble>.sectionbody>.paragraph.out-links p {
+  font-size: 14pt;
+  font-family: 'Source Sans Pro', sans-serif;
+  color: #606060;
+  padding-left: 2px;
+}
+

@@ -5,8 +5,10 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-//! A cohesive fressian library for rust
 
+//! A cohesive fressian library for rust
+#![doc(html_logo_url = "/images/logo/shield.svg")]
+#![doc(html_favicon_url = "/favicon.ico")]
 
 pub mod array;
 pub mod atom;

@@ -1,4 +1,4 @@
-= image:logo/shield.svg[fress logo,50] A Library of Values: Persistent Data Structures using Explicit Aliasing
+= A Library of Values: Persistent Data Structures using Explicit Aliasing
 Cole Frederick
 v0.5, 2019-09-01
 
@@ -302,14 +302,14 @@ mitigate or avoid risks or reduce technical debts.
 
 == Templates
 Linking to rustdoc.
-link:fress/transduce/index.html[Transducer rustdoc]
+link:/fress/transduce[Transducer rustdoc]
 
 Link to section.
 <<_quality_requirements>> is a great section!!
 And a citation to the bibliography <<Ackerman82>>, as you can see.
 
 .An image
-image::vector-5.png[vector diagram,400]
+image::book.svg[book pic,50]
 
 .A little table
 |===

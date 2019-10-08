@@ -1,0 +1,17 @@
+= Memory in fress
+
+The smallest unit of memory is called a Unit.
+A Unit is the size of a machine word. A machine word
+is the size of an address in the hardware memory system,
+commonly 32 or 64 bits. A machine word is also the size
+of the registers, the fundamental computational unit.
+
+To store information, we borrow a segment of memory from
+the pool of memory. A Segment is a contiguous group of
+Units, and is identified by the address of its first Unit.
+The first unit in a Segment serves as its anchor. An Anchor
+records the size of a segment and facilitates sharing.
+The other Units of the segment will store information.
+
+== Sharing
+

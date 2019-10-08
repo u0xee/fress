@@ -1,0 +1,49 @@
+== Glossary
+[glossary]
+language:: a model for creating programs, and an accompanying text format for specifying model components
+aggregate:: a group (flock, herd). Information that is logically a grouping of other information, like a _list_ of telephone numbers.
+alias::
+  the act of making one reference -> into two, both referencing the same thing.
+  Imagine you have a public-library reference number
+human-friendly:: readable or writable easily by humans, as opposed to machine-friendly (readily understood by computers or programs)
+compile::
+  transform an input set of instructions (usually in a human-friendly form),
+  into an output set of instructions (usually in a machine-friendly form)
+execute:: run a program; perform the instructions
+program:: computer instructions that you may ask your computer to perform
+runtime::
+  - a computing environment supporting your program, "java programs run inside the java runtime, but go programs run by themselves"
+  - the time when a program is running, "the program won't know the file name until runtime, when the user will enter it."
+    Especially as opposed to compile-time.
+memory:: primitive storage units for the computer
+pointer:: a reference (most commonly) to computer memory
+string::
+  a sequence (_string_) of characters (letters), like a word or a sentence,
+  often written with quotes like "Hello, world"
+list:: a sequence of things. Think grocery list.
+map:: a mapping between keys and values
+data structure:: a computer representation of some information
+persistent data structure::
+  a data structure whose meaning (information which it represents) remains the same (persists), as the program runs.
+  In contrast, an _ephemeral_ data structure is designed with operations to change its meaning, as the program runs.
+library::
+  a set of computing recipes, meant to be reused
+framework::
+  a system for creating and running programs
+pro:: professional
+commission:: underwrite, bankroll, fund (roots in entrust)
+system:: a coherent whole, made of parts
+polymorphic:: not predetermined, decisions are made at runtime
+API:: application programming interface
+ABI:: application binary interface
+simple:: unentangled, not complected
+easy:: requires little effort
+complect:: entangle, entwine, braid
+stakeholder:: person who has some stake in the project. Will be affected by project in some way.
+edn:: extensible data notation https://github.com/edn-format/edn[source^]
+parse:: to make sense of some notation
+fressian:: binary data notation https://github.com/Datomic/fressian[source^]
+information:: data, specific chunk of knowledge
+implicit:: implied. assumed. contextually apparent.
+explicit:: marked. called out.
+

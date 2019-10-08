@@ -6,13 +6,14 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
+use handle::STATIC_NIL;
 
-pub fn meta(prism: AnchoredLine) -> Unit {
+pub fn meta(prism: AnchoredLine) -> *const Unit {
     let guide = Guide::hydrate(prism);
     if guide.has_meta() {
-        guide.meta_line()[0]
+        guide.meta_line().line().star()
     } else {
-        Value::NIL
+        (& STATIC_NIL) as *const Unit
     }
 }
 
@@ -29,6 +30,7 @@ pub fn with_meta(prism: AnchoredLine, m: Unit) -> Unit {
         guide.segment().at(0..mi).to(s);
         guide.segment().at(mi..cap).to_offset(s, mi + 1);
         s.set(mi, m);
+        guide.segment().unalias();
         Segment::free(guide.segment());
         let mut g = guide;
         g.prism = guide.prism.with_seg(s);

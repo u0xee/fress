@@ -1,0 +1,47 @@
+= Transducers
+
+Transducers are trait objects with one main operation:
+```
+trait Transducer {
+    fn process(&self) -> Box<Process>;
+}
+```
+Which returns a trait object for the Process trait.
+
+Transducers will normally be aggregated into stacks:
+```
+pub struct Transducers {
+    pub stack: Arc<Vec<Arc<Transducer>>>,
+}
+```
+
+== Process
+
+A Process trait object has two main operations:
+```
+trait Process {
+    fn ingest(&mut self, process_stack: &mut [Box<Process>], v: &Value) -> Option<Value>;
+    fn last_call(&mut self, process_stack: &mut [Box<Process>]) -> Value;
+}
+```
+
+`ingest` takes a new item and incorporates it into the overall process.
+`last_call` requests the final result, signaling the end of input to the
+overall process, and gives stateful Processes a chance to flush state.
+
+Additionally, a Process has an ingest method that takes a key and associated value
+as a single unit of input.
+```
+trait Process {
+    ...
+    fn ingest_kv(&mut self, process_stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value>;
+}
+```
+
+Default implementations cover all three methods, simply calling
+through down the stack in absence of an explicit implementation.
+
+A Process will call one or more methods on the Process below
+it in the stack, in order to drive the overall process forward.
+
+link:fress/transduce/index.html[Transducer rustdoc module]

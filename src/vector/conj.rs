@@ -8,7 +8,7 @@
 use super::*;
 
 pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
-    let guide= unaliased_root(Guide::hydrate(prism));
+    let guide = unaliased_root(Guide::hydrate(prism));
     if guide.count <= TAIL_CAP {
         conj_untailed(guide, x)
     } else {

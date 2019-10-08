@@ -1,8 +1,19 @@
 [package]
-name = "fress-rust"
-version = "0.1.0"
+name = "fress"
+version = "0.5.0"
 authors = ["Cole Frederick <csp.frederick@gmail.com>"]
-description = "A cohesive fressian library for rust"
+description = "A cohesive fressian library"
+documentation = "https://www.fress.io/fress"
+homepage = "https://www.fress.io"
+repository = "https://github.com/u0xee/fress"
+readme = "README.adoc"
+keywords = ["information", "io", "persistent", "edn", "fressian"]
+categories = ["data-structures", "algorithms", "encoding", "parser-implementations", "wasm"]
+license = "EPL-1.0"
+maintenance = { status = "experimental" }
+
+[lib]
+crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
 
@@ -25,6 +36,5 @@ fuzz_segment_extra_cap = []
 fuzz_segment_random_content = []
 fuzz_segment_spurious_aliased = []
 fuzz_segment = ["fuzz_segment_extra_cap", "fuzz_segment_random_content", "fuzz_segment_spurious_aliased"]
-
 
 fuzz = ["fuzz_segment"]

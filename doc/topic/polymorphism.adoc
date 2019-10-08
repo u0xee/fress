@@ -1,0 +1,37 @@
+= Polymorphism in fress
+
+There are different kinds of values. For example, there are several
+types of numbers, and different kinds of collections.
+
+== Base dispatch trait
+* Common to all polymorphic objects on the heap
+* Heap objects begin with one word, which gives access to the capacity
+of the allocated chunk.
+* Polymorphic heap objects have a vtable pointer as their second word.
+
+== Polymorphism implemented
+
+Methods on Value can be implemented as:
+cast into ValueUnit,
+differentiate into ValueImm or ValueRef,
+Dispatch into ValueRef prism, or
+predicate polymorphism for ValueImm
+
+Value
+  ValueUnit
+    ValueRef - polymorphic heap dispatch
+      Vector
+      List
+      Map
+      Set
+      String
+      Symbol
+      Rational
+    ValueImm
+      Nil
+      True and False
+      Integral
+      FloatPoint
+      Character
+
+

@@ -7,9 +7,11 @@
 
 //! A unit of memory.
 use std::fmt;
+use std::mem::transmute;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
 use memory::*;
-use value::*;
+use value::Value;
+use handle::Handle;
 
 /// A Unit is one processor word. Here, 64 or 32 bits.
 
@@ -20,208 +22,125 @@ pub struct Unit {
 }
 
 impl fmt::Debug for Unit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:#X} }}", self.word)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { write!(f, "{:#X}", self.word) }
 }
 
-
 impl Unit {
-    pub fn is_even(&self) -> bool {
-        self.word & 0x01 == 0
-    }
-
-    pub fn u(&self) -> usize {
-        self.word as usize
-    }
-
-    pub fn i(&self) -> isize {
-        self.word as isize
-    }
-
-    pub fn u64(&self) -> u64 {
-        self.word as u64
-    }
-
-    pub fn u32(&self) -> u32 {
-        self.word as u32
-    }
-
-    pub fn anchor(self) -> Anchor {
-        Anchor::from(self)
-    }
-
-    pub fn line(self) -> Line {
-        Line::from(self)
-    }
-
-    pub fn segment(self) -> Segment {
-        Segment::from(self)
-    }
-
-    pub fn value_unit(self) -> ValueUnit {
-        ValueUnit::from(self)
-    }
+    pub fn bytes() -> u32 { if cfg!(target_pointer_width = "32") { 4 } else { 8 } }
+    pub fn zero() -> Unit { Unit::from(0usize) }
+    pub fn is_even(&self) -> bool { self.word & 0x01 == 0 }
+    pub fn u(&self) -> usize { self.word as usize }
+    pub fn i(&self) -> isize { self.word as isize }
+    pub fn u64(&self) -> u64 { self.word as u64 }
+    pub fn u32(&self) -> u32 { self.word as u32 }
+    pub fn anchor(self) -> Anchor { Anchor::from(self) }
+    pub fn line(self) -> Line { Line::from(self) }
+    pub fn segment(self) -> Segment { Segment::from(self) }
+    pub fn handle(self) -> Handle { Handle::from(self) }
 }
 
 
 // Conversions around primitives
 impl From<usize> for Unit {
-    fn from(x: usize) -> Self {
-        Unit { word: x }
-    }
+    fn from(x: usize) -> Self { Unit { word: x } }
 }
 
 impl Into<usize> for Unit {
-    fn into(self) -> usize {
-        self.word
-    }
+    fn into(self) -> usize { self.word }
 }
 
 impl From<isize> for Unit {
-    fn from(x: isize) -> Self {
-        Unit { word: x as usize }
-    }
+    fn from(x: isize) -> Self { Unit { word: x as usize } }
 }
 
 impl Into<isize> for Unit {
-    fn into(self) -> isize {
-        self.word as isize
-    }
+    fn into(self) -> isize { self.word as isize }
 }
 
 impl From<u64> for Unit {
-    fn from(x: u64) -> Self {
-        Unit { word: x as usize }
-    }
+    fn from(x: u64) -> Self { Unit { word: x as usize } }
 }
 
 impl Into<u64> for Unit {
-    fn into(self) -> u64 {
-        self.word as u64
-    }
+    fn into(self) -> u64 { self.word as u64 }
 }
 
 impl From<i64> for Unit {
-    fn from(x: i64) -> Self {
-        Unit { word: x as usize }
-    }
+    fn from(x: i64) -> Self { Unit { word: x as usize } }
 }
 
 impl Into<i64> for Unit {
-    fn into(self) -> i64 {
-        self.word as i64
-    }
+    fn into(self) -> i64 { self.word as i64 }
 }
 
 impl From<u32> for Unit {
-    fn from(x: u32) -> Self {
-        Unit { word: x as usize }
-    }
+    fn from(x: u32) -> Self { Unit { word: x as usize } }
 }
 
 impl Into<u32> for Unit {
-    fn into(self) -> u32 {
-        self.word as u32
-    }
+    fn into(self) -> u32 { self.word as u32 }
 }
 
 impl From<u16> for Unit {
-    fn from(x: u16) -> Self {
-        Unit { word: x as usize }
-    }
+    fn from(x: u16) -> Self { Unit { word: x as usize } }
 }
 
 impl Into<u16> for Unit {
-    fn into(self) -> u16 {
-        self.word as u16
-    }
+    fn into(self) -> u16 { self.word as u16 }
 }
 
 impl From<i32> for Unit {
-    fn from(x: i32) -> Self {
-        Unit { word: x as usize }
-    }
+    fn from(x: i32) -> Self { Unit { word: x as usize } }
 }
 
 impl Into<i32> for Unit {
-    fn into(self) -> i32 {
-        self.word as i32
-    }
+    fn into(self) -> i32 { self.word as i32 }
 }
 
-fn f64_into_u64(f: f64) -> u64 {
-    use std::mem::transmute;
-    unsafe {
-        transmute(f)
-    }
+pub fn f64_into_u64(f: f64) -> u64 {
+    unsafe { transmute(f) }
 }
-fn f64_from_u64(f: u64) -> f64 {
-    use std::mem::transmute;
-    unsafe {
-        transmute(f)
-    }
+pub fn f64_from_u64(f: u64) -> f64 {
+    unsafe { transmute(f) }
 }
 
 impl From<f64> for Unit {
-    fn from(x: f64) -> Self {
-        Unit { word: f64_into_u64(x) as usize }
-    }
+    fn from(x: f64) -> Self { Unit { word: f64_into_u64(x) as usize } }
 }
 
 impl Into<f64> for Unit {
-    fn into(self) -> f64 {
-        f64_from_u64(self.word as u64)
-    }
+    fn into(self) -> f64 { f64_from_u64(self.word as u64) }
 }
 
-fn f32_into_u32(f: f32) -> u32 {
-    use std::mem::transmute;
-    unsafe {
-        transmute(f)
-    }
+pub fn f32_into_u32(f: f32) -> u32 {
+    unsafe { transmute(f) }
 }
-fn f32_from_u32(f: u32) -> f32 {
-    use std::mem::transmute;
-    unsafe {
-        transmute(f)
-    }
+pub fn f32_from_u32(f: u32) -> f32 {
+    unsafe { transmute(f) }
 }
 
 impl From<f32> for Unit {
-    fn from(x: f32) -> Self {
-        Unit { word: f32_into_u32(x) as usize }
-    }
+    fn from(x: f32) -> Self { Unit { word: f32_into_u32(x) as usize } }
 }
 
 impl Into<f32> for Unit {
-    fn into(self) -> f32 {
-        f32_from_u32(self.word as u32)
-    }
+    fn into(self) -> f32 { f32_from_u32(self.word as u32) }
 }
 
 impl<T> From<*const T> for Unit {
-    fn from(ptr: *const T) -> Self {
-        Unit { word: ptr as usize }
-    }
+    fn from(ptr: *const T) -> Self { Unit { word: ptr as usize } }
 }
 
 impl<T> Into<*const T> for Unit {
-    fn into(self) -> *const T {
-        self.word as *const T
-    }
+    fn into(self) -> *const T { self.word as *const T }
 }
 
 impl<T> From<*mut T> for Unit {
-    fn from(ptr: *mut T) -> Self {
-        Unit { word: ptr as usize }
-    }
+    fn from(ptr: *mut T) -> Self { Unit { word: ptr as usize } }
 }
 
 impl<T> Into<*mut T> for Unit {
-    fn into(self) -> *mut T {
-        self.word as *mut T
-    }
+    fn into(self) -> *mut T { self.word as *mut T }
 }
 
 

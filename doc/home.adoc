@@ -1,0 +1,117 @@
+= image:banner-io.svg[fress,260] image:bars.svg[menu,50,float="right",link="#toc"]
+:toc: macro
+:title: fress.io
+
+[.pitch]
+image:tool.svg[tool,50] [small]#a# [big]#tool# [small]#for# [big]#information#
+[.pitch]
+image:people.svg[people,50] [small]#purposely# [big]#understandable#
+[.pitch]
+image:cycle.svg[cycle,50] [small]#whole information# [big]#lifecycle#
+
+'''
+
+[.out-links]
+image:book.svg[thesis,40] Jump to link:thesis.html[my thesis]
+[.out-links]
+image:notes.svg[notation,40] Learn information *notation* https://www.fress.in[fress.in]
+[.out-links]
+image:dev.svg[dev,40] Find developer resources https://www.fress.dev[fress.dev]
+
+toc::[]
+
+== Introduction
+fress is a simple system for wielding information.
+
+== Audience
+fress is intended for use by a wide array of people, with or without prior programming experience.
+
+== Scope
+This project consists of a set of recipes for the computer.
+These recipes together form a system for processing information.
+
+== Directory
+Many useful links including github repository, rustdoc, thesis, etc.
+
+== Templates
+Linking to rustdoc.
+link:/fress/transduce[Transducer rustdoc]
+
+Link to section.
+<<_introduction>> is a great section!!
+
+.A little table
+|===
+| Hello | world!
+| Some  | wonder
+|===
+
+.Code sample
+[source,ruby]
+----
+puts "Hello, World!"
+----
+
+:sourcedir: ../src
+
+.Included external file
+[source,rust]
+----
+include::{sourcedir}/atom/mod.rs[lines=8..-1]
+----
+
+.Using callouts in code
+[source,clojure]
+----
+(defn say-hello
+  [name] <1>
+  (let [x (str "Hello, " name)] <2>
+    (println x))) <3>
+----
+<1> Accepts a single param
+<2> Compute the string
+<3> Print it
+
+.Paragraph using little code names
+Hello there, we should talk about `Value` before we go any further.
+
+:env-github: sure-thing
+
+ifdef::env-github[]
+This content is for GitHub only.
+endif::env-github[]
+
+:!env-github:
+
+ifdef::env-github[]
+This content is for GitHub only.
+endif::env-github[]
+
+////
+Comment inside the adoc itself, this will NOT be rendered!
+////
+
+.My title
+====
+Example case, story, self-contained
+====
+
+.My title
+****
+Sidebar for some content.
+****
+
+// Can be TIP NOTE IMPORTANT WARNING CAUTION
+[NOTE]
+====
+A note called out from the regular text flow.
+====
+
+TIP: Here's a tip.
+
+WARNING: Here's a warning.
+
+IMPORTANT: Here's an important.
+
+CAUTION: Here's a caution.
+

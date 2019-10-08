@@ -23,10 +23,14 @@ impl Line {
     pub fn offset(&self, x: isize) -> Line {
         Line { line: unsafe { self.line.offset(x) } }
     }
+    pub fn star(self) -> *const Unit {
+        self.line
+    }
 }
 
 impl From<Unit> for Line {
     fn from(u: Unit) -> Self {
+        assert!(u.is_even());
         Line { line: u.into() }
     }
 }

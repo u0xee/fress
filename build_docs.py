@@ -6,7 +6,6 @@ import subprocess
 import shutil
 import sys
 
-
 src_dir = 'src'
 doc_dir = 'doc'
 target_dir = 'target/doc'
@@ -22,23 +21,58 @@ def find_files(d, find_args=None):
     return [str(f, 'utf-8') for f in ret]
 
 
+asciidoc_base = ['asciidoctor',
+                 '-a', 'stylesheet=style.css',
+                 '-a', 'stylesdir=anc',
+                 '-a', 'imagesdir=images',
+                 '-a', 'docinfo=shared',
+                 '-a', 'sectanchors',
+                 '-a', 'docinfodir=images/favicon',
+                 '-a', 'icons=font',
+                 '-a', 'source-highlighter=prettify',
+                 '-a', 'doctype=article']
+
+
 def generate_html_from_asciidoc(dir, out_dir):
-    adocs = find_files(dir, ['-name', '*.adoc'])
-    command = ['asciidoctor', '--destination-dir', out_dir]
-    command.extend(adocs)
+    thesis = find_files(dir, ['-name', 'thesis.adoc'])
+    home = find_files(dir, ['-name', 'home.adoc'])
+    home_in = find_files(dir, ['-name', 'home-in.adoc'])
+    # adocs = find_files(dir, ['-name', '*.adoc'])
+    command = asciidoc_base + ['--destination-dir', out_dir]
+    print('Running: {}'.format(' '.join(command)))
+    subprocess.run(command + ['-a', 'toc=left'] + thesis)
+    subprocess.run(command + home)
+    subprocess.run(command + home_in)
+
+
+def copy_images():
+    command = ['rsync', '-r', doc_dir + '/images', target_dir]
+    print('Running: {}'.format(' '.join(command)))
+    subprocess.run(command)
+
+
+def copy_favicons():
+    command = ['rsync', '-r', doc_dir + '/images/favicon/', target_dir]
     print('Running: {}'.format(' '.join(command)))
     subprocess.run(command)
 
 
 def build_project(args):
-    print('==== Creating rustdoc pages')
     subprocess.run(["cargo", "doc"])
     generate_html_from_asciidoc(doc_dir, target_dir)
+    copy_images()
+    copy_favicons()
+
+
+def build_adoc(args):
+    generate_html_from_asciidoc(doc_dir, target_dir)
+    copy_images()
+    copy_favicons()
 
 
 # Main parser
 parser = argparse.ArgumentParser(description='Builds AsciiDoc and rustdoc web pages.')
-parser.set_defaults(func=lambda args: parser.print_usage())
+parser.set_defaults(func=build_project)
 subparsers = parser.add_subparsers(help='action to perform')
 
 # Build subparser
@@ -46,7 +80,17 @@ build_parser = subparsers.add_parser('build', description='Build project docs',
                                      help='Build AsciiDoc and rustdoc web pages (-h for options)')
 build_parser.set_defaults(func=build_project)
 
+# AsciiDoc subparser
+adoc_parser = subparsers.add_parser('adoc', description='Build project asciidocs',
+                                     help='Build AsciiDoc web pages (-h for options)')
+adoc_parser.set_defaults(func=build_adoc)
+
 
 # Parse and dispatch
 args = parser.parse_args()
 args.func(args)
+
+# top priority todos
+#homepage
+
+

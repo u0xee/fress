@@ -5,30 +5,36 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-pub mod value_unit;
-pub use self::value_unit::ValueUnit;
-
+use std::cmp;
+use std::fmt;
+use std::str::FromStr;
+use std::default;
+use std::ops;
 use memory::*;
+use handle::*;
 use dispatch::*;
-use vector::Vector;
+use transduce::{Transducer, Transducers};
 
-#[derive(Debug)]
+pub mod operators;
+pub mod conversions;
+
 pub struct Value {
-    pub handle: Unit,
+    pub handle: Handle,
 }
 
 impl Value {
-    pub const NIL: Unit = Unit { word: 0x07 };
-    pub const TRUE: Unit = Unit { word: !0x00usize };
-    pub const FALSE: Unit = Unit { word: !0x08usize };
+    pub fn nil()  -> Value { Handle::nil().value() }
+    pub fn tru()  -> Value { Handle::tru().value() }
+    pub fn fals() -> Value { Handle::fals().value() }
 
-    fn consume(self) -> ValueUnit {
-        ValueUnit::from(self)
-    }
+    pub fn is_nil(&self)   -> bool { self.handle().is_nil() }
+    pub fn is_true(&self)  -> bool { self.handle().is_true() }
+    pub fn is_false(&self) -> bool { self.handle().is_false() }
+    pub fn is_not(&self)   -> bool { self.handle().is_not() }
+    pub fn is_so(&self)    -> bool { !self.is_not() }
 
-    fn value_unit(&self) -> ValueUnit {
-        ValueUnit { unit: self.handle }
-    }
+    fn consume(self) -> Handle { Handle::from(self) }
+    fn handle(&self) -> Handle { self.handle }
 
     pub fn split(self) -> (Value, Value) {
         let v = self.consume();
@@ -37,112 +43,162 @@ impl Value {
     }
 
     pub fn split_out(&self) -> Value {
-        let v = self.value_unit();
+        let v = self.handle();
         v.split();
         v.value()
     }
 
-    pub fn conj(self, x: Value) -> Value {
-        self.consume().conj(x.consume()).value()
+    pub fn type_name(&self) -> &'static str { self.handle().type_name() }
+    pub fn conj(self, x: Value) -> Value { self.consume().conj(x.consume()).value() }
+    pub fn pop(self) -> (Value, Value) {
+        let (c, x) = self.consume().pop();
+        (c.value(), x.value())
+    }
+
+    pub fn peek(&self) -> &Value {
+        let v = self.handle().peek() as *const Value;
+        unsafe { &*v }
+    }
+
+    pub fn count(&self) -> u32 { self.handle().count() }
+    pub fn hash(&self) -> u32 { self.handle().hash() }
+    pub fn empty(&self) -> Value { self.handle().empty().value() }
+    pub fn contains(&self, k: &Value) -> bool { self.handle().contains(k.handle()) }
+
+    pub fn assoc(self, k: Value, v: Value) -> Value {
+        let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
+        displaced.retire();
+        c.value()
+    }
+
+    pub fn dissoc(self, k: &Value) -> Value { self.consume().dissoc(k.handle()).value() }
+
+    pub fn get(&self, k: &Value) -> &Value {
+        let v = self.handle().get(k.handle()) as *const Value;
+        unsafe { &*v }
+    }
+
+    pub fn nth(&self, idx: u32) -> &Value {
+        let v = self.handle().nth(idx) as *const Value;
+        unsafe { &*v }
+    }
+
+    pub fn meta(&self) -> &Value {
+        let v = self.handle().meta() as *const Value;
+        unsafe { &*v }
+    }
+
+    pub fn with_meta(self, m: Value) -> Value { self.consume().with_meta(m.consume()).value() }
+
+    pub fn inc(self) -> Value { self.consume().inc().value() }
+    pub fn dec(self) -> Value { self.consume().dec().value() }
+    pub fn modulus(self, divisor: Value) -> Value {
+        self.consume().modulus(divisor.consume()).value()
+    }
+
+    pub fn pour(self, xf: Transducers, sink: Value) -> Value {
+        let s = self.consume();
+        let ret = s.pour(xf, sink.consume()).value();
+        s.retire();
+        ret
     }
 }
 
-impl From<ValueUnit> for Value {
-    fn from(vu: ValueUnit) -> Self {
-        Value { handle: vu.unit }
+impl From<Handle> for Value {
+    fn from(h: Handle) -> Self {
+        Value { handle: h }
     }
 }
 
 impl Drop for Value {
     fn drop(&mut self) {
-        self.value_unit().retire();
+        self.handle().retire();
+    }
+}
+
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.handle.fmt(f)
+    }
+}
+
+impl fmt::Debug for Value {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.handle.fmt(f)
+    }
+}
+
+// derived?
+// unsafe impl Send for Value {}
+// unsafe impl Sync for Value {}
+// index with i32, Value, &str ?
+// partialEq with i32, &str
+// iterator, intoiterator
+
+impl default::Default for Value {
+    fn default() -> Self {
+        Handle::nil().value()
+    }
+}
+
+impl Clone for Value {
+    fn clone(&self) -> Self {
+        self.split_out()
     }
 }
 
 impl PartialEq for Value {
     fn eq(&self, other: &Value) -> bool {
-        // TODO expand to non-immediates
-        self.handle == other.handle
+        self.handle().eq(other.handle())
+    }
+}
+
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Value) -> Option<cmp::Ordering> {
+        self.handle().cmp(other.handle())
+    }
+}
+
+impl<'a> ops::Index<&'a Value> for Value {
+    type Output = Value;
+    fn index(&self, index: &'a Value) -> &Value {
+        self.get(index)
+    }
+}
+
+impl<'a> ops::Index<Value> for Value {
+    type Output = Value;
+    fn index(&self, index: Value) -> &Value {
+        self.index(&index)
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-
-    #[test]
-    fn passes() {
-        assert!(true)
-    }
-
-    #[test]
-    fn first() {
-        assert!(true)
-        /*
-        let v = Vector::new_value();
-        let v1 = v.conj(1.into());
-        let v2 = v1.conj(2.into());
-        unimplemented!();
-        let w = v2.conj(3.into());
-
-        let (w_, three) = w.pop();
-        let (w__, two) = w_.pop();
-        let (w___, one) = w__.pop();
-        assert_eq!(three, 3.into());
-        assert_eq!(two, 2.into());
-        assert_eq!(one, 1.into());
-        */
-    }
-
-    /*
-    #[test]
-    fn testbed() {
-        let x = Value { handle: 7 };
-
-    }
-
-    #[test]
-    fn is_immediate() {
-        assert!(Value {handle: 7}.is_immediate())
-    }
-
-    #[test]
-    fn is_not() {
-        assert!(Value::NIL.is_not() && Value::FALSE.is_not())
-    }
-
-    #[test]
-    fn is_so() {
-        assert!(Value {handle: 0}.is_so())
-    }
-
-    #[test]
-    fn is_nil() {
-        assert!(Value {handle: 7}.is_nil())
-    }
-
-    #[test]
-    fn is_true() {
-        assert!(Value {handle: !0}.is_true())
-    }
-
-    #[test]
-    fn is_false() {
-        assert!(Value {handle: !0 - 8}.is_false())
-    }
-
-    #[test]
-    fn is_immediate_number() {
-        assert!(Value {handle: 1}.is_immediate_number() &&
-            Value {handle: 5}.is_immediate_number())
-    }
-
-    #[test]
-    fn from_u64() {
-        let x: u64 = 17;
-        let y: Value = x.into();
-        let z: u64 = y.into();
-        assert_eq!(x, z)
-    }
-    */
 }
+
+// Important Traits:
+// Drop, Default, Display, Debug, Clone
+// math:       + - * / % neg(-)
+// logical:    !
+// bitwise:    & | ^ << >>
+// Index:      v[k]
+// PartialEq:  == !=
+// PartialOrd: < <= => >
+// From: numbers, strings
+
+//struct MapValue {}
+//struct SetValue {}
+//struct SortedMapValue {}
+//struct SortedSetValue {}
+//struct VectorValue {}
+//struct ListValue {}
+//struct StringValue {}
+//struct Boolean {}
+//struct Symbol {}
+//struct Keyword {}
+//struct Integral {}
+//struct Rational {}
+//struct FloatPoint {}
+

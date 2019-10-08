@@ -50,6 +50,9 @@ impl AnchoredLine {
     }
 
     pub fn line(&self) -> Line {
+        if !self.has_index(0) {
+            panic!("AnchoredLine out of bounds for segment: [{} {}]", self.index, self.seg.capacity());
+        }
         self.seg.anchor_line.offset(self.index as isize + 1)
     }
 

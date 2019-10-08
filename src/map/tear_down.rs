@@ -59,15 +59,19 @@ pub fn step(stack: &mut NodeRecordStack, has_vals: u32) {
                 (p.child_count(), p.key_count())
             };
             c.line_at(child_count << 1).span(key_count << has_vals).retire();
-            top.current_child = Some(i);
-            stack.push(NodeRecord {
-                first_child: c.line_at(0),
-                child_count,
-                height: top.height + 1,
-                on_boundary: false,
-                current_child: None,
-            });
-            return;
+            if child_count == 0 {
+                Segment::free(c);
+            } else {
+                top.current_child = Some(i);
+                stack.push(NodeRecord {
+                    first_child: c.line_at(0),
+                    child_count,
+                    height: top.height + 1,
+                    on_boundary: false,
+                    current_child: None,
+                });
+                return;
+            }
         }
         i = i + 1;
     }

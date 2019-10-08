@@ -2,9 +2,9 @@
 
 fress is a toolkit for processing information with computers.
 
-* Home page: https://www.fress.io
-** Code docs: https://www.fress.io/fress
-* Repository: https://github.com/u0xee/fress
+* Home page: https://www.fress.io[fress.io]
+** Code docs: https://www.fress.io/fress[fress.io/fress]
+* Repository: https://github.com/u0xee/fress[github.com/u0xee/fress]
 
 == Welcome, Wayfarer!
 This project is named fress. It is software (instructions for a computer) that
@@ -13,21 +13,37 @@ to learn about the project.
 
 Here in this repository (the project files), you will find:
 
-* Source code in link:src[]
+* Documentation sources in link:/doc[]
+** My thesis source at link:/doc/thesis.adoc[] (better viewed online https://www.fress.io/thesis.html[fress.io/thesis.html])
+** Images used in documentation in link:/doc/images[]
+* Source code in link:/src[] (code docs viewed online https://www.fress.io/fress[fress.io/fress])
+** The library root at link:/src/lib.rs[]
+** Integration tests in link:/tests[]
+** Benchmarks in link:/benches[]
+** Example programs in link:/examples[]
 
-* whats here, whats not (repo vs websites, video, etc)
-** document sources, rust source, directory layout
-* things to do
-** cargo, doc test run
-** build_docs
-** asciidoc
+== Things to do
+You can read the source code and documentation sources, without any special tools.
+If you want to run the code, you'll need to https://www.rust-lang.org/learn/get-started[install the Rust programming language].
+After you have Rust installed, you can use the `cargo` program:
+
+* `cargo help`
+* `cargo build`
+* `cargo test`
+* `cargo bench`
+* `cargo run --example basic` runs the example program link:/examples/basic.rs[]
+
+Documentation sources are written with https://asciidoctor.org[Asciidoctor].
+If you want to build the website yourself, you'll need to install it, and https://www.python.org[Python3].
+Then you can run the script at link:/build_docs.py[], which runs `cargo doc` and `asciidoctor`.
+http://linuxcommand.org/lc3_wss0010.php[Run the script] like this: `./build_docs.py`.
 
 == License
 Below, and in every source code file, you will find a license notice. Briefly:
 
 * don't sue me
 * don't remove the license notices
-* don't steal my work (by claiming you did it, or by implying you did it)
+* don't steal my work (by claiming or implying you did it)
 
 You can still copy, modify, and redistribute this work (build on top of my work),
 as long as you make it clear that you are building on top of my work.

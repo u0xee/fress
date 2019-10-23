@@ -22,7 +22,6 @@
 
 use std::mem;
 use std::ops::{Index, IndexMut, Range};
-use fuzz;
 use memory::*;
 
 #[derive(Copy, Clone, Debug)]
@@ -70,7 +69,7 @@ impl Segment {
     pub fn is_aliased(&self) -> bool {
         let real_ret = self.anchor_line[0].anchor().is_aliased();
         if cfg!(feature = "fuzz_segment_spurious_aliased") {
-            use fuzz;
+            use random::fuzz;
             let (seed, log_tail) = fuzz::next_random();
             let spurious = ((seed ^ (seed >> 32)) & 0x7) == 0x7;
             real_ret || spurious
@@ -246,7 +245,7 @@ pub fn dealloc(line: Line, raw_cap: u32) {
 
 #[cfg(any(test, feature = "fuzz_segment_extra_cap"))]
 pub fn extra_cap() -> u32 {
-    use fuzz;
+    use random::fuzz;
     use random::{uniform_f64, cycle, cycle_n, normal_f64};
     let (seed, log_tail) = fuzz::next_random();
     let p = uniform_f64(seed, cycle(seed));
@@ -261,7 +260,7 @@ pub fn extra_cap() -> u32 {
 
 #[cfg(any(test, feature = "fuzz_segment_random_content"))]
 pub fn random_content(mut s: Segment, cap: u32) {
-    use fuzz;
+    use random::fuzz;
     use random::{cycle};
     let (mut seed, log_tail) = fuzz::next_random();
     for i in 0..cap {

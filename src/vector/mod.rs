@@ -30,8 +30,6 @@ pub mod reduce;
 pub mod iter;
 pub mod util;
 use self::util::*;
-#[cfg(test)]
-use fuzz;
 
 /// Defines branching factor.
 ///

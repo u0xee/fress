@@ -47,10 +47,12 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
         if hit(c, NUM_NAME) { // alphanum .*+!-_?$%&=<>|:/
             if let Some(sym) = isolate_symbolic(&bytes[i..]) {
                 let res = if digit(c) || (sign(c) && sym.len() > 1 && digit(sym[1])) {
+                    println!("Number at {:?}", &reader.counter); // TODO
                     number::parse_numeric(sym)
                 } else {
                     use edn::reader::reference;
                     let default = reader.pending.default_ns().map(|ns| reference(ns, bytes));
+                    println!("Symbolic at {:?}", &reader.counter); // TODO
                     name::parse_symbol_keyword(sym, default)
                 };
                 match res {
@@ -128,6 +130,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             }
             if c == b'"' {
                 let str_start = &bytes[i..];
+                println!("String at {:?}", &reader.counter); // TODO
                 if let Some(quote_index) = string_end_quote_index(str_start, &mut reader.counter) {
                     use string::Str;
                     match Str::new_escaping(&str_start[1..quote_index]) {
@@ -174,7 +177,9 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             return err(reader, format!("Can't parse a token starting with ({})", char::from(c)))
         }
         if whitespace(c) {
+            println!("WS '{}' at {:?}", c as char, &reader.counter); // TODO
             if let Some(printing) = not_whitespace_index(&bytes[i..], &mut reader.counter) {
+                println!("WS Some(printing) at {:?}", &reader.counter); // TODO
                 i += printing;
                 continue 'top;
             } else {
@@ -185,6 +190,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             if c == b'{' {
                 use map::Map;
                 let h = Map::new();
+                println!("{{ at {:?}", &reader.counter); // TODO
                 reader.pending.push(Pending::Map, h);
                 reader.counter.add(1);
                 i += 1;
@@ -627,11 +633,11 @@ pub fn not_whitespace_index(s: &[u8], c: &mut Counter) -> Option<usize> {
     let mut cnt = *c;
     for i in 0..s.len() {
         let si = s[i];
-        if si == b'\n' { cnt.newline() } else { cnt.add(1) }
         if !whitespace(si) {
             *c = cnt;
             return Some(i)
         }
+        if si == b'\n' { cnt.newline() } else { cnt.add(1) }
     }
     None
 }
@@ -639,6 +645,8 @@ pub fn not_whitespace_index(s: &[u8], c: &mut Counter) -> Option<usize> {
 pub fn string_end_quote_index(s: &[u8], c: &mut Counter) -> Option<usize> {
     let mut cnt = *c;
     // unroll groups of four
+    // TODO check for \, skip next
+    let mut i: usize = 1;
     for i in 1..s.len() {
         let si = s[i];
         if si == b'\n' { cnt.newline() } else { cnt.add(1) }

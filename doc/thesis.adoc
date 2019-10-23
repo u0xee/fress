@@ -1,6 +1,6 @@
 = A Library of Values: Persistent Data Structures using Explicit Aliasing
 Cole Frederick
-v0.5, 2019-09-01
+v0.6, 2019-09-09
 
 Persistent data structures _are the crux of_ functional programming.
 We find here a rich history; and an opportunity to apply it.
@@ -19,7 +19,7 @@ Languages and runtimes often support numbers and strings as values, but don’t 
 Aggregates are necessary tools.
 Aggregate values are implemented with _persistent data structures_,
 most notably as trees that can share (_alias_) their components.
-Runtime-dynamic aliasing like this requires runtime-dynamic memory recycling.
+Runtime-dynamic aliasing like this requires runtime-dynamic _memory recycling_.
 Aliasing and unaliasing can be _implicit_, where recycling happens in periodic sweeps,
 or _explicit_, where recycling happens upon an explicit unaliasing event.
 Currently, the most complete value implementations are integrated with some particular recycling runtime.
@@ -50,11 +50,11 @@ Reflecting my own journey, the major stakeholders and the intended audiences are
 * Customers of orgs -- the decision-makers who appraise an organization's output
 
 .With great power...
-Countless hours, learning countless systems; weeks, months, years, elbow to elbow with learners, problem solving.
+Countless hours, learning countless systems; weeks, months, years, elbow to elbow with learners, problem solving..
 Computer systems vary widely in design.
 Given a problem, the programmer is free to make myriad programs that would solve it, all different.
 These myriad programs are not equivalent, however!
-As they vary in design, they vary in size and complexity, cost to develop and maintain.
+As they vary in design, they vary in size and complexity, _cost to develop and maintain_.
 For projects of short lifespan or small scope, the choice hardly matters.
 But for many projects, the programmer profits by considering design _options_.
 
@@ -68,54 +68,212 @@ They don't want to learn (the hard way) that an org's systems are difficult or e
 bugs may linger, features may lag, and rising cost of maintenance foreshadows abandonment, system collapse.
 For any substantial commissioned program, the stakeholders care about _how_ it works, not just _what_ it does.
 
-This information toolkit is _simple_, _systematic_, and _wieldy_.
+If this information toolkit is to be helpful to my stakeholders listed above, it's design should achieve
+certain properties and strive for certain goals. It's incredibly important to me that
+this information toolkit is _simple_, _systematic_, and _wieldy_.
 
 === Simple
-Simple means the components are separated vigorously, unentangled, independent.
+Programmers make computer programs (and systems), and design the whole in terms of parts.
+All designs have this nature, components used as building blocks, to describe something larger.
+Simple means the components are separated vigorously; independent, unentangled.
 When two things are complected (entangled), you can't consider them separately.
 You can't think about one without thinking about both.
-Imagine if every time you started the microwave
+For a computer system, this is a liability.
 
-* simple
-** unentangled, independent, not complected
-** combinatorial burden,
-** Understanding is base to everything else
-** Growing, fixing, learning
+======
+Imagine if every time you turned on the lights, your television turned off (#FirstWorldProblems).
+Making popcorn during movie night just got a little more complex:
+
+|===
+| turn on the lights | image:light-on.svg[on,50] -> image:tv-off.svg[tv off,50]
+| microwave popcorn  | image:microwave-on.svg[on,50]
+| power tv on        | image:tv-on.svg[on,50]
+| turn off lights, resume movie | image:light-off.svg[off,50]
+|===
+
+Imagine further that every time the microwave starts, the lights turned off. Making popcorn is:
+
+|===
+| turn on the lights | image:light-on.svg[on,50] -> image:tv-off.svg[tv off,50]
+| microwave popcorn  | image:microwave-on.svg[on,50] -> image:light-off.svg[off,50]
+| turn on the lights | image:light-on.svg[on,50]
+| power tv on        | image:tv-on.svg[on,50]
+| turn off lights, resume movie | image:light-off.svg[off,50]
+|===
+
+And when you power the tv on, the microwave starts. Now we need:
+
+|===
+| turn on lights    | image:light-on.svg[on,50] -> image:tv-off.svg[tv off,50]
+| microwave popcorn | image:microwave-on.svg[on,50] -> image:light-off.svg[off,50]
+| turn on lights    | image:light-on.svg[on,50]
+| power tv on       | image:tv-on.svg[on,50] -> image:microwave-on.svg[on,50] -> image:light-off.svg[off,50]
+| turn on lights    | image:light-on.svg[on,50] -> image:tv-off.svg[tv off,50]
+| power tv on       | image:tv-on.svg[on,50] (microwave already on)
+| stop microwave    | image:microwave-off.svg[off,50]
+| turn off lights, resume movie | image:light-off.svg[off,50]
+|===
+
+.What would a programmer do?
+A programmer would fix this, quite elegantly.
+They will leave a bag of popcorn waiting, in the microwave. Then:
+
+|===
+| turn on lights | image:light-on.svg[on,50] -> image:tv-off.svg[tv off,50]
+| power tv on    | image:tv-on.svg[on,50] -> image:microwave-on.svg[on,50] -> image:light-off.svg[off,50]
+| turn on lights | image:light-on.svg[on,50] -> image:tv-off.svg[tv off,50]
+| power tv on    | image:tv-on.svg[on,50] (microwave already on)
+| walk to microwave, collect popcorn, replace with new bag |
+| turn off lights, resume movie | image:light-off.svg[off,50]
+|===
+======
+
+This story illustrates three things:
+
+* the burden of complexity
+* human ingenuity
+* our tendency to address symptoms, not root causes: +
+(any _sane_ person would have [big]#called an electrician# _months_ ago!)
+
+.The burden of complexity
+There are only three components, with only two states each.
+There are only three cause-effect rules.
+Yet reasoning about how to achieve a goal is onerous (burdensome).
+You have to _simulate_ (imagine in your mind) the mechanisms and the states of the system.
+Since the components are entangled (complected), we can't reason about them _separately_.
+The burden grows, faster and faster, as more components interact.
+As anyone who's ever tried programming can tell you, it's all too easy,
+to make something that _defies reason_.
+
+Complexity in your computer program costs you time (work takes longer), but more to the point:
+_complexity costs you lost opportunity_. If the work of programming took only a tenth of the time,
+would we build the _same_ programs, just ten times faster? No, it would expand our horizons.
+Computer information systems are _very_ expensive to build; organizations build them anyway,
+because information is _very_ useful. How many decade long projects can a person take on?
+Maybe 5? If such projects were only a year in the making, you could have dozens in your career.
+And projects that would take ten years to build are rarely built anyway!
+With the exception of NASA, it just doesn't make sense to plan that far ahead.
+As ever, supply of human ingenuity (elbow grease) is _the_ limiting factor, in what we do with computers.
+Complexity scales down our output, and our ambitions.
+
+.Human Ingenuity
+The programmer in the story reduced trips to the kitchen from two to one. They were even able to
+"remote start" the microwave, so the popcorn could cook _while_ they walk to the kitchen.
+Not bad. But it took the programmer (me actually) time and head scratching, and, to be honest,
+an embarrassing amount of debugging. We humans can accomplish amazing things, nigh anything, with our time.
+We should choose wisely then, where our time and energy go.
+
+.Addressing symptoms
+If you've lived in a modern house with electricity, you know that most electronics can be started or stopped
+_independently_ from one another. How could the programmer from the story have missed this:
+the _real_ problem was a house with bad wiring... are programmers meant to seem, a bit, daft?
+Actually, people old and young, students and masters, pros and amateurs, seemingly universally,
+struggle to identify _sources of complexity_. It's a human problem: relative to the complexity we can create,
+our faculties for _understanding_ and untangling it are, one and all, _very_ limited.
+Real world systems, systems built by professionals, open-source systems running The Internet,
+are, as likely as not, very complex. It happens. It's a testament to how difficult this is for us:
+growing our computer systems _without_ getting caught in _complexity quicksand_:
+
+======
+It is _very easy_ to create a tangle or overlook a tangle, when programming.
+As beginners, we learn to see only the problem at hand, to solve within _a given context_.
+We get so excited about _solving a problem_, we easily overlook if we are _solving the right problem_.
+As experts, we are _habituated_ to living with certain familiar tangles, and besides:
+wouldn't untangling the wiring _now_ mean popcorn takes 20 _additional_ seconds to make??
+======
+
+// drawing of quicksand
+The programmer in the story was, clearly, addressing _symptoms_, not _root causes_.
+In real programming projects, _introducing complexity_ is as easy as _stepping into quicksand_.
+Over time, real projects often build up tangles, become harder and harder to maintain, and are eventually abandoned.
+Maintainers find small activities require large effort to accomplish, as if _moving through quicksand_.
+Complexity hampers our ability to _understand_ our programs.
+Understanding is base to everything else:
+
+* growing programs,
+* fixing them,
+* teaching others, so they can help with growing and fixing.
+
+My goal is an information toolkit, with parts cleanly separated, and _loose coupling_ between parts that do interact.
+Like a Phillips-head screw and a Phillips-head screwdriver, parts can interact on purpose, coupled by a common interface.
+Coupling between parts should be loose.
+Note that screw manufacturers don't make screws that can only be used by their specific screwdriver:
+
+// drawing of hardware store
+======
+Imagine a hardware store aisle with fifty different screws,
+each _incompatible_ with forty-nine of the fifty screwdrivers for sale.
+What a pain maintaining a household would be: tons of specific interfaces, requiring as many specific tools.
+And variation to what end? Many designs would be, more or less, equivalent in properties and use cases.
+Mercifully, a few sizes of Phillips-head screwdrivers and a few flat-heads go a long way.
+And custom interfaces are reserved for specialized uses that merit the treatment
+(like building a house deck, or fastening street signs to their posts).
+======
+
+// diagram of table assembled
+TIP: Prank a loved one (or a bitter enemy) with this sadistic device: when roped into moving their furniture,
+proceed to "help" by assembling the table using as many different screw interfaces as you can.
+Come prepared with Phillips head, flat head, hex sets (in _both_ metric _and_ imperial), wrenches,
+and a grab bag of assorted screws. And in two years when they move again, they'll curse your name
+when they go to disassemble it!
+
+Using this tool, a person can make programs out of loosely coupled parts.
+// tooling doesn't help with complexity
 
 === Systematic
-** encompassing scope
-** info lifecycle, mem, disk, other programs (system building)
-** cohesive
+Systematic here means I want this tool to have an encompassing scope, not to be "part of a balanced breakfast".
+I want information constructs for common tasks, like: numbers, names, dates, and aggregates (grouping).
+Also, this tool is systematic in spanning the whole information lifecycle;
+information can be used from computer memory, stored, and sent to other programs.
+In this way, this tool supports system building, a system being composed of cooperating programs and computers.
+Systematic also means system focused, the components of this tool kit are meant to work together;
+the components are cohesive.
 
 === Wieldy
-** it's a dig
-** make "at hand"
-** ease of navigation, learning
-** concerns like presentation, exploration
-** its about accessibility
-
-The result of my work is meant to be a simple system for wielding information.
+You may have heard of "unwieldy", think of a small child trying to use a too-heavy bowling ball.
+"Wieldy" is the opposite, a tool that feels natural to pick up and use.
+For this tool, wieldy means seeing it in context of a person using it.
+The description and presentation of this tool is _vital_ to the success of the tool.
+It's about accessibility; many people that _could_ program don't, because of needless hassle.
+Wieldy is about meeting people where they are.
+// drawing of bowling
 
 === Constraints
-* dev time, my time
-* relative independence among
-** hardware architecture
-** operating system
-** language and runtime
-* library vs framework
-* understandable by humans
-* good aggregates, sort of the linchpin
+An important constraint on the design of this tool is my time.
+I am a team of size one, so I design a tool that can be constructed and understood by one human in a handful of years.
+
+I took it as a constraint that the information model should be relatively independent of:
+
+* hardware architecture
+* operating system and kernel
+* language and runtime
+
+Related, this tool should be more like a library than a framework.
+And, in what we will see later is the linchpin, it should have good information _aggregates_.
 
 === Context
-Fundamentally, this tool will be used by a person programming.
+This tool is a book of recipes for processing information. A person programming can apply a recipe at will, to:
 
-* Library of basic functions, collection of base recipes for processing info
-** Constructors for info
-** Transforms on info
-** Read/write info from bytes
+* create a piece of information, from scratch
+* elaborate upon existing information, creating new pieces of information
+* write down information, so it can be saved on the computer, or sent to another program or computer
+* read information that was previously saved, or sent to you
+
+A person can use this tool as a basic set of recipes, building their own recipes on top.
 
 == Information
-Abstract view of the model supported by this project.
+It informs; you can share it, like an idea. It is specific, not subjective (in the eye of the beholder).
+
+
+* Numbers, like `42` or `3.14`
+* Letters, like `\a` or `\Z`
+* Dates and times
+* Words or phrases, like `"cat"` or `"when pigs fly"`
+* The booleans `true` and `false`
+* An ordered list of other information, like `["apples" "bananas" "coconuts"]`
+* A set, like `#{\a \b \c \d \e \f}`
+* An association `{\a 1, \b 2, \d 4}`
+** Used as fields in a "form": `{:name "Cole", :site "fress.io"}`
 
 === Values vs Objects
 What are they and how are they different?
@@ -305,8 +463,8 @@ Linking to rustdoc.
 link:/fress/transduce[Transducer rustdoc]
 
 Link to section.
-<<_quality_requirements>> is a great section!!
-And a citation to the bibliography <<Ackerman82>>, as you can see.
+<<simple>> is a great section!!
+And a citation to the bibliography <<Ackerman-Diss>>, as you can see `Value` is a code name.
 
 .An image
 image::book.svg[book pic,50]
@@ -343,8 +501,6 @@ include::{sourcedir}/atom/mod.rs[lines=8..-1]
 <2> Compute the string
 <3> Print it
 
-.Paragraph using little code names
-Hello there, we should talk about `Value` before we go any further.
 
 :env-github: sure-thing
 
@@ -375,16 +531,16 @@ Sidebar for some content.
 // Can be TIP NOTE IMPORTANT WARNING CAUTION
 [NOTE]
 ====
-A note called out from the regular text flow.
+A note called out from the regular text flow. This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders.
 ====
 
-TIP: Here's a tip.
+TIP: Here's a tip. This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders.
 
-WARNING: Here's a warning.
+WARNING: Here's a warning. This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders.
 
-IMPORTANT: Here's an important.
+IMPORTANT: Here's an important. This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders.
 
-CAUTION: Here's a caution.
+CAUTION: Here's a caution. This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders.
 
 [glossary]
 include::glossary.adoc[]
@@ -393,10 +549,10 @@ include::glossary.adoc[]
 include::bib.adoc[]
 
 [appendix]
-include::topic/hardware.adoc[]
+include::topic/big-O.adoc[]
 
 [appendix]
-include::topic/big-O.adoc[]
+include::topic/quadratic-residue.adoc[]
 
 [appendix]
 include::topic/supplement.adoc[]

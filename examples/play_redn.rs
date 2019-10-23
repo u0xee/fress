@@ -40,8 +40,9 @@ fn main() {
     use std::fs;
     let s = fs::read_to_string(&filename).unwrap();
     println!("@@ {}", &filename);
+    println!("   0 2 4 6 8 a c e");
     for (line, txt) in s.lines().enumerate() {
-        println!("{:2}  {}", line + 1, txt);
+        println!("{:2} |{}", line + 1, txt);
     }
     parse_diagnostics(s);
 

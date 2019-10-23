@@ -7,23 +7,25 @@ fress is a toolkit for processing information with computers.
 * Repository: https://github.com/u0xee/fress[github.com/u0xee/fress]
 
 == Welcome, Wayfarer!
-This project is named fress. It is software (instructions for a computer) that
-can be used to process information. The home page (listed above) is a good place
-to learn about the project.
+This project is named _fress_ (as in "fresh fruit"). It is software (instructions for a computer) that
+can be used to process information. Visit the home page (listed above) to learn about the project.
 
-Here in this repository (the project files), you will find:
+== What's here?
+Here in this repository (these project files), you will find:
 
 * Documentation sources in link:/doc[]
-** My thesis source at link:/doc/thesis.adoc[] (better viewed online https://www.fress.io/thesis.html[fress.io/thesis.html])
+** My thesis source at link:/doc/thesis.adoc[] (better viewed online https://www.fress.io/thesis[fress.io/thesis])
 ** Images used in documentation in link:/doc/images[]
 * Source code in link:/src[] (code docs viewed online https://www.fress.io/fress[fress.io/fress])
 ** The library root at link:/src/lib.rs[]
-** Integration tests in link:/tests[]
+** The memory module's root at link:/src/memory/mod.rs[]
+* Integration tests in link:/tests[]
 ** Benchmarks in link:/benches[]
-** Example programs in link:/examples[]
+* Example programs in link:/examples[]
 
 == Things to do
 You can read the source code and documentation sources, without any special tools.
+
 If you want to run the code, you'll need to https://www.rust-lang.org/learn/get-started[install the Rust programming language].
 After you have Rust installed, you can use the `cargo` program:
 
@@ -33,8 +35,10 @@ After you have Rust installed, you can use the `cargo` program:
 * `cargo bench`
 * `cargo run --example basic` runs the example program link:/examples/basic.rs[]
 
-Documentation sources are written with https://asciidoctor.org[Asciidoctor].
+== Building the website
+Documentation sources are turned into the website using https://asciidoctor.org[Asciidoctor].
 If you want to build the website yourself, you'll need to install it, and https://www.python.org[Python3].
+
 Then you can run the script at link:/build_docs.py[], which runs `cargo doc` and `asciidoctor`.
 http://linuxcommand.org/lc3_wss0010.php[Run the script] like this: `./build_docs.py`.
 
@@ -45,7 +49,7 @@ Below, and in every source code file, you will find a license notice. Briefly:
 * don't remove the license notices
 * don't steal my work (by claiming or implying you did it)
 
-You can still copy, modify, and redistribute this work (build on top of my work),
+NOTE: You can copy, modify, and redistribute this work (build on top of my work),
 as long as you make it clear that you are building on top of my work.
 
 ----

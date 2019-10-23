@@ -11,19 +11,21 @@ image:cycle.svg[cycle,50] [small]#whole information# [big]#lifecycle#
 
 [cols="3*^",frame=topbot,grid=none,options="header"]
 |===
-| image:book.svg[thesis,65] +
-link:thesis.html[My thesis]
-| image:notes.svg[thesis,65] +
-https://www.fress.in[fress.in]
-| image:dev.svg[thesis,65] +
-https://www.fress.dev[fress.dev]
-| Project white paper | Notation for information | Programming with fress
+| link:thesis[image:book.svg[thesis,60] +++<br>+++ My thesis]
+| https://www.fress.in[image:notes.svg[notation,60] +++<br>+++ fress.in]
+| https://www.fress.dev[image:dev.svg[virtual terminal,60] +++<br>+++ fress.dev]
+| White paper | Notation for Information | Programming with fress
 |===
 
 toc::[]
 
 == Introduction
+
+IMPORTANT: This site is under construction. The thesis is the main writing focus right now.
+
 fress is a simple system for wielding information.
+
+See getting started video! Reading the thesis.
 
 == Audience
 fress is intended for use by a wide array of people, with or without prior programming experience.
@@ -32,88 +34,15 @@ fress is intended for use by a wide array of people, with or without prior progr
 This project consists of a set of recipes for the computer.
 These recipes together form a system for processing information.
 
-== Directory
-Many useful links including github repository, rustdoc, thesis, etc.
+== Navigation
+* https://www.fress.io[fress.io] -- home page
+** https://www.fress.io/thesis[fress.io/thesis] -- my thesis
+** https://www.fress.io/fress[fress.io/fress] -- code docs
+* https://www.fress.in[fress.in] -- edn fressian home page
+* https://www.fress.dev[fress.dev] -- developer home page
+* https://github.com/u0xee/fress[github.com/u0xee/fress] -- repository
 
-== Templates
-Linking to rustdoc.
-link:/fress/transduce[Transducer rustdoc]
 
-Link to section.
-<<_introduction>> is a great section!!
 
-.A little table
-|===
-| Hello | world!
-| Some  | wonder
-|===
-
-.Code sample
-[source,ruby]
-----
-puts "Hello, World!"
-----
-
-:sourcedir: ../src
-
-.Included external file
-[source,rust]
-----
-include::{sourcedir}/atom/mod.rs[lines=8..-1]
-----
-
-.Using callouts in code
-[source,clojure]
-----
-(defn say-hello
-  [name] <1>
-  (let [x (str "Hello, " name)] <2>
-    (println x))) <3>
-----
-<1> Accepts a single param
-<2> Compute the string
-<3> Print it
-
-.Paragraph using little code names
-Hello there, we should talk about `Value` before we go any further.
-
-:env-github: sure-thing
-
-ifdef::env-github[]
-This content is for GitHub only.
-endif::env-github[]
-
-:!env-github:
-
-ifdef::env-github[]
-This content is for GitHub only.
-endif::env-github[]
-
-////
-Comment inside the adoc itself, this will NOT be rendered!
-////
-
-.My title
-====
-Example case, story, self-contained
-====
-
-.My title
-****
-Sidebar for some content.
-****
-
-// Can be TIP NOTE IMPORTANT WARNING CAUTION
-[NOTE]
-====
-A note called out from the regular text flow.
-====
-
-TIP: Here's a tip.
-
-WARNING: Here's a warning.
-
-IMPORTANT: Here's an important.
-
-CAUTION: Here's a caution.
+// Github, Youtube
 

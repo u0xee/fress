@@ -1,28 +1,856 @@
 == Bibliography
-:scholar: https://scholar.google.com/scholar_lookup?
-* [[[Ackerman77]]] Ackerman, William B. A structure memory for data flow computers. No. MIT/LCS/TR-186.
-  Massachusetts Institute of Technology, Cambridge Lab for Computer Science, 1977.
-  {scholar}author=Ackerman&title=structure%20memory%20data%20flow%20computers[search^]
+:scholar: https://scholar.google.com/scholar_lookup?author=
 
-* [[[Ackerman79]]] Ackerman, William B., and Jack B. Dennis. VAL: A Value-Oriented Algorithmic Language (Preliminary Reference Manual).
-  No. MIT/LCS/TR-218. Massachusetts Institute of Technology, Cambridge Lab for Computer Science, 1979.
-  {scholar}author=Ackerman&title=val%20value%20oriented%20algorithmic%20language[search^]
+// TODO add infoq, podcasts, conference presentations
+[big]#<<bib-a,A>> -- <<bib-b,B>> -- <<bib-c,C>> -- <<bib-d,D>> -- <<bib-f,F>> -- <<bib-g,G>> -- <<bib-h,H>>
+   -- <<bib-i,I>> -- <<bib-k,K>> -- <<bib-l,L>> -- <<bib-m,M>> -- <<bib-n,N>> -- <<bib-o,O>> -- <<bib-p,P>>
+   -- <<bib-r,R>> -- <<bib-s,S>> -- <<bib-t,T>> -- <<bib-u,U>> -- <<bib-v,V>> -- <<bib-w,W>>#
 
-* [[[Ackerman82]]] Ackerman, William B. "Data flow languages." Computer; (United States) 2 (1982).
-  {scholar}author=Ackerman&title=Data%20flow%20languages[search^]
+[[bib-a]]
+* [[[Ackerman-Flow]]] Ackerman, William B. A structure memory for data flow computers.
+  Technical Report 186, Massachusetts Institute of Technology, Cambridge Lab for Computer Science, 1977.
+  {scholar}ackerman&title=structure+memory+data+flow+computers[search^]
 
-* [[[Ackerman84]]] Ackerman, William Beekley. Efficient implementation of applicative languages. PhD Diss.
-  Massachusetts Institute of Technology, 1984.
-  {scholar}author=Ackerman&title=Efficient%20implementation%20applicative%20languages[search^]
+* [[[Ackerman-VAL]]] Ackerman, William B., and Jack B. Dennis. VAL: A Value-Oriented Algorithmic Language.
+  Technical Report 218, Massachusetts Institute of Technology, Cambridge Lab for Computer Science, 1979.
+  {scholar}ackerman&title=val+value+oriented+algorithmic+language[search^]
 
-* [[[Appel87]]] Appel, Andrew W. "Garbage collection can be faster than stack allocation."
+* [[[Ackerman-Langs]]] Ackerman, William B. "Data flow languages." Computer; (United States) 2 (1982).
+  {scholar}ackerman&title=Data+flow+languages[search^]
+
+* [[[Ackerman-Diss]]] Ackerman, William Beekley. Efficient implementation of applicative languages.
+  Massachusetts Institute of Technology, Doctoral thesis, 1984.
+  {scholar}ackerman&title=efficient+implementation+applicative+languages[search^]
+
+* [[[Almeida]]] Almeida P.S. Balloon types: Controlling sharing of state in data types.
+  Object-Oriented Programming, ECOOP 1997. Lecture Notes in Computer Science, vol 1241.
+  Springer, Berlin, Heidelberg, 1997.
+  https://link.springer.com/chapter/10.1007/BFb0053373[source^]
+
+* [[[Appel]]] Appel, Andrew W. "Garbage collection can be faster than stack allocation."
   Information Processing Letters 25.4 (1987): 275-279.
-  {scholar}author=appel&title=garbage%20collection%20can%20be%20faster%20than%20stack%20allocation[search^]
+  {scholar}appel&title=garbage+collection+can+be+faster+than+stack+allocation[search^]
 
+* [[[Aref]]] Aref, Molham, et al. "Design and implementation of the LogicBlox system."
+  Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data. ACM, 2015.
+  {scholar}aref&title=design+and+implementation+of+the+logicblox+system[search^]
+
+* [[[Aspinall]]] Aspinall, David, and Martin Hofmann. "Another type system for in-place update."
+  European Symposium on Programming. Springer, Berlin, Heidelberg, 2002.
+  {scholar}aspinall&title=another+type+system[search^]
+
+[[bib-b]]
+* [[[Backus-FORTRAN]]] Backus, John W., et al. "The FORTRAN automatic coding system."
+  Papers presented at the February 26-28, 1957, Western Joint Computer Conference: Techniques for Reliability. ACM, 1957.
+  {scholar}backus&title=the+fortran+automatic+coding+system[search^]
+
+* [[[Backus-Semantics]]] Backus, John. "Programming language semantics and closed applicative languages."
+  Proceedings of the 1st annual ACM SIGACT-SIGPLAN symposium on Principles of programming languages. ACM, 1973.
+  {scholar}backus&title=programming+language+semantics[search^]
+
+* [[[Backus-Functional]]] Backus J. Can programming be liberated from the von Neumann style?
+  A functional style and its algebra of programs. 1977 ACM Turing Award Lecture, Commun. ACM 21, 8. Aug 1978.
+  https://dl.acm.org/citation.cfm?id=1283933[source^]
+
+* [[[Bacon]]] Bacon, David F., Perry Cheng, and V. T. Rajan.
+  "A unified theory of garbage collection." ACM SIGPLAN Notices 39.10 (2004): 50-68.
+  {scholar}bacon&title=a+unified+theory+of+garbage+collection[search^]
+
+* [[[Bagwell-Search]]] Bagwell, Phil. Fast and Space-efficient Trie Searches. Technical report, EPFL, 2000.
+  {scholar}bagwell&title=fast+and+space+efficient+trie+searches[search^]
+
+* [[[Bagwell-Trees]]] Bagwell, Phil. Ideal hash trees. Technical report, EPFL, 2001.
+  {scholar}bagwell&title=ideal+hash+trees[search^]
+
+* [[[Bagwell-Lists]]] Bagwell, Phil. Fast Functional Lists, Hash-Lists, Deques and Variable Length Arrays.
+  In Implementation of Functional Languages, 2002.
+  {scholar}bagwell&title=fast+functional+lists[search^]
+
+* [[[Bagwell-RRB]]] Bagwell, Phil, and T. Rompf. RRB-Trees: Efficient Immutable Vectors.
+  Technical Report EPFL-REPORT-169879, Ecole polytechnique fédérale de Lausanne, 2011.
+  {scholar}bagwell&title=rrb+trees+efficient+immutable+vectors[search^]
+
+* [[[Baker-Processes]]] Baker Jr, Henry C., and Carl Hewitt. "The incremental garbage collection of processes."
+  ACM Sigplan Notices 12.8 (1977): 55-59.
+  http://www.pipeline.com/~hbaker1/Futures.html[source^]
+
+* [[[Baker-Unify]]] Baker, Henry G. "Unify and conquer (Garbage, Updating, Aliasing) in Functional Languages."
+  Proceedings of the 1990 ACM conference on LISP and functional programming. ACM, 1990.
+  http://www.pipeline.com/~hbaker1/Share-Unify.html[source^]
+
+* [[[Baker-Shallow]]] Baker, Henry G. "Shallow binding makes functional arrays fast."
+  SIGPLAN notices 26.8 (1991): 145-147.
+  http://www.pipeline.com/~hbaker1/ShallowArrays.html[source^]
+
+* [[[Baker-Linear]]] Baker, Henry G. "Lively linear Lisp -- 'Look ma, no garbage!'."
+  ACM Sigplan notices 27.8 (1992): 89-98.
+  http://www.pipeline.com/~hbaker1/LinearLisp.html[source^]
+
+* [[[Baker-Treadmill]]] Baker, Henry G. "The treadmill: real-time garbage collection without motion sickness."
+  ACM Sigplan Notices 27.3 (1992): 66-70.
+  http://www.pipeline.com/~hbaker1/NoMotionGC.html[source^]
+
+* [[[Baker-Equality]]] Baker, Henry G. "Equal rights for functional objects or,
+  the more things change, the more they are the same." ACM SIGPLAN OOPS Messenger 4.4 (1993): 2-27.
+  http://www.pipeline.com/~hbaker1/ObjectIdentity.html[source^]
+
+* [[[Baker-Min]]] Baker, Henry G. "Minimizing reference count updating with deferred and
+  anchored pointers for functional data structures." ACM Sigplan Notices 29.9 (1994): 38-43.
+  http://www.pipeline.com/~hbaker1/LRefCounts.html[source^]
+
+* [[[Baker-Once]]] Baker, Henry G. "'Use-once' variables and linear objects: storage management,
+  reflection and multi-threading." ACM Sigplan Notices 30.1 (1995): 45-52.
+  http://www.pipeline.com/~hbaker1/Use1Var.html[source^]
+
+* [[[Balzer-Dataless]]] Balzer, Robert M. "Dataless programming."
+  Proceedings of the November 14-16, 1967, Fall Joint Computer Conference. ACM, 1967.
+  {scholar}balzer&title=dataless+programming[search^]
+
+* [[[Barth]]] Barth, Jeffrey M. "Shifting garbage collection overhead to compile time."
+  Communications of the ACM 20.7 (1977): 513-518.
+  {scholar}barth&title=shifting+garbage+collection+overhead+to+compile+time[search^]
+
+* [[[Bayer-Binary]]] Bayer, Rudolf. "Binary B-trees for virtual memory."
+  Proceedings of the 1971 ACM SIGFIDET (now SIGMOD) Workshop on Data Description, Access and Control. ACM, 1971.
+  {scholar}bayer&title=binary+b+trees+for+virtual+memory[search^]
+
+* [[[Bayer-Indices]]] Bayer, Rudolf, and Edward M. McCreight. "Organization and Maintenance of Large Ordered Indices."
+  Acta Informatica 1 (1972): 173-189.
+  {scholar}bayer&title=organization+and+maintenance[search^]
+
+* [[[Bayer-Prefix]]] Bayer, Rudolf, and Karl Unterauer. "Prefix B-trees."
+  ACM Transactions on Database Systems (TODS) 2.1 (1977): 11-26.
+  {scholar}bayer&title=prefix+b+trees[search^]
+
+* [[[Bellin]]] Bellin, Gianluigi, and Philip J. Scott. "On the π-calculus and linear logic."
+  Theoretical Computer Science 135.1 (1994): 11-65.
+  {scholar}bellin&title=on+the+π+calculus+and+linear+logic[search^]
+
+* [[[Bernstein]]] Bernstein, Philip A., and Nathan Goodman. "Multiversion concurrency control—theory and algorithms."
+  ACM Transactions on Database Systems (TODS) 8.4 (1983): 465-483.
+  {scholar}bernstein&title=multiversion+concurrency+control[search^]
+
+* [[[Bertoni-Ref]]] Bertoni, Guido, Joan Daemen, Michaël Peeters, and G. V. Assche. "The keccak reference."
+  Submission to NIST (Round 3) 13 (2011): 14-15.
+  https://keccak.team/files/Keccak-reference-3.0.pdf[source^]
+
+* [[[Bertoni-Keccak]]] Bertoni, Guido, et al. "Keccak." Annual International Conference on the Theory and
+  Applications of Cryptographic Techniques. Springer, Berlin, Heidelberg, 2013.
+  https://keccak.team/keccak.html[source^]
+
+* [[[Bertoni-Sakura]]] Bertoni, Guido, et al. "Sakura: a flexible coding for tree hashing."
+  International Conference on Applied Cryptography and Network Security. Springer, Cham, 2014.
+  https://keccak.team/2013/sakura.html[source^]
+
+* [[[Bertoni-Farfalle]]] Bertoni, Guido, et al. "Farfalle: parallel permutation-based cryptography."
+  IACR Transactions on Symmetric Cryptology (2017): 1-38.
+  https://keccak.team/farfalle.html[source^]
+
+* [[[Bird]]] Bird, Richard S. "Lectures on constructive functional programming."
+  Constructive Methods in Computing Science. Springer, Berlin, Heidelberg, 1989. 151-217.
+  {scholar}bird&title=lectures+on+constructive+functional+programming[search^]
+
+* [[[Bloss]]] Bloss, Adrienne. "Update analysis and the efficient implementation of functional aggregates."
+  Proceedings of the Fourth International Conference on
+  Functional Programming Languages and Computer Architecture. ACM, 1989.
+  {scholar}bloss&title=update+analysis+and+the+efficient+implementation+of+functional+aggregates[search^]
+
+* [[[Bonwick-Slab]]] Bonwick, Jeff. "The slab allocator: An object-caching kernel memory allocator."
+  USENIX summer. Vol. 16. 1994.
+  {scholar}bonwick&title=the+slab+allocator[search^]
+
+* [[[Bonwick-ZFS]]] Bonwick, Jeff, et al. "The zettabyte file system."
+  Proc. of the 2nd Usenix Conference on File and Storage Technologies. Vol. 215. 2003.
+  {scholar}bonwick&title=the+zettabyte+file+system[search^]
+
+* [[[Boyland]]] Boyland, John. "Checking interference with fractional permissions."
+  International Static Analysis Symposium. Springer, Berlin, Heidelberg, 2003.
+  {scholar}boyland&title=checking+interference+with+fractional+permissions[search^]
+
+* [[[Brent]]] Brent, Richard P., and Paul Zimmermann. Modern computer arithmetic.
+  Vol. 18. Cambridge University Press, 2010.
+  https://www.google.com/books/edition/Modern_Computer_Arithmetic/-8wuH5AwbwMC[search^]
+
+* [[[Brodal]]] Brodal, Gerth Stølting, et al. "Fully persistent B-trees."
+  Proceedings of the twenty-third annual ACM-SIAM symposium on Discrete algorithms.
+  Society for Industrial and Applied Mathematics, 2012.
+  {scholar}brodal&title=fully+persistent+b+trees[search^]
+
+* [[[Brooks-Music]]] Brooks, Frederick P., et al. "An experiment in musical composition."
+  IRE Transactions on Electronic Computers 3 (1957): 175-182.
+  {scholar}brooks&title=an+experiment+in+musical+composition[search^]
+
+* [[[Brooks-ManMonth]]] Brooks, Frederick P. The Mythical Man-Month: Essays on Software Engineering,
+  Addison-Wesley, Reading, MA, 1975.
+  https://www.google.com/books/edition/The_Mythical_Man_Month/Yq35BY5Fk3gC[search^]
+
+* [[[Brooks-Silver]]] Brooks, Frederick P. "No Silver Bullet: Essence and Accidents of Software Engineering."
+  IEEE Computer, Apr. 1987, Vol. 20, No. 4, pp. 10-19.
+  {scholar}brooks&title=no+silver+bullet[search^]
+
+* [[[Brooks-Compiler]]] Brooks, Rodney A., Richard P. Gabriel, and Guy L. Steele Jr.
+  "An optimizing compiler for lexically scoped LISP." ACM SIGPLAN Notices. Vol. 17. No. 6. ACM, 1982.
+  {scholar}brooks&title=an+optimizing+compiler+for+lexically+scoped+lisp[search^]
+
+* [[[Burger]]] Burger, Robert G., and R. Kent Dybvig. "Printing floating-point numbers quickly and accurately."
+  ACM SIGPLAN Notices. Vol. 31. No. 5. ACM, 1996.
+  {scholar}burger&title=printing+floating+point+numbers+quickly+and+accurately[search^]
+
+[[bib-c]]
+* [[[Cann-Parallel]]] Cann, David, and Rodney Oldehoeft.
+  Reference count and copy elimination for parallel applicative computing.
+  Colorado State University, Fort Collins. Technical Report CS-88-129, 1988.
+  {scholar}cann&title=reference+count+and+copy+elimination+for+parallel+applicative+computing[search^]
+
+* [[[Cann-Diss]]] Cann, David C. Compilation Techniques for High-performance Applicative Computation.
+  Colorado State University, Fort Collins, 1989. Doctoral Thesis.
+  {scholar}cann&title=compilation+techniques+for+high+performance+applicative+computation[search^]
+
+* [[[Cantrill]]] Cantrill, Bryan, and Jeff Bonwick. "Real-world concurrency." Commun. ACM 51.11 (2008): 34-39.
+  {scholar}cantrill&title=real+world+concurrency[search^]
+
+* [[[Cantrill-DTrace]]] Cantrill, Bryan, Michael W. Shapiro, and Adam H. Leventhal.
+  "Dynamic Instrumentation of Production Systems." USENIX Annual Technical Conference, General Track. 2004.
+  {scholar}cantrill&title=dynamic+instrumentation+of+production+systems[search^]
+
+* [[[Ceri-Datalog]]] Ceri, Stefano, Georg Gottlob, and Letizia Tanca.
+  "What you always wanted to know about Datalog (and never dared to ask)."
+  IEEE transactions on knowledge and data engineering 1.1 (1989): 146-166.
+  {scholar}ceri&title=what+you+always+wanted+to+know+about+datalog[search^]
+
+* [[[Chirimar]]] Chirimar, Jawahar, Carl A. Gunter, and Jon G. Riecke.
+  "Reference counting as a computational interpretation of linear logic."
+  Journal of Functional Programming 6.2 (1996): 195-244.
+  {scholar}chirimar&title=reference+counting+as+a+computational+interpretation[search^]
+
+* [[[Chuang]]] Chuang, Tyng-Ruey. "Fully persistent arrays for efficient incremental updates and voluminous reads."
+  European Symposium on Programming. Springer, Berlin, Heidelberg, 1992.
+  {scholar}chuang&title=fully+persistent+arrays+for+efficient+incremental+updates[search^]
+
+* [[[Clarke]]] Clarke, David G., John M. Potter, and James Noble. "Ownership Types for Flexible Alias Protection."
+  ACM SIGPLAN Notices. Vol. 33. No. 10. ACM, 1998.
+  {scholar}clarke&title=ownership+types+for+flexible+alias+protection[search^]
+
+* [[[Clebsch]]] Clebsch, Sylvan, et al. "Ownership and reference counting based garbage collection
+  in the actor world." (2015).
+  {scholar}clebsch&title=ownership+and+reference+counting+based+garbage+collection[search^]
+
+* [[[Clinger-Continue]]] Clinger, Will, Anne Hartheimer, and Eric Ost. "Implementation Strategies for Continuations."
+  Proceedings of the 1988 ACM conference on LISP and functional programming. ACM, 1988.
+  {scholar}clinger&title=implementation+strategies+for+continuations[search^]
+
+* [[[Clinger]]] Clinger, William D. How to read floating point numbers accurately. Vol. 25. No. 6. ACM, 1990.
+  {scholar}clinger&title=how+to+read+floating+point+numbers+accurately[search^]
+
+* [[[Collins]]] Collins, George E. "A Method for Overlapping and Erasure of Lists."
+  Communications of the ACM 3.12 (1960): 655-657.
+  {scholar}collins&title=a+method+for+overlapping+and+erasure+of+lists[search^]
+
+* [[[Comer]]] Comer, Douglas. "Ubiquitous B-tree." ACM Computing Surveys (CSUR) 11.2 (1979): 121-137.
+  {scholar}comer&title=ubiquitous+b+tree[search^]
+
+* [[[Corbato-Systems]]] Corbató, Fernando J. "On Building Systems That Will Fail."
+  1990 ACM Turing Award Lecture, Communications of the ACM 34.9 (1991): 72-82.
+  {scholar}corbato&title=on+building+systems+that+will+fail[search^]
+
+* [[[Cormen]]] Cormen, Thomas H., Charles E. Leiserson, Ronald L. Rivest, and Clifford Stein.
+  Introduction to algorithms. MIT press, 2009.
+  https://www.google.com/books/edition/Introduction_to_Algorithms/aefUBQAAQBAJ[search^]
+
+* [[[Culik]]] Culik II, Karel, Th Ottmann, and Derick Wood. "Dense multiway trees."
+  ACM Transactions on Database Systems (TODS) 6.3 (1981): 486-512.
+  {scholar}culik&title=dense+multiway+trees[search^]
+
+[[bib-d]]
+* [[[Daemen]]] Daemen, Joan, et al. "Xoodoo cookbook." IACR Cryptology ePrint Archive 2018 (2018): 767.
+  {scholar}daemen&title=xoodoo+cookbook[search^]
+
+* [[[Dahl-SIMULA]]] Dahl, Ole-Johan, and Kristen Nygaard. "SIMULA: an ALGOL-based simulation language."
+  Communications of the ACM 9.9 (1966): 671-678.
+  {scholar}dahl&title=simula+an+algol+based+simulation+language[search^]
+
+* [[[Dahl-Dijkstra-Hoare]]] Dahl, Ole-Johan, Edsger Wybe Dijkstra, and Charles Antony Richard Hoare.
+  Structured programming. Academic Press Ltd., 1972.
+  {scholar}dahl&title=structured+programming[search^]
+
+* [[[Denning-Working]]] Denning, Peter J. "The working set model for program behavior."
+  Proceedings of the first ACM symposium on Operating System Principles. ACM, 1967.
+  {scholar}denning&title=the+working+set+model+for+program+behavior[search^]
+
+* [[[Denning-Virtual]]] Denning, Peter J. "Virtual memory." ACM Computing Surveys (CSUR) 2.3 (1970): 153-189.
+  {scholar}denning&title=virtual+memory[search^]
+
+* [[[Dennis-Flow]]] Dennis, Jack B. "First version of a data flow procedure language."
+  Programming Symposium. Springer, Berlin, Heidelberg, 1974.
+  {scholar}denning&title=first+version+of+a+data+flow+procedure+language[search^]
+
+* [[[Dijkstra-Coop]]] Dijkstra, Edsger W. "Cooperating sequential processes."
+  The origin of concurrent programming. Springer, New York, NY, 1968. 65-138.
+  {scholar}dijkstra&title=cooperating+sequential+processes[search^]
+
+* [[[Dijkstra-Humble]]] Dijkstra, Edsger W. "The humble programmer." Commun. ACM 15.10 (1972): 859-866.
+  {scholar}dijkstra&title=the+humble+programmer[search^]
+
+* [[[Domani]]] Domani, Tamar, et al. "Implementing an on-the-fly garbage collector for Java."
+  ACM SIGPLAN Notices 36.1 (2001): 155-166.
+  {scholar}domani&title=implementing+an+on+the+fly+garbage+collector+for+java[search^]
+
+* [[[Downey-Float]]] Downey, Allen B. "Generating Pseudo-random Floating-Point Values." (2007).
+  {scholar}downey&title=generating+pseudo+random+floating+point+values[search^]
+
+* [[[Driscoll-Diss]]] Driscoll, James R. "The Diameter of Permutation Groups - Fully Persistent Search Trees."
+  Carnegie-Mellon University, Doctoral thesis, 1986.
+  {scholar}driscoll&title=the+diameter+of+permutation+groups+fully+persistent+search+trees[search^]
+
+* [[[Driscoll-Persistent]]] Driscoll, James R., Neil Sarnak, Daniel D. Sleator, and Robert E. Tarjan.
+  "Making data structures persistent." Journal of Computer and System Sciences 38, no. 1 (1989): 86-124.
+  {scholar}driscoll&title=making+data+structures+persistent[search^]
+
+* [[[Driscoll-Cat]]] Driscoll, James R., Daniel DK Sleator, and Robert E. Tarjan.
+  "Fully persistent lists with catenation." Journal of the ACM (JACM) 41.5 (1994): 943-959.
+  {scholar}driscoll&title=fully+persistent+lists+with+catenation[search^]
+
+[[bib-f]]
+* [[[Fagin]]] Fagin, Ronald, et al. "Extendible Hashing: A Fast Access Method for Dynamic Files."
+  ACM Transactions on Database Systems (TODS) 4.3 (1979): 315-344.
+  {scholar}fagin&title=extendible+hashing+a+fast+access+method+for+dynamic+files[search^]
+
+* [[[Fahndrich]]] Fahndrich, Manuel, and Robert DeLine.
+  "Adoption and focus: Practical linear types for imperative programming." ACM SIGPLAN Notices 37.5 (2002): 13-24.
+  {scholar}fahndrich&title=adoption+and+focus+practical+linear+types[search^]
+
+* [[[Feeley-Epsilon]]] Feeley, Marc, and Guy Lapalme.
+  "Closure generation based on viewing lambda as epsilon plus compile." Computer Languages 17.4 (1992): 251-267.
+  {scholar}feeley&title=closure+generation+based+on+viewing+lambda+as+epsilon[search^]
+
+* [[[Feynman]]] Feynman, Richard P. "Quantum mechanical computers." Foundations of physics 16.6 (1986): 507-531.
+  {scholar}feynman&title=quantum+mechanical+computers[search^]
+
+* [[[SHA3]]] "FIPS 202, SHA-3 standard: Permutation-based hash and extendable-output functions,"
+  Aug 2015, NIST Publication, US Dept. of Commerce.
+  https://www.nist.gov/itl/current-fips[source^]
+
+* [[[Fitzgerald]]] Fitzgerald, Steven M., and Rodney R. Oldehoeft.
+  "Update-in-place analysis for true multidimensional arrays." Scientific Programming 5.2 (1996): 147-160.
+  {scholar}fitzgerald&title=update+in+place+analysis+for+true+multidimensional+arrays[search^]
+
+* [[[Flajolet]]] Flajolet, Philippe, and Robert Sedgewick. "Digital search trees revisited."
+  SIAM Journal on Computing 15.3 (1986): 748-767.
+  {scholar}flajolet&title=digital+search+trees+revisited[search^]
+
+* [[[Floyd-Paradigms]]] Floyd, Robert W. "The paradigms of programming."
+  1978 ACM Turing Award Lecture, Communications of the ACM 22.8 (1979): 455-460.
+
+* [[[Fredkin]]] Fredkin, Edward. "Trie memory." Communications of the ACM 3.9 (1960): 490-499.
+  {scholar}fredkin&title=trie+memory[search^]
+
+* [[[Friedman]]] Friedman, Daniel P., and David S. Wise. "Functional combination."
+  Computer Languages 3.1 (1978): 31-35.
+  {scholar}friedman&title=functional+compbination[search^]
+
+* [[[Friedman-Applicative]]] Friedman, Daniel P., and David S. Wise.
+  "Aspects of applicative programming for parallel processing." IEEE Transactions on Computers 4 (1978): 289-296.
+  {scholar}friedman&title=aspects+of+applicative+programming+for+parallel+processing[search^]
+
+[[bib-g]]
+* [[[Gaudiot-Sisal]]] Gaudiot, J-L., Wim Bohm, Walid Najjar, Tom DeBoni, John Feo, and Patrick Miller.
+  "The Sisal model of functional programming and its implementation."
+  Proceedings of IEEE International Symposium on Parallel Algorithms Architecture Synthesis. IEEE, 1997.
+  {scholar}gaudiot&title=the+sisal+model+of+functional+programming[search^]
+
+* [[[Gaudiot-Real]]] Gaudiot, Jean-Luc, Tom DeBoni, John Feo, Wim Böhm, Walid Najjar, and Patrick Miller.
+  "The Sisal project: Real world functional programming."
+  In Compiler optimizations for scalable parallel systems, pp. 45-72. Springer, Berlin, Heidelberg, 2001.
+  {scholar}gaudiot&title=the+sisal+project+real+world+functional+programming[search^]
+
+* [[[Gay-Rounding]]] Gay, David M. "Correctly rounded binary-decimal and decimal-binary conversions."
+  Numerical Analysis Manuscript 90-10 (1990).
+  {scholar}gay&title=correctly+rounded+binary+decimal+and+decimal+binary+conversion[search^]
+
+* [[[Gelernter]]] Gelernter, H., J. R. Hansen, and C. L. Gerberich. "A FORTRAN-compiled list-processing language."
+  Journal of the ACM (JACM) 7.2 (1960): 87-101.
+  {scholar}gelernter&title=a+fortran+compiled+list+processing+language[search^]
+
+* [[[Gharachorloo]]] Gharachorloo, Kourosh, Vivek Sarkar, and John L. Hennessy.
+  "A simple and efficient implementation approach for single assignment languages."
+  Proceedings of the 1988 ACM conference on LISP and functional programming. ACM, 1988.
+  {scholar}gharachorloo&title=a+simple+and+efficient+implementation+approach+for+single+assignment+languages[search^]
+
+* [[[Girard]]] Girard, Jean-Yves. "Linear logic." Theoretical computer science 50.1 (1987): 1-101.
+  {scholar}girard&title=linear+logic[search^]
+
+* [[[Goldberg-Smalltalk]]] Goldberg, Adele, and Alan Kay. Smalltalk-72: Instruction Manual.
+  Palo Alto: Xerox Corporation, 1976.
+  {scholar}goldberg&title=smalltalk+72+instruction+manual[search^]
+
+* [[[Goldberg]]] Goldberg, Benjamin.
+  "Generational reference counting: A reduced-communication distributed storage reclamation scheme."
+  ACM SIGPLAN Notices. Vol. 24. No. 7. ACM, 1989.
+  {scholar}goldberg&title=generational+reference+counting[search^]
+
+* [[[Gopinath]]] Gopinath, K., and John L. Hennessy. "Copy elimination in functional languages."
+  Proceedings of the 16th ACM SIGPLAN-SIGACT symposium on Principles of programming languages. ACM, 1989.
+  {scholar}gopinath&title=copy+elimination+in+functional+languages[search^]
+
+* [[[Guibas]]] Guibas, Leo J., and Robert Sedgewick. "A dichromatic framework for balanced trees."
+  19th Annual Symposium on Foundations of Computer Science (sfcs 1978). IEEE, 1978.
+  {scholar}guibas&title=a+dichromatic+framework+for+balanced+trees[search^]
+
+* [[[Gupta]]] Gupta, Anoop, et al. "Comparative evaluation of latency reducing and tolerating techniques."
+  ACM SIGARCH Computer Architecture News 19.3 (1991): 254-263.
+  {scholar}gupta&title=comparative+evaluation+of+latency+reducing+and+tolerating+techniques[search^]
+
+* [[[Guzman]]] Guzman, Juan Carlos. "On expressing the mutation of state in a functional programming language."
+  Yale University, Doctoral thesis, Adviser Paul Hudak, 1993.
+  {scholar}guzman&title=on+expressing+the+mutation+of+state+in+a+functional+programming+language[search^]
+
+[[bib-h]]
+* [[[Held]]] Held, James P., and John V. Carlis. "The applicative data model."
+  Information sciences 49.1-3 (1989): 249-283.
+  {scholar}held&title=the+applicative+data+model[search^]
+
+* [[[Hewitt]]] Hewitt, Carl, and Henry Baker. "Laws for Communicating Parallel Processes."
+  MIT Artificial Intelligence Lab, AI Working Paper 134A, 1977.
+
+* [[[Hoare-Quicksort]]] Hoare, Charles AR. "Quicksort." The Computer Journal 5.1 (1962): 10-16.
+  {scholar}hoare&title=quicksort[search^]
+
+* [[[Hoare-Axiomatic]]] Hoare, Charles Antony Richard. "An axiomatic basis for computer programming."
+  Communications of the ACM 12.10 (1969): 576-580.
+  {scholar}hoare&title=an+axiomatic+basis+for+computer+programming[search^]
+
+* [[[Hoare-Lang]]] Hoare, Charles A. Hints on programming language design. No. STAN-CS-73-403.
+  Stanford University, CA, Dept of Computer Science, 1973.
+  {scholar}hoare&title=hints+on+language+design[search^]
+
+* [[[Hoare-CSP]]] Hoare, Charles Antony Richard. "Communicating sequential processes."
+  The origin of concurrent programming. Springer, New York, NY, 1978. 413-443.
+  {scholar}hoare&title=communicating+sequential+processes[search^]
+
+* [[[Hoare-Emperor]]] Hoare, Charles Antony Richard. "The emperor's old clothes."
+  Communications of the ACM 24.2 (1981): 75-83.
+  {scholar}hoare&title=the+emperors+old+clothes[search^]
+
+* [[[Hofmann]]] Hofmann, Martin. "A type system for bounded space and functional in-place update."
+  European Symposium on Programming. Springer, Berlin, Heidelberg, 2000.
+  {scholar}hofmann&title=a+type+system+for+bounded+space+and+functional+in+place+update[search^]
+
+* [[[Holloway-Survey]]] Holloway, C. Michael. "A survey of functional programming language principles."
+  NASA Langley Research Center, Hampton VA, Technical Memorandum 89019, 1986.
+  {scholar}holloway&title=a+survey+of+functional+programming+language+principles[search^]
+
+* [[[Hudak-Dist]]] Hudak, Paul, and Robert M. Keller.
+  "Garbage collection and task deletion in distributed applicative processing systems."
+  Proceedings of the 1982 ACM symposium on LISP and functional programming. ACM, 1982.
+  {scholar}hudak&title=garbage+collection+and+task+deletion+in+distributed+applicative+processing[search^]
+
+* [[[Hudak-Problem]]] Hudak, Paul, and Adrienne Bloss.
+  "The aggregate update problem in functional programming systems."
+  Proceedings of the 12th ACM SIGACT-SIGPLAN symposium on Principles of programming languages. ACM, 1985.
+  {scholar}hudak&title=the+aggregate+update+problem+in+functional+programming[search^]
+
+* [[[Hudak-RC]]] Hudak, Paul. "A semantic model of reference counting and its abstraction."
+  Conference Record of the 1986 ACM Symposium on LISP and Functional Programming. Vol. 348. 1986.
+  {scholar}hudak&title=a+semantic+model+of+reference+counting+and+its+abstraction[search^]
+
+* [[[Hudak-Concept]]] Hudak, Paul. "Conception, evolution, and application of functional programming languages."
+  ACM Computing Surveys (CSUR) 21.3 (1989): 359-411.
+  {scholar}hudak&title=conception+evolution+and+application+of+functional+programming+languages[search^]
+
+* [[[Hudak-FRP]]] Hudak, Paul, et al. "Arrows, robots, and functional reactive programming."
+  International School on Advanced Functional Programming. Springer, Berlin, Heidelberg, 2002.
+  {scholar}hudak&title=arrows+robots+and+functional+reactive+programming[search^]
+
+* [[[Huddleston]]] Huddleston, Scott, and Kurt Mehlhorn. "Robust balancing in B-trees."
+  Theoretical Computer Science. Springer, Berlin, Heidelberg, 1981. 234-244.
+  {scholar}huddleston&title=robust+balancing+in+b+trees[search^]
+
+* [[[Huddleston-WeakB]]] Huddleston, Scott, and Kurt Mehlhorn. "A new data structure for representing sorted lists."
+  Acta informatica 17.2 (1982): 157-184.
+  {scholar}huddleston&title=a+new+data+structure+for+representing+sorted+lists[search^]
+
+* [[[Hughes-GC]]] Hughes, John. "A distributed garbage collection algorithm."
+  Conference on Functional Programming Languages and Computer Architecture. Springer, Berlin, Heidelberg, 1985.
+  {scholar}hughes&title=a+distributed+garbage+collection+algorithm[search^]
+
+* [[[Hughes-Matters]]] Hughes, John. "Why functional programming matters." The computer journal 32.2 (1989): 98-107.
+  {scholar}hughes&title=why+functional+programming+matters[search^]
+
+[[bib-i]]
+* [[[Ingalls]]] Ingalls, Dan, et al.
+  "Back to the future: the story of Squeak, a practical Smalltalk written in itself."
+  ACM SIGPLAN Notices. Vol. 32. No. 10. ACM, 1997.
+  {scholar}ingalls&title=back+to+the+future+the+story+of+squeak+a+practical+smalltalk[search^]
+
+[[bib-k]]
+* [[[Kaplan-Diss]]] Kaplan, Haim. "Purely functional lists."
+  Prineton University, Doctoral thesis, Adviser Bob Tarjan, 1997.
+  {scholar}kaplan&title=purely+functional+lists[search^]
+
+* [[[Kaplan-Survey]]] Kaplan, Haim. "Persistent data structures."
+  Handbook on Data Structures and Applications, CRC Press, Editors Sartaj Sahni and Dinesh Mehta, 2001.
+  https://www.google.com/books/edition/Handbook_of_Data_Structures_and_Applicat/fQVZy1zcpJkC[search^]
+
+* [[[Kay-ForChildren]]] Kay, Alan C. "A personal computer for children of all ages."
+  Proceedings of the ACM annual conference-Volume 1. ACM, 1972.
+  {scholar}kay&title=a+personal+computer+for+children+of+all+ages[search^]
+
+* [[[Kay-Personal]]] Kay, Alan. "Personal Computing",
+  Meeting on 20 Years of Computing Science, Instituto di Elaborazione della Informazione, Pisa, Italy. 1975.
+  https://mprove.de/visionreality/media/kay.html[source^]
+
+* [[[Kay-Media]]] Kay, Alan, and Adele Goldberg. "Personal dynamic media." Computer 3 (1977): 31-41.
+  {scholar}kay&title=personal+dynamic+media[search^]
+
+* [[[Kay-History]]] Kay, Alan C. "The early history of Smalltalk." History of Programming Languages II. ACM, 1996.
+  {scholar}kay&title=the+early+history+of+smalltalk[search^]
+
+* [[[Kay-OO]]] Kay, Alan. "Meaning of Object-Oriented Programming."
+  Private email exchange with Stefan Ram, 2003.
+  http://www.purl.org/stefan_ram/pub/doc_kay_oop_en[source^]
+
+* [[[Keller]]] Keller, Robert M., and Gary Lindstrom.
+  "Approaching Distributed Database Implementations Through Functional Programming Concepts."
+  Proceedings of the Fifth International Conference on Distributed Computing Systems (May 1985): 192-200.
+  {scholar}keller&title=approaching+distributed+database+implementations+through+functional+programming[search^]
+
+* [[[Kleinberg]]] Kleinberg, Jon, and Eva Tardos. Algorithm design. Pearson Education India, 2006.
+  {scholar}kleinberg&title=algorithm+design[search^]
+
+[[bib-l]]
+* [[[Lamport-Time]]] Lamport, Leslie. "Time, clocks, and the ordering of events in a distributed system."
+  Communications of the ACM 21.7 (1978): 558-565.
+  {scholar}lamport&title=time+clocks+and+the+ordering+of+events[search^]
+
+* [[[Lamport-Write]]] Lamport, Leslie. "How to write a proof."
+  The American mathematical monthly 102.7 (1995): 600-608.
+  {scholar}lamport&title=how+to+write+a+proof[search^]
+
+* [[[Landauer]]] Landauer, Walter I. "The balanced tree and its utilization in information retrieval."
+  IEEE Transactions on Electronic computers 6 (1963): 863-871.
+  {scholar}landauer&title=the+balanced+tree+and+its+utilization+in+information+retrieval[search^]
+
+* [[[Landin-Eval]]] Landin, Peter J. "The mechanical evaluation of expressions."
+  The Computer Journal 6.4 (1964): 308-320.
+  {scholar}landin&title=the+mechanical+evaluation+of+expressions[search^]
+
+* [[[Landin-Next]]] Landin, Peter J. "The next 700 programming languages."
+  Communications of the ACM 9.3 (1966): 157-166.
+  {scholar}landin&title=the+next+700+programming+languages[search^]
+
+* [[[Larson]]] Larson, Per-Åke. "Linear hashing with partial expansions."
+  Proceedings of the Sixth International Conference on Very Large Data Bases - Volume 6. VLDB Endowment, 1980.
+  {scholar}larson&title=linear+hashing+with+partial+expansions[search^]
+
+* [[[Liljenzin]]] Liljenzin, Olle. "Confluently Persistent Sets and Maps." arXiv preprint arXiv:1301.3388 (2013).
+  {scholar}liljenzin&title=confluently+persistent+sets+and+maps[search^]
+
+* [[[Liskov-Abstract]]] Liskov, Barbara, and Stephen Zilles. "Programming with abstract data types."
+  ACM Sigplan Notices. Vol. 9. No. 4. ACM, 1974.
+  {scholar}liskov&title=programming+with+abstract+data+types[search^]
+
+* [[[Litwin]]] Litwin, Witold. "Trie hashing."
+  Proceedings of the 1981 ACM SIGMOD International Conference on Management of Data. ACM, 1981.
+  {scholar}litwin&title=trie+hashing[search^]
+
+* [[[Lomet]]] Lomet, David, and Betty Salzberg. Access methods for multiversion data. Vol. 18. No. 2. ACM, 1989.
+  {scholar}lomet&title=access+methods+for+multiversion+data[search^]
+
+* [[[Lorange]]] L'orange, Jean Niklas. Improving RRB-Tree Performance through Transience.
+  Norwegian University of Science and Technology, Master's thesis, 2014.
+  {scholar}lorange&title=improving+rrb+tree+performance+through+transience[search^]
+
+[[bib-m]]
+* [[[MacLennan-Values]]] MacLennan, Bruce J. Values and Objects in Programming Languages.
+  Technical Report NPS52-81-006. Naval Postgraduate School, Monterey CA, 1981.
+  {scholar}maclennan&title=values+and+objects+in+programming+languages[search^]
+
+* [[[MacLennan-View]]] MacLennan, Bruce J. A View of Object-Oriented Programming.
+  Technical Report NPS52-83-001. Naval Postgraduate School, Monterey CA, 1983.
+  {scholar}maclennan&title=a+view+of+object+oriented+programming[search^]
+
+* [[[Maier]]] Maier, David, and Sharon C. Salveter. "Hysterical B-trees."
+  Information Processing Letters 12.4 (1981): 199-202.
+  {scholar}maier&title=hysterical+b+trees[search^]
+
+* [[[Marsaglia-Normal]]] Marsaglia, George, and Thomas A. Bray.
+  "A convenient method for generating normal variables." SIAM review 6.3 (1964): 260-264.
+  {scholar}marsaglia&title=a+convenient+method+for+generating+normal+variables[search^]
+
+* [[[Marsaglia-RNG]]] Marsaglia, George. "Xorshift RNGs." Journal of Statistical Software 8.14 (2003): 1-6.
+  {scholar}marsaglia&title=xorshift+rngs[search^]
+
+* [[[Matsakis]]] Matsakis, Nicholas D. "In Rust, ordinary vectors are values." Blog, 1 Feb. 2018,
+  https://www.smallcultfollowing.com/babysteps/blog/2018/02/01/in-rust-ordinary-vectors-are-values/[smallcultfollowing.com^]
+
+* [[[McCarthy-Lisp]]] McCarthy, John.
+  "Recursive functions of symbolic expressions and their computation by machine." 1959.
+  {scholar}mccarthy&title=recursive+functions+of+symbolic+expressions[search^]
+
+* [[[McCarthy-Linking]]] McCarthy, John, Fernando J. Corbató, and Marjorie M. Daggett.
+  "The Linking Segment Subprogram Language and Linking Loader." Communications of the ACM 6.7 (July 1963): 391.
+  {scholar}mccarthy&title=the+linking+segment+subprogram+language+and+linking+loader[search^]
+
+* [[[McCarthy-History]]] McCarthy, John. "History of LISP." ACM Sigplan Notices 13.8 (1978): 217-223.
+  {scholar}mccarthy&title=history+of+lisp[search^]
+
+* [[[Meijer]]] Meijer, Erik, Maarten Fokkinga, and Ross Paterson.
+  "Functional programming with bananas, lenses, envelopes and barbed wire."
+  Conference on Functional Programming Languages and Computer Architecture. Springer, Berlin, Heidelberg, 1991.
+  {scholar}meijer&title=functional+programming+with+bananas+lenses+envelopes+and+barbed+wire[search^]
+
+* [[[Milner]]] Milner, Robin. "How ML evolved" ML/Hope/LCF Newsletter, vol. 1, no. 1, pp. 25-34, 1982.
+  https://www.research.ed.ac.uk/portal/en/publications/how-ml-evlolved(86317c55-fb0d-4103-aa78-b5a97e93c1c6).html[source^]
+
+* [[[Moore]]] Moore, Gordon E. "Cramming more components onto integrated circuits."
+  Proceedings of the IEEE 86.1 (1998): 82-85.
+  {scholar}moore&title=cramming+more+components+onto+integrated+circuits[search^]
+
+* [[[Moseley]]] Moseley, Ben, and Peter Marks. "Out of the tar pit." Software Practice Advancement (SPA) 2006.
+  {scholar}moseley&title=out+of+the+tar+pit[search^]
+
+* [[[Myers]]] Myers, Eugene W. "Efficient applicative data types." POPL. Vol. 84. 1984.
+  {scholar}myers&title=efficient+applicative+data+types[search^]
+
+[[bib-n]]
+* [[[Newell-Process]]] Newell, Allen, and Herbert Simon.
+  "The logic theory machine - A complex information processing system."
+  IRE Transactions on information theory 2.3 (1956): 61-79.
+  {scholar}newell&title=the+logic+theory+machine+a+complex+information+processing+system[search^]
+
+* [[[Newell-Machine]]] Newell, Allen, John Clark Shaw, and Herbert A. Simon.
+  "Empirical explorations of the logic theory machine: a case study in heuristic."
+  Western Joint Computer Conference: Techniques for Reliability. ACM, 1957.
+  {scholar}newell&title=empirical+explorations+of+the+logic+theory+machine[search^]
+
+* [[[Newell-Solving]]] Newell, Allen, John C. Shaw, and Herbert A. Simon.
+  "Report on a general problem solving program." IFIP congress. Vol. 256. 1959.
+  {scholar}newell&title=report+on+a+general+problem+solving+program[search^]
+
+* [[[Nicklas]]] Nicklas, B. M., and Gunter Schlageter.
+  "Index structuring in inverted data bases by TRIES." The Computer Journal 20.4 (1977): 321-324.
+  {scholar}nicklas&title=index+structuring+in+inverted+data+bases+by+tries[search^]
+
+* [[[Nikhil]]] Nikhil, Rishiyur S., and Keshav K. Pingali. "I-structures: Data structures for parallel computing."
+  ACM Transactions on Programming Languages and Systems (TOPLAS) 11.4 (1989): 598-632.
+  {scholar}nikhil&title=data+structures+for+parallel+computing[search^]
+
+* [[[Noble]]] Noble, James, Jan Vitek, and John Potter. "Flexible alias protection."
+  European Conference on Object-Oriented Programming. Springer, Berlin, Heidelberg, 1998.
+  {scholar}noble&title=flexible+alias+protection[search^]
+
+[[bib-o]]
+* [[[Odersky-Destructive]]] Odersky, Martin. "How to make destructive updates less destructive." POPL. Vol. 91. 1991.
+  {scholar}odersky&title=how+to+make+destructive+updates+less+destructive[search^]
+
+* [[[Odersky-Observers]]] Odersky, Martin. "Observers for linear types."
+  European Symposium on Programming. Springer, Berlin, Heidelberg, 1992.
+  {scholar}odersky&title=observers+for+linear+types[search^]
+
+* [[[Okasaki]]] Okasaki, Chris. Purely functional data structures. Cambridge University Press, 1999.
+  {scholar}okasaki&title=purely+functional+data+structures[search^]
+
+* [[[Oneill-Thesis]]] O'Neill, Melissa E.
+  A data structure for more efficient runtime support of truly functional arrays.
+  Simon Fraser University, British Columbia, Canada. Master's thesis, 1994.
+  {scholar}oneill&title=a+data+structure+for+more+efficient+runtime+support+of+truly+functional+arrays[search^]
+
+* [[[ONeill]]] O'Neill, Melissa E., and F. Warren Burton. "A new method for functional arrays."
+  Journal of functional programming 7.5 (1997): 487-513.
+  {scholar}oneill&title=a+new+method+for+functional+arrays[search^]
+
+* [[[Ongaro]]] Ongaro, Diego, and John Ousterhout. "In search of an understandable consensus algorithm."
+  Proceedings of the 2014 USENIX conference on USENIX Annual Technical Conference. USENIX Association, 2014.
+  {scholar}ongaro&title=in+search+of+an+understandable+consensus+algorithm[search^]
+
+[[bib-p]]
+* [[[Perlis-Symbol]]] Perlis, Alan J., and Charles Thornton. "Symbol manipulation by threaded lists."
+  Communications of the ACM 3.4 (1960): 195-204.
+  {scholar}perlis&title=symbol+manipulation+by+threaded+lists[search^]
+
+* [[[Perlis-Synthesis]]] Perlis, Alan J. "The synthesis of algorithmic systems."
+  Journal of the ACM (JACM) 14.1 (1967): 1-9.
+  {scholar}perlis&title=the+synthesis+of+algorithmic+systems[search^]
+
+* [[[Polya]]] Polya, George. How To Solve It: A New Aspect of Mathematical Method. Princeton University Press, 1945.
+  https://www.google.com/books/edition/How_to_Solve_It/X3xsgXjTGgoC[search^]
+
+* [[[Puente]]] Puente, Juan Pedro Bolívar. "Persistence for the masses: RRB-vectors in a systems language."
+  Proceedings of the ACM on Programming Languages 1.ICFP (2017): 16.
+  {scholar}puente&title=persistence+for+the+masses[search^]
+
+[[bib-r]]
+* [[[Reynolds-GEDANKEN]]] Reynolds, John C.
+  "GEDANKEN—a simple typeless language based on the principle of completeness and the reference concept."
+  Communications of the ACM 13.5 (1970): 308-319.
+  {scholar}reynolds&title=gedanken+a+simple+typeless+language+based+on+the+principle+of+completeness[search^]
+
+* [[[Reynolds-Interpret]]] Reynolds, John C. "Definitional interpreters for higher-order programming languages."
+  Proceedings of the ACM annual conference-Volume 2. ACM, 1972.
+  {scholar}reynolds&title=definitional+interpreters+for+higher+order+programming+languages[search^]
+
+* [[[Ritchie]]] Ritchie, Dennis M., and Ken Thompson. "The UNIX time‐sharing system."
+  Bell System Technical Journal 57.6 (1978): 1905-1929.
+  {scholar}ritchie&title=the+unix+time+sharing+system[search^]
+
+* [[[Rosenblum]]] Rosenblum, Mendel, and John K. Ousterhout.
+  "The design and implementation of a log-structured file system."
+  ACM Transactions on Computer Systems (TOCS) 10.1 (1992): 26-52.
+  {scholar}rosenblum&title=the+design+and+implementation+of+a+log+structured+file+system[search^]
+
+[[bib-s]]
+* [[[Sarnak-Diss]]] Sarnak, Neil Ivor. "Persistent data structures."
+  New York University, Doctoral thesis. Adviser Bob Tarjan, 1986.
+  {scholar}sarnak&title=persistent+data+structures[search^]
+
+* [[[Scott]]] Scott, Dana. Outline of a mathematical theory of computation.
+  Oxford University Computing Laboratory, Programming Research Group, 1970.
+  {scholar}scott&title=outline+of+a+mathematical+theory+of+computation[search^]
+
+* [[[Seidel]]] Seidel, Raimund, and Cecilia R. Aragon. "Randomized search trees."
+  Algorithmica 16.4-5 (1996): 464-497.
+  {scholar}seidel&title=randomized+search+trees[search^]
+
+* [[[Sen]]] Sen, Siddhartha, and Robert E. Tarjan. "Deletion without rebalancing in multiway search trees."
+  International Symposium on Algorithms and Computation. Springer, Berlin, Heidelberg, 2009.
+  {scholar}sen&title=deletion+without+rebalancing+in+multiway+search+trees[search^]
+
+* [[[Shamir-Share]]] Shamir, Adi. "How to share a secret." Communications of the ACM 22.11 (1979): 612-613.
+  {scholar}shamir&title=how+to+share+a+secret[search^]
+
+* [[[Shao-Space]]] Shao, Zhong, and Andrew W. Appel.
+  Space-efficient closure representations. Vol. 7. No. 3. ACM, 1994.
+  {scholar}shao&title=space+efficient+closure+representations[search^]
+
+* [[[Shaw-Command]]] Shaw, J. Cliff, Allen Newell, Herbert A. Simon, and T. O. Ellis.
+  "A command structure for complex information processing."
+  Western Joint Computer Conference: Contrasts in Computers, pp. 119-128. ACM, 1958.
+  {scholar}shaw&title=a+command+structure+for+complex+information+processing[search^]
+
+* [[[Sleator]]] Sleator, Daniel Dominic, and Robert Endre Tarjan. "Self-adjusting binary search trees."
+  Journal of the ACM (JACM) 32.3 (1985): 652-686.
+  {scholar}sleator&title=self+adjusting+binary+search+trees[search^]
+
+* [[[Smith]]] Smith, Frederick, David Walker, and Greg Morrisett. "Alias types."
+  European Symposium on Programming. Springer, Berlin, Heidelberg, 2000.
+  {scholar}smith&title=alias+types[search^]
+
+* [[[Steele-GC]]] Steele Jr, Guy L. "Multiprocessing compactifying garbage collection."
+  Communications of the ACM 18.9 (1975): 495-508.
+  {scholar}steele&title=multiprocessing+compactifying+garbage+collection[search^]
+
+* [[[Steele-Imperative]]] Steele Jr, Guy Lewis, and Gerald Jay Sussman. Lambda: The ultimate imperative.
+  Technical Report AI-M-353. MIT AI Lab, Cambridge MA. 1976.
+  {scholar}steele&title=lambda+the+ultimate+imperative[search^]
+
+* [[[Steele-MacLISP]]] Steele Jr, Guy Lewis. Data Representations in PDP-10 MacLISP.
+  Technical Report AI-M-420. MIT AI Lab, Cambridge MA. 1977.
+  {scholar}steele&title=data+representations+in+pdp+10+maclisp[search^]
+
+* [[[Steele-Arith]]] Steele Jr, Guy Lewis. Fast Arithmetic in MacLISP.
+  Technical Report AI-M-421. MIT AI Lab, Cambridge MA. 1977.
+  {scholar}steele&title=fast+arithmetic+in+maclisp[search^]
+
+* [[[Steele-Rabbit]]] Steele Jr, Guy L. "Rabbit: A compiler for Scheme."
+  Technical Report AI-M-474. MIT AI Lab, Cambridge MA. 1978.
+  {scholar}steele&title=rabbit+a+compiler+for+scheme[search^]
+
+* [[[Steele-Extent]]] Steele Jr, Guy Lewis, and Gerald Jay Sussman.
+  "The dream of a lifetime: A lazy variable extent mechanism."
+  Proceedings of the 1980 ACM conference on LISP and functional programming. ACM, 1980.
+  {scholar}steele&title=the+dream+of+a+lifetime[search^]
+
+* [[[Steele-Print]]] Steele Jr, Guy L., and Jon L. White. "How to print floating-point numbers accurately."
+  ACM Sigplan Notices. Vol. 25. No. 6. ACM, 1990.
+  {scholar}steele&title=how+to+print+floating+point+numbers+accurately[search^]
+
+* [[[Steindorfer-HAMT]]] Steindorfer, Michael J., and Jurgen J. Vinju.
+  "Optimizing hash-array mapped tries for fast and lean immutable JVM collections."
+  ACM SIGPLAN Notices. Vol. 50. No. 10. ACM, 2015.
+  {scholar}steindorfer&title=optimizing+hash+array+mapped+tries+for+fast+and+lean+immutable[search^]
+
+* [[[Steindorfer-Thesis]]] Steindorfer, Michael J. "Efficient immutable collections."
+  University of Amsterdam, Netherlands. Doctoral Thesis, 2017.
+  {scholar}steindorfer&title=efficient+immutable+collections[search^]
+
+* [[[Stucki-RRB]]] Stucki, Nicolas, et al. "RRB vector: a practical general purpose immutable sequence."
+  ACM SIGPLAN Notices. Vol. 50. No. 9. ACM, 2015.
+  {scholar}stucki&title=rrb+vector[search^]
+
+* [[[Sussman]]] Sussman, Gerald Jay, and Guy L. Steele. "Scheme: A interpreter for extended lambda calculus."
+  Higher-Order and Symbolic Computation 11.4 (1998): 405-439.
+  {scholar}sussman&title=scheme+a+interpreter+for+extended+lambda+calculus[search^]
+
+* [[[Swartout]]] Swartout, William, and Robert Balzer. "On the inevitable intertwining of specification and implementation."
+  Communications of the ACM 25.7 (1982): 438-440.
+  {scholar}swartout&title=on+the+inevitable+intertwining+of+specification+and+implementation[search^]
+
+[[bib-t]]
+* [[[Tamminen]]] Tamminen, Markku. "Order preserving extendible hashing and bucket tries."
+  BIT Numerical Mathematics 21.4 (1981): 419-435.
+  {scholar}tamminen&title=order+preserving+extendible+hashing+and+bucket+tries[search^]
+
+* [[[Tarjan-Amortized]]] Tarjan, Robert Endre. "Amortized computational complexity."
+  SIAM Journal on Algebraic Discrete Methods 6.2 (1985): 306-318.
+  {scholar}tarjan&title=amortized+computational+complexity[search^]
+
+* [[[Thompson]]] Thompson, Ken. "Reflections on trusting trust." Commun. ACM 27.8 (1984): 761-763.
+  {scholar}thompson&title=reflections+on+trusting+trust[search^]
+
+* [[[Turner-Tech]]] Turner, David A. "A New Implementation Technique for Applicative Languages."
+  Software: Practice and Experience 9.1 (1979): 31-49.
+  {scholar}turner&title=a+new+implementation+technique+for+applicative+languages[search^]
+
+* [[[Turner-Equation]]] Turner, David A. "Recursion Equations as a Programming Language."
+  A List of Successes That Can Change the World. Springer, Cham, 1982. 459-478.
+  {scholar}turner&title=recursion+equations+as+a+programming+language[search^]
+
+[[bib-u]]
+* [[[Ungar-Self]]] Ungar, David, and Randall B. Smith.
+  "SELF: The Power of Simplicity." Lisp and Symbolic Computing, 4, 3, 1991.
+  {scholar}ungar&title=self+the+power+of+simplicity[search^]
+
+[[bib-v]]
 * [[[Vanderburg]]] Vanderburg, Glenn. "Real Software Engineering."
-  QCon San Francisco 2012. https://www.infoq.com/presentations/Software-Engineering[source^]
+  QCon San Francisco 2012, InfoQ, 7 Nov 2012, Hyatt Regency San Francisco, Keynote Address.
+  https://www.infoq.com/presentations/Software-Engineering[infoq.com^] --
+  https://qconsf.com/sf2012/dl/qcon-sanfran-2012/slides/GlennVanderburg_OpeningKeynoteRealSoftwareEngineering.pdf[slides^]
 
-* [[[Wilson95]]] Wilson, Paul R., et al. "Dynamic storage allocation: A survey and critical review."
+[[bib-w]]
+* [[[Wadler-Change]]] Wadler, Philip. "Linear types can change the world!."
+  Programming concepts and methods. Vol. 3. No. 4. 1990.
+  {scholar}wadler&title=linear+types+can+change+the+world[search^]
+
+* [[[Wadler-Essence]]] Wadler, Philip. "The essence of functional programming." POPL. Vol. 92. No. 37. 1992.
+  {scholar}wadler&title=the+essence+of+functional+programming[search^]
+
+* [[[Wadler-Imp]]] Wadler, Philip, and Simon L. Peyton Jones. "Imperative functional programming."
+  Proceeding of the 20th Annual ACM SIGACT-SIGPLAN Symposium on Pronciple of Programming Languages. 1993.
+  {scholar}wadler&title=imperative+functional+programming[search^]
+
+* [[[Wakeling]]] Wakeling, David, and Colin Runciman. "Linearity and laziness."
+  Conference on Functional Programming Languages and Computer Architecture. Springer, Berlin, Heidelberg, 1991.
+  {scholar}wakeling&title=linearity+and+laziness[search^]
+
+* [[[Warren]]] Warren, Henry S. Hacker's delight. Pearson Education, 2002.
+  https://www.google.com/books/edition/Hacker_s_Delight/VicPJYM0I5QC[search^]
+
+* [[[Weiss]]] Weiss, Aaron, Daniel Patterson, Nicholas D. Matsakis, and Amal Ahmed.
+  "Oxide: The Essence of Rust." arXiv preprint arXiv:1903.00982 (2019).
+  {scholar}weiss&title=oxide+the+essence+of+rust[search^]
+
+* [[[Weizenbaum]]] Weizenbaum, Joseph. "Symmetric list processor." Communications of the ACM 6.9 (1963): 524-536.
+  {scholar}weizenbaum&title=symmetric+list+processor[search^]
+
+* [[[Whiting]]] Whiting, Paul G., and Robert SV Pascoe. "A history of data-flow languages."
+  IEEE Annals of the History of Computing 16.4 (1994): 38-59.
+  {scholar}whiting&title=a+history+of+data+flow+languages[search^]
+
+* [[[Wilson-GC]]] Wilson, Paul R. "Uniprocessor garbage collection techniques."
+  International Workshop on Memory Management. Springer, Berlin, Heidelberg, 1992.
+  {scholar}wilson&title=uniprocessor+garbage+collection+techniques[search^]
+
+* [[[Wilson-Malloc]]] Wilson, Paul R., et al. "Dynamic storage allocation: A survey and critical review."
   International Workshop on Memory Management. Springer, Berlin, Heidelberg, 1995.
-  {scholar}author=Wilson&title=Dynamic%20storage%20allocation[search^]
+  {scholar}wilson&title=dynamic+storage+allocation[search^]
 

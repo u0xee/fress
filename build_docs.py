@@ -30,19 +30,19 @@ asciidoc_base = ['asciidoctor',
                  '-a', 'docinfodir=images/favicon',
                  '-a', 'icons=font',
                  '-a', 'source-highlighter=prettify',
-                 '-a', 'doctype=article']
+                 '-a', 'doctype=article',
+                 '-a', 'idprefix=',
+                 '-a', 'idseparator=-']
 
 
 def generate_html_from_asciidoc(dir, out_dir):
     thesis = find_files(dir, ['-name', 'thesis.adoc'])
     home = find_files(dir, ['-name', 'home.adoc'])
-    home_in = find_files(dir, ['-name', 'home-in.adoc'])
     # adocs = find_files(dir, ['-name', '*.adoc'])
     command = asciidoc_base + ['--destination-dir', out_dir]
     print('Running: {}'.format(' '.join(command)))
     subprocess.run(command + ['-a', 'toc=left'] + thesis)
     subprocess.run(command + home)
-    subprocess.run(command + home_in)
 
 
 def copy_images():
@@ -92,5 +92,5 @@ args.func(args)
 
 # top priority todos
 #homepage
-
-
+#https://doc.rust-lang.org/rustdoc/command-line-arguments.html#--html-in-header-include-more-html-in-head
+#https://blog.guillaume-gomez.fr/articles/2016-09-16+Generating+doc+with+rustdoc+and+a+custom+theme

@@ -19,7 +19,6 @@ pub mod edn;
 pub mod eval;
 pub mod float_point;
 pub mod fressian;
-pub mod fuzz;
 pub mod graph;
 pub mod handle;
 pub mod hash;
@@ -48,8 +47,8 @@ pub mod value;
 pub mod vector;
 pub mod wasm;
 
+#[doc(inline)]
 pub use value::Value;
-pub use transduce::{Transducer, Transducers};
 
 #[no_mangle]
 pub extern fn fress_nil() -> usize { 7 }
@@ -121,7 +120,7 @@ pub fn difference(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn intersection(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn is_subset(s: &Value, t: &Value) -> bool { unimplemented!() }
 pub fn is_superset(s: &Value, t: &Value) -> bool { unimplemented!() }
-pub fn into(sink: Value, xf: Transducers, source: Value) -> Value { source.pour(xf, sink) }
+pub fn into(sink: Value, xf: transduce::Transducers, source: Value) -> Value { source.pour(xf, sink) }
 pub fn reduce(red: u32, xf: u32, f: u32) -> Value { unimplemented!() }
 pub fn educe(red: u32, xf: u32) -> u32 { unimplemented!() }
 pub fn max_key(c: &Value, f: u32) -> &Value { unimplemented!() }
@@ -180,9 +179,9 @@ pub fn u64s(n: u32) -> Value { unimplemented!() }
 pub fn varray(n: u32) -> Value { unimplemented!() }
 
 
-pub fn filter(pred: fn(&Value) -> bool) -> Transducer { transduce::filter(pred) }
-pub fn take(n: u32) -> Transducer { unimplemented!() }
-pub fn drop(n: u32) -> Transducer { unimplemented!() }
+pub fn filter(pred: fn(&Value) -> bool) -> transduce::Transducer { transduce::filter(pred) }
+pub fn take(n: u32) -> transduce::Transducer { unimplemented!() }
+pub fn drop(n: u32) -> transduce::Transducer { unimplemented!() }
 pub fn range(r: std::ops::Range<i64>) -> Value { unimplemented!() }
 
 // reducible: repeat, cycle, range, iterate, repeatedly

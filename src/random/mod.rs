@@ -5,6 +5,7 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+pub mod fuzz;
 
 // From George Marsaglia's "Xorshift RNGs", 2003
 // https://www.jstatsoft.org/index.php/jss/article/view/v008i14/xorshift.pdf
@@ -48,9 +49,9 @@ pub const ABC: [(u8, u8, u8); 275] = [
 
 pub fn cycle_abc(abc: usize, mut y: u64) -> u64 {
     let (a, b, c) = ABC[abc];
-    y ^= y << a;
-    y ^= y >> b;
-    y ^= y << c;
+    y ^= y << a as u64;
+    y ^= y >> b as u64;
+    y ^= y << c as u64;
     y
 }
 

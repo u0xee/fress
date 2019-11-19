@@ -4,21 +4,21 @@ aggregate:: a group (flock, herd). Information that is logically a grouping of o
 alias::
   the act of making one reference -> into two, both referencing the same thing.
   Imagine you have a public-library reference number
-API:: application programming interface (and ABI -> application binary interface)
+[.caps]#api#:: application programming interface (and [.caps]#abi# -> application binary interface)
 bespoke:: custom made, made to fit (a specific person or situation)
 commission:: underwrite, bankroll, fund (roots in entrust)d
 compile::
   transform an input set of instructions (usually in a human-friendly form),
   into an output set of instructions (usually in a machine-friendly form)
-complect:: entangle, entwine, brai
+complect:: entangle, entwine, braid
 coupling:: tied together, entwined
 data structure:: a computer representation of some information
 easy:: requires little effort
-edn:: extensible data notation https://github.com/edn-format/edn[source^]
+edn:: see <<edn>>
 execute:: run a program; perform the instructions
 explicit:: marked. called out.
 framework:: a system for creating and running programs
-fressian:: binary data notation https://github.com/Datomic/fressian[source^]
+fressian:: see <<Fressian>>
 human-friendly:: readable or writable easily by humans, as opposed to machine-friendly (readily understood by computers or programs)
 implicit:: implied. assumed. contextually apparent.
 information:: data, specific chunk of knowledge

@@ -14,6 +14,7 @@ pub mod array;
 pub mod atom;
 pub mod channel;
 pub mod character;
+pub mod compress;
 pub mod dispatch;
 pub mod edn;
 pub mod eval;

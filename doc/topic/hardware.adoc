@@ -1,3 +1,84 @@
 == The Nature of Computing Hardware
 
 Hardware is base to what software can do.
+
+
+== Templates
+Learn more about `Value` in the link:/fress/value[rustdoc].
+How does [.caps]#Clojure# actually work?
+Can it read an [.caps]#svg# easily?
+<<simple>> is a great section, & a citation to the bibliography <<Ackerman-Thesis>>.
+
+.An image
+image::book.svg[book pic,50]
+
+.A little table
+|===
+| Hello | world!
+| Some  | wonder
+|===
+
+.Code sample
+[source,ruby]
+----
+puts "Hello, World!"
+----
+
+:sourcedir: ../src
+
+.Included external file
+[source,rust]
+----
+include::{sourcedir}/atom/mod.rs[lines=8..-1]
+----
+
+.Using callouts in code
+[source,clojure]
+----
+(defn say-hello
+  [name] <1>
+  (let [x (str "Hello, " name)] <2>
+    (println x))) <3>
+----
+<1> Accepts a single param
+<2> Compute the string
+<3> Print it
+
+
+:env-github: sure-thing
+
+ifdef::env-github[]
+This content is for GitHub only.
+endif::env-github[]
+
+:!env-github:
+
+ifdef::env-github[]
+This content is for GitHub only.
+endif::env-github[]
+
+////
+Comment inside the adoc itself, this will NOT be rendered!
+////
+
+.My title
+====
+Example case, story, self-contained
+====
+
+.My title
+****
+Sidebar for some content.
+****
+
+// NOTE TIP WARNING IMPORTANT CAUTION
+[NOTE]
+====
+A note.
+====
+
+TIP: Here's a tip.
+WARNING: Here's a warning.
+IMPORTANT: Here's an important.
+CAUTION: Here's a caution.
+

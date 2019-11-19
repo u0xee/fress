@@ -1,0 +1,335 @@
+== History
+Computing is still dawning on humankind; yet I see precursors to my work in the endeavours of so many others.
+Let this map be your guide on a tour of related work:
+
+image::island.svg[Map,width=100%,opts=inline]
+
+Click on the map to jump to sections like:
+
+* <<Programming Languages>> & <<Complexity>>
+* <<Functional Programming>>, <<List Processing>> & <<Data Flow>>
+* <<Tree Structures>>, <<Memory>> & <<Tries>>
+* <<Persistent Data Structures>>, <<Aliasing>> & <<Transient Data Structures>>
+* <<Language Theory>> & <<Linear Use>>
+* <<Associative Aggregates>>, <<Sorting>> & <<Hashing>>
+* <<Distributed Computing>> & <<Data Notation>>
+
+=== Programming Languages
+* 1880-1951 <<Punched-Card-Equipment>> Early Punched Card Equipment
+* 1950 <<EDSAC>>
+* 1952 <<Subroutine>>
+* 1957 <<FORTRAN>>
+* 1960 <<LISP>>, <<LISP-History>>
+* 1964 <<Landin-Eval>>
+* 1966 <<Landin-Next>>
+* 1966 <<SIMULA>>
+* 1969 <<Hoare-Axiomatic>>
+* 1970 <<GEDANKEN>>
+* 1972 <<Structured-Programming>>
+* 1973 <<Backus-Semantics>>
+* 1973 <<Hoare-Design>>
+* 1974 <<Liskov>>
+* 1975 <<Scheme>>
+* 1976 <<Lambda-the-Ultimate>>
+* 1976 <<Smalltalk>> <<Smalltalk-History>>
+* 1978 <<Rabbit>>
+* 1978 <<Kernighan-Ritchie>>
+* 1978 <<Backus-Functional>>
+* 1979 <<Floyd-Paradigms>>
+* 1979 <<Awk>>
+* 1981 <<Hoare-Emperor>>
+* 1982 <<Brooks-Compiler>>
+* 1983 <<MacLennan-OO>>
+* 1991 <<SELF>>
+* 1997 <<Squeak>>
+
+=== Complexity
+* 1972 <<Parnas-Modules>>
+* 1975 <<Man-Month>>
+* 1981 <<MacLennan-Values>>
+* 1982 <<Swartout-Balzer>>
+* 1987 <<No-Silver-Bullet>>
+* 1993 <<Baker-Equality>>
+* 1994 <<Parnas-Aging>>
+* 2006 <<Mosely-Marks>>
+* Hickey
+
+=== Functional Programming
+* 1960 <<LISP>>
+* 1967 <<Dataless-Programming>>
+* 1973 <<Milner>>
+* 1978 <<Backus-Functional>>
+* 1978 <<Friedman-Combination>>
+* 1978 <<Friedman-Applicative>>
+* 1979 <<VAL>>
+* 1986 <<Holloway-Survey>>
+* 1989 <<Hudak-History>>
+* 1989 <<Held-Carlis>>
+* 1989 <<Hughes-Why>>
+* 1989 <<Linda>>
+* 1989 <<Bird>>
+* 1991 <<Meijer>>
+* 1992 <<Wadler-Essence>>
+* 1993 <<Baker-Equality>>
+* 2011 <<Simple-Made-Easy>>
+* 2012 <<Value-of-Values>>
+
+.Applicative
+* 1979 <<Turner-Applicative>>
+* 1982 <<Turner-Recursion>>
+* 1988 <<Cann-Oldehoeft>>
+* 1989 <<Cann-Thesis>>
+
+.Single Assignment
+* 1983 <<SAL>>
+* 1988 <<Gharachorloo>>
+* 1988 <<Gopinath-Thesis>>
+* 1997 <<Sisal>>
+* 2001 <<Sisal-Real-World>>
+* 2002 <<Bohm-Single>>
+
+==== List Processing
+* 1956 <<Newell-Process>>
+* 1957 <<Newell-Machine>>
+* 1958 <<Shaw-Processing>>
+* 1959 <<Newell-Solving>>
+* 1960 <<Gelernter>>
+* 1960 <<LISP>>
+* 1960 <<Collins>>
+* 1960 <<Perlis-Symbol>>
+* 1961 <<Weizenbaum-Knotted>>
+* 1963 <<Weizenbaum-Symmetric>>
+* 1964 <<Landin-Eval>>
+* 1965 <<Wilkes-Lists>>
+
+==== Data Flow
+* 1971 <<Morrison>>
+* 1974 <<Dennis>>
+* 1977 <<Ackerman-Memory>>
+* 1982 <<Data-Flow-Languages>>
+* 1984 <<Ackerman-Thesis>>
+* 1994 <<Whiting-History>>
+
+=== Tree Structures
+* 1962 <<AVL-Tree>>
+* 1963 <<Landauer>>
+* 1971 <<Binary-B-tree>>
+* 1978 <<Red-Black-Tree>>
+* 1982 <<Huddleston-Weak>>
+* 1985 <<Splay-Tree>>
+* 1990 <<Skip-List>>
+* 1996 <<Treap>>
+
+.Disk
+* 1972 <<B-tree>>
+* 1979 <<Comer>>
+* 1981 <<Maier>>
+* 1981 <<Culik>>
+* 1986 <<Easton>>
+* 1996 <<LSM-Tree>>
+* 1992 <<Rosenblum-Ousterhout>>
+* 1977 <<Nicklas>>
+* 1981 <<Huddleston-Robust>>
+* 2000 <<SQLite>>
+* 2006 <<Fossil>>
+
+==== Tries
+* 1960 <<Trie>>
+* 1977 <<Prefix-B-Tree>>
+* 1981 <<Litwin-Trie>>
+* 1986 <<Flajolet-Sedgewick>>
+* 2000 <<Bagwell-Search>>
+* 2001 <<Ideal-Hash-Tree>>
+
+=== Memory
+* 1965 <<Moore>>
+* 1967 <<Working-Set>>
+* 1970 <<Virtual-Memory>>
+* 1991 <<Gupta>>
+* 1994 <<Slab-Allocator>>
+* 1995 <<Wilson-Malloc>>
+* 2000 <<Manegold>>
+* 2003 <<ZFS>>
+
+.Garbage Collection
+* 1960 <<LISP>>
+* 1967 <<Schorr-Waite>>
+* 1975 <<Steele-GC>>
+* 1982 <<Hudak-Distributed>>
+* 1985 <<Hughes-GC>>
+* 1987 <<Appel-GC>>
+* 1990 <<Baker-Unify>>
+* 1992 <<Baker-Treadmill>>
+* 1992 <<Wilson-GC>>
+* 2001 <<Domani-GC>>
+* 2004 <<Bacon-GC>>
+* 2012 <<Database-as-a-Value>>
+
+.Reference Counting
+* 1960 <<Collins>>
+* 1986 <<Hudak-RC>>
+* 1989 <<Goldberg-Generational>>
+* 1989 <<Hederman>>
+* 1994 <<Baker-Pointers>>
+* 1996 <<Chirimar>>
+
+=== Persistent Data Structures
+* 1980 <<Dobkin-Munro>>
+* 1983 <<MVCC>>
+* 1984 <<Myers>>
+* 1985 <<Hudak-Aggregate-Update>>
+* 1986 <<Easton>>
+* 1986 <<Sarnak-Thesis>>
+* 1986 <<Driscoll-Thesis>>
+* 1989 <<Bloss>>
+* 1989 <<Persistent-Data-Structures>>
+* 1992 <<Chuang>>
+* 1994 <<ONeill-Thesis>>
+* 1994 <<Driscoll-List>>
+* 1997 <<ONeill-Array>>
+* 1997 <<Kaplan-Thesis>>
+* 1999 <<Okasaki>>
+* 2001 <<Kaplan-Survey>>
+* 2001 <<Ideal-Hash-Tree>>
+* 2002 <<Bagwell-List>>
+* 2007 <<Clojure>>
+* 2011 <<RRB-Tree>>
+* 2012 <<Brodal>>
+* 2013 <<Liljenzin>>
+* 2015 <<Steindorfer-HAMT>>
+* 2015 <<Stucki>>
+* 2015 <<LogicBlox>>
+* 2017 <<Steindorfer-Thesis>>
+* 2017 <<Puente>>
+
+==== Transient Data Structures
+* 1982 <<Data-Flow-Languages>>
+* 1990 <<Baker-Unify>>
+* 1996 <<Fitzgerald-Oldehoeft>>
+* 2007 <<Clojure>>
+* 2014 <<Lorange>>
+
+==== Aliasing
+.Difference
+* 1994 <<Burrows-Wheeler>>
+* 1996 <<ZLIB>>
+* 1999 <<Bentley-McIlroy>>
+
+.Tails
+* 1989 <<Bloss>>
+* 1991 <<Baker-Shallow>>
+* 2007 <<Clojure>>
+
+.Path copy, structural sharing
+* 1970 <<Virtual-Memory>>
+* 2003 <<ZFS>>
+* 2006 <<Fossil>>
+
+=== Language Theory
+.Ownership
+* 1993 <<Guzman>>
+* 1997 <<Almeida>>
+* 1998 <<Noble>>
+* 1998 <<Clarke-Ownership>>
+* 2000 <<Smith-Alias>>
+* 2001 <<Clarke-Thesis>>
+* 2001 <<Boyland-Capabilities>>
+* 2003 <<Boyland-Permissions>>
+* 2015 <<Clebsch>>
+* 2018 <<Matsakis>>
+* 2019 <<Weiss>>
+
+==== Linear Use
+* 2002 <<Fahndrich-DeLine>>
+* 1994 <<Bellin-Pi-Calculus>>
+* 1991 <<Wakeling>>
+* 1987 <<Girard>>
+* 1990 <<Wadler-Linear>>
+* 1992 <<Baker-Linear>>
+* 1995 <<Baker-Use-Once>>
+* 1990 <<Baker-Unify>>
+* 1996 <<Chirimar>>
+* 1986 <<Hudak-RC>>
+* 1991 <<Odersky-Destructive>>
+* 1992 <<Odersky-Observers>>
+
+.Copy Elimination
+* 1977 <<Barth>>
+* 1988 <<Gopinath-Thesis>>
+* 1989 <<Bloss>>
+* 1989 <<Hederman>>
+* 1989 <<Gopinath-Copy>>
+* 1994 <<Baker-Pointers>>
+* 2000 <<Hofmann>>
+* 2002 <<Aspinall-Hofmann>>
+
+=== Associative Aggregates
+==== Hashing
+* 1974 <<Goto-Monocopy>>
+* 1979 <<Extendible-Hashing>>
+* 1980 <<Larson-Linear>>
+* 1980 <<Litwin-Linear>>
+* 1981 <<Litwin-Trie>>
+* 1981 <<Tamminen>>
+* 1988 <<Larson-Dynamic>>
+* 1992 <<MD5>>
+* 1993 <<Appel-Consing>>
+* 1994 <<Goubault>>
+* 2001 <<Ideal-Hash-Tree>>
+* 2011 <<SHA>>
+* 2012 <<Spooky>>
+* 2015 <<SHA-3>>
+
+==== Sorting
+See <<Tree Structures>> and 1962 <<Quicksort>>
+
+=== Distributed Computing
+* 1978 <<Lamport-Time>>
+* 1991 <<Corbato>>
+* 2003 <<Armstrong-Thesis>>
+* 2013 <<Tail-at-Scale>>
+
+.Concurrency
+* 1963 <<Coroutine>>
+* 1968 <<Dijkstra-CSP>>
+* 1971 <<Morrison>>
+* 1977 <<Hewitt-Baker>>
+* 1977 <<Baker-Processes>>
+* 1978 <<CSP>>
+* 1978 <<UNIX>>
+* 1982 <<Hudak-Distributed>>
+* 1985 <<Keller-Lindstrom>>
+* 1985 <<Hughes-GC>>
+* 1989 <<Lomet-Multiversion>>
+* 1989 <<Goldberg-Generational>>
+* 2008 <<Cantrill-Bonwick>>
+* 2009 <<Click-Hardware>>
+* 2010 <<Pike-Stanford>>
+* 2012 <<Database-as-a-Value>>
+* 2014 <<Raft-Consensus>>
+* 2015 <<LogicBlox>>
+* 2015 <<Clebsch>>
+
+==== Data Notation
+* 1969 <<ASCII>>
+* 1990 <<Steele-Print>>
+* 1990 <<Clinger-Read>>
+* 1990 <<Gay-Rounded>>
+* 1995 <<HTML>>
+* 1996 <<Burger-Print>>
+* 2002 <<Timestamp>>
+* 2003 <<UTF-8>>
+* 2005 <<URI>>
+* 2005 <<UUID>>
+* 2009 <<JSON>>
+* 2012 <<edn>>
+* 2012 <<Fressian>>
+
+.Protocols
+* 1980 <<UDP>>
+* 1981 <<IP>>
+* 1981 <<TCP>>
+* 1987 <<DNS>>
+* 1996 <<HTTP>>
+* 2015 <<HTTP-2>>
+

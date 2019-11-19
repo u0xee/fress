@@ -1,4 +1,45 @@
-[[quadratic-residue]]
-== Probabilistic Asymmetric Encryption Using Quadratic Residues
+== Encryption using Quadratic Residues
+With probabilistic asymmetric encryption using quadratic residues,
+a group of people can:
 
-Define probabilistic, quadratic residue, etc.
+* create messages that only one person can read,
+* create signatures that no one else could have made, and,
+* embed undetectable information in both these things.
+
+=== Cryptography
+Having information, and a desire to deny one or more people of it,
+a person uses encryption to mask it such that a secret is required
+to remove the mask and recover the information.
+If the secret used to unmask the information is distinct from the secret
+needed to mask it (and not deducible from it), encryption is _asymmetric_.
+If encrypting information using a secret produces one of
+a set of possible encryptions, it is _probabilistic_.
+
+Asymmetric encryption systems allow a user to freely distribute their _encrypting secret_,
+meaning that many people can encrypt a message to them, while keeping their _decrypting secret_
+to themselves, meaning that only they can read such messages.
+
+Probabilistic encryption systems allow a user to encrypt the same message repeatedly,
+producing distinct encryptions each time.
+This means guess-and-check style cryptanalysis is ineffective, even for small message spaces.
+Encrypting a ten bit message with a deterministic scheme (such as RSA),
+is easily broken by simply trying all 2^10 patterns. One will be correct.
+To avoid this you have to extend and randomize the message space. This is non-trivial to do
+in a way that is provably secure. A probabilistic encryption system randomizes the
+encryption process in a secure way, taking this burden off of the user.
+
+=== Quadratic Residues
+Using a modulus _n_, square any number _x_ and calculate the remainder of division by _n_.
+The resulting number _r_ is a quadratic residue modulo _n_.
+Knowing such an _x_ (called a quadratic root modulo _n_) is necessary and sufficient
+to know that _r_ is a residue.
+
+x^2 is congruent to r (mod n)
+
+Using a modulus _n_, you can find a quadratic residue by taking the residue of the square of any number.
+The residue of the square of a quadratic residue is also a quadratic residue.
+You can iteratively compute the residue of the square, yielding an infinite series of quadratic residues.
+Since residues are all positive numbers and are less than _n_, we know that this infinite series of
+residues must eventually cycle, and produce residues it had previously produced.
+Hence it is a periodic, infinite series.
+

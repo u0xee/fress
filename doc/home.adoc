@@ -9,7 +9,7 @@ image:people.svg[people,50] [small]#purposely# [big]#understandable#
 [.pitch]
 image:cycle.svg[cycle,50] [small]#whole information# [big]#lifecycle#
 
-[cols="3*^",frame=topbot,grid=none,options="header"]
+[cols="3*^",frame=topbot,grid=none]
 |===
 | link:thesis[image:book.svg[thesis,60] +++<br>+++ My thesis]
 | https://www.fress.in[image:notes.svg[notation,60] +++<br>+++ fress.in]

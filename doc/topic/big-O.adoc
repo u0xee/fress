@@ -1,4 +1,4 @@
 == Asymptotic Analysis
 
 See https://en.wikipedia.org/wiki/The_Big_O[The Big O^].
-Analysis of computation resources gives us a model.
+

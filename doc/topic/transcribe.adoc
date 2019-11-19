@@ -1,0 +1,8 @@
+== Transcribed Presentations
+
+Hickey, Rich. The Value of Values. Keynote speech, JaxConf 2012. https://youtu.be/-6BsiVyC1kM[youtube.com^], 32 minutes.
+
+Who here works in I.T.? Everybody I think.
+What does it stand for, I.T.? Information Technology.
+What does it mean, when we say "information"?
+

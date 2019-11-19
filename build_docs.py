@@ -31,7 +31,7 @@ asciidoc_base = ['asciidoctor',
                  '-a', 'icons=font',
                  '-a', 'source-highlighter=prettify',
                  '-a', 'doctype=article',
-                 '-a', 'idprefix=',
+                 '-a', 'idprefix=+',
                  '-a', 'idseparator=-']
 
 

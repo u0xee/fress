@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="1in"
+   height="1in"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg6796">
+  <defs
+     id="defs6790" />
+  <metadata
+     id="metadata6793">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     transform="matrix(2.0092998,0,0,2.0092998,-3.8241565,-462.62185)"
+     id="g19870">
+    <path
+       style="opacity:1;fill:#f0ec1b;fill-opacity:1;stroke:#464646;stroke-width:2.02241039;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 49.156612,274.49677 c -14.912728,0 -29.825456,0 -44.738186,0 7.456365,-12.9148 14.91273,-25.8296 22.369097,-38.7444 7.456363,12.9148 14.912725,25.8296 22.369089,38.7444 z"
+       id="path7787" />
+    <path
+       id="path14178"
+       style="opacity:1;fill:#010101;fill-opacity:1;stroke:none;stroke-width:1.45757985;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 29.040219,268.52666 a 2.3214271,2.3214271 0 0 1 -2.321427,2.32142 2.3214271,2.3214271 0 0 1 -2.321425,-2.32142 2.3214271,2.3214271 0 0 1 2.321425,-2.32143 2.3214271,2.3214271 0 0 1 2.321427,2.32143 z m -0.04978,-20.71988 c -0.0885,5.19233 -0.71433,10.59114 -1.231786,14.58405 -0.09249,0.75146 -0.393074,1.12719 -0.901757,1.12719 h -0.39884 c -0.404615,0 -0.670538,-0.49134 -0.797731,-1.47401 -0.378702,-4.81157 -0.98775,-9.37721 -1.023537,-14.18523 0,-0.75146 0.167617,-1.30638 0.502867,-1.66477 0.346825,-0.36997 0.847987,-0.55492 1.703508,-0.55492 h 0.41621 c 1.086726,0 1.730088,0.72256 1.730088,2.16767 z" />
+  </g>
+</svg>

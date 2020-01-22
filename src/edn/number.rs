@@ -14,7 +14,7 @@ pub const BASE_16:   (u64, u64) = (0x_03FF_0000_0000_0000, 0x_0000_007E_8000_007
 
 pub fn get_bit(x: u64, y: u64, idx: u8) -> u32 {
     let z = x ^ y;
-    let word_idx = idx & 0x3F;
+    let word_idx = (idx & 0x3F) as u64;
     let x_ = (x >> word_idx) as u32;
     let z_ = (z >> word_idx) as u32;
     let masked = z_ & (idx as u32 >> 6);

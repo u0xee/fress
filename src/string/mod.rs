@@ -61,9 +61,11 @@ impl Str {
                 match c {
                     b'\\' => b'\\',
                     b'"'  => b'"',
+                    b'\'' => b'\'',
                     b'n'  => b'\n',
                     b'r'  => b'\r',
                     b't'  => b'\t',
+                    b'0'  => b'\0',
                     b'u'  => {
                         if i + 4 < bytes {
                             let code = &source[(i + 1)..(i + 5)];
@@ -144,7 +146,7 @@ impl Distinguish for Str {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -201,15 +203,10 @@ impl Notation for Str {
         // https://doc.rust-lang.org/src/core/fmt/mod.rs.html#1956-1974
         write!(f, "{:?}", guide.str())
     }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "String[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
 }
 
 impl Numeral for Str {}
+impl Callable for Str {}
 
 #[cfg(test)]
 mod tests {

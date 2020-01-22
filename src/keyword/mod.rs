@@ -84,7 +84,7 @@ impl Distinguish for Keyword {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -119,11 +119,6 @@ impl Reversible for Keyword { }
 impl Sorted for Keyword { }
 
 impl Notation for Keyword {
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let guide = Guide::hydrate(prism);
-        write!(f, "Keyword({})", guide.str())
-    }
-
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
         write!(f, "{}", guide.str())
@@ -131,6 +126,7 @@ impl Notation for Keyword {
 }
 
 impl Numeral for Keyword { }
+impl Callable for Keyword { }
 
 #[cfg(test)]
 mod tests {

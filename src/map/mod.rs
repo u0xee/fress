@@ -108,7 +108,7 @@ impl Distinguish for Map {
         let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs, 1);
         let h = cycle_abc(179, y) as u32;
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -127,6 +127,7 @@ impl Distinguish for Map {
 }
 
 impl Aggregate for Map {
+    fn is_aggregate(&self) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
@@ -144,9 +145,15 @@ impl Aggregate for Map {
             (& handle::STATIC_NIL) as *const Unit
         }
     }
+
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+        reduce::reduce(prism, process, 1)
+    }
 }
 impl Sequential for Map {}
 impl Associative for Map {
+    fn is_map(&self) -> bool { true }
+
     fn contains(&self, prism: AnchoredLine, k: Unit) -> bool {
         let h = k.handle().hash();
         get::get(prism, k, h, 1).is_some()
@@ -180,12 +187,6 @@ impl Reversible for Map {}
 impl Sorted for Map {}
 
 impl Notation for Map {
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Map|");
-        self.edn(prism, f);
-        write!(f, "|")
-    }
-
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO print in prefix map form
         struct Printer {
@@ -222,6 +223,7 @@ impl Notation for Map {
 }
 
 impl Numeral for Map {}
+impl Callable for Map {}
 
 pub fn next_power(x: u32) -> u32 {
     (x + 1).next_power_of_two()

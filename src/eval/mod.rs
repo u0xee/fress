@@ -5,3 +5,17 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+use value::Value;
+use ::{read, is_aggregate, hash_map, hash_set, list, vector, nil, tru, fals};
+use right_into;
+use transduce::Process;
+
+pub mod structure;
+pub mod compile;
+
+// eval global context map!
+pub fn eval(v: Value) -> Value {
+    let (structured, notes) = structure::structure(v).expect("Error during structure");
+    vector().conj(structured).conj(notes)
+}
+

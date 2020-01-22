@@ -91,7 +91,7 @@ impl Distinguish for Set {
         let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = map::reduce::reduce(prism, &mut procs, 0);
         let h = cycle_abc(27, y) as u32;
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
@@ -109,6 +109,7 @@ impl Distinguish for Set {
 }
 
 impl Aggregate for Set {
+    fn is_aggregate(&self) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
@@ -116,15 +117,6 @@ impl Aggregate for Set {
 
     fn empty(&self, prism: AnchoredLine) -> Unit {
         Set::new()
-    }
-
-    fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit {
-        let h = k.handle().hash();
-        if let Some(key_line) = map::get::get(prism, k, h, 0) {
-            key_line.line().star()
-        } else {
-            (& handle::STATIC_NIL) as *const Unit
-        }
     }
 
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
@@ -142,11 +134,25 @@ impl Aggregate for Set {
             },
         }
     }
+
+    fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit {
+        let h = k.handle().hash();
+        if let Some(key_line) = map::get::get(prism, k, h, 0) {
+            key_line.line().star()
+        } else {
+            (& handle::STATIC_NIL) as *const Unit
+        }
+    }
+
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+        map::reduce::reduce(prism, process, 0)
+    }
 }
 
 impl Sequential for Set {}
 
 impl Associative for Set {
+    fn is_set(&self) -> bool { true }
     fn contains(&self, prism: AnchoredLine, k: Unit) -> bool {
         let h = k.handle().hash();
         map::get::get(prism, k, h, 0).is_some()
@@ -162,12 +168,6 @@ impl Associative for Set {
 impl Reversible for Set {}
 impl Sorted for Set {}
 impl Notation for Set {
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Set|");
-        self.edn(prism, f);
-        write!(f, "|")
-    }
-
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,
@@ -203,6 +203,7 @@ impl Notation for Set {
 }
 
 impl Numeral for Set {}
+impl Callable for Set {}
 
 
 #[cfg(test)]

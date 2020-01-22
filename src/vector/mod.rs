@@ -101,7 +101,7 @@ impl Distinguish for Vector {
         let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
         let h = cycle_abc(210, y) as u32;
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -131,6 +131,7 @@ impl Distinguish for Vector {
 }
 
 impl Aggregate for Vector {
+    fn is_aggregate(&self) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
@@ -139,6 +140,10 @@ impl Aggregate for Vector {
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit { conj::conj(prism, x) }
     fn meta(&self, prism: AnchoredLine) -> *const Unit { meta::meta(prism) }
     fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { meta::with_meta(prism, m) }
+    fn peek(&self, prism: AnchoredLine) -> *const Unit {
+        let guide = Guide::hydrate(prism);
+        self.nth(prism, guide.count - 1)
+    }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { pop::pop(prism) }
     fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
         reduce::reduce(prism, process)
@@ -146,68 +151,27 @@ impl Aggregate for Vector {
 }
 
 impl Sequential for Vector {
+    fn is_sequential(&self) -> bool { true }
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit {
         nth::nth(prism, idx).line().star()
     }
 }
 
-fn key_into_idx(k: Unit) -> u32 {
-    // TODO need general conversion to int
-    let i: u32 = k.into();
-    i >> 4
-}
-
 impl Associative for Vector {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
-        let idx: u32 = key_into_idx(k);
-        assoc::assoc(prism, idx, v)
+        let guide = Guide::hydrate(prism);
+        let idx = k.handle().as_i64();
+        k.handle().retire();
+        if idx < 0 || (idx as u32) >= guide.count {
+            panic!("Index out of bounds: {} in vector of count {}", idx, guide.count);
+        }
+        assoc::assoc(prism, idx as u32, v)
     }
 }
 
 impl Reversible for Vector {}
 impl Sorted for Vector {}
 impl Notation for Vector {
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Vector");
-        self.edn(prism, f)
-        /*
-        let guide= Guide::hydrate(prism);
-        let hash = if !guide.has_hash() { "".to_string() } else {
-            format!(" #x{:X}", guide.hash)
-        };
-        let meta = if !guide.has_meta() { "".to_string() } else {
-            format!(" ^{:?}", guide.meta_line()[0].handle())
-        };
-        write!(f, "{aliases}->[Vector{hash}{meta} {count}ct ",
-               aliases = guide.segment().anchor().aliases(),
-               hash = hash, meta = meta, count = guide.count);
-        if guide.count <= TAIL_CAP {
-            if guide.is_compact_bit == 0 { write!(f, "_ "); }
-            guide.root.span(guide.count).debug(f);
-            let used = guide.root.index + guide.count;
-            let empty = guide.segment().capacity() - used;
-            if empty != 0 { write!(f, " _{}", empty); }
-            write!(f, "]")
-        } else {
-            let tail = guide.root[-1].segment();
-            write!(f, "tail {}->[", tail.anchor().aliases());
-            tail.at(0..tail_count(guide.count)).debug(f);
-            //let rc = root_content_count(tailoff(guide.count));
-            //let last_index = tailoff(guide.count) - 1;
-            // root elems are value units
-            // root elems are nodes
-            //
-            //guide.root.span(rc).debug(f);
-            //write!(f, "]")
-            write!(f, "]]\n")
-        }
-        */
-    }
-
-    fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> {
-        unimplemented!()
-    }
-
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         // conversion to and from &Formatter
         // factor out Printer parts
@@ -260,6 +224,7 @@ impl Notation for Vector {
 }
 
 impl Numeral for Vector {}
+impl Callable for Vector {}
 
 #[cfg(test)]
 mod tests {

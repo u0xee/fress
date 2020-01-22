@@ -125,15 +125,10 @@ impl Notation for Rational {
         let y =  hydrate(prism.offset(next));
         write!(f, "{}/{}", x, y)
     }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Rational[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
 }
 
 impl Numeral for Rational { }
+impl Callable for Rational { }
 
 #[cfg(test)]
 mod tests {

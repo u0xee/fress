@@ -84,7 +84,7 @@ impl Distinguish for List {
         let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
         let h = cycle_abc(210, y) as u32;
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -109,6 +109,7 @@ impl Distinguish for List {
 }
 
 impl Aggregate for List {
+    fn is_aggregate(&self) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
@@ -125,6 +126,9 @@ impl Aggregate for List {
     fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
         vector::meta::with_meta(prism, m)
     }
+    fn peek(&self, prism: AnchoredLine) -> *const Unit {
+        self.nth(prism, 0)
+    }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
         vector::pop::pop(prism)
     }
@@ -134,6 +138,7 @@ impl Aggregate for List {
 }
 
 impl Sequential for List {
+    fn is_sequential(&self) -> bool { true }
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit {
         let guide = Guide::hydrate(prism);
         if idx >= guide.count {
@@ -143,31 +148,21 @@ impl Sequential for List {
     }
 }
 
-fn key_into_idx(k: Unit) -> u32 {
-    // TODO need general conversion to int
-    let i: u32 = k.into();
-    i >> 4
-}
-
 impl Associative for List {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
-        let idx: u32 = key_into_idx(k);
         let guide = Guide::hydrate(prism);
-        if idx >= guide.count {
+        let idx = k.handle().as_i64();
+        k.handle().retire();
+        if idx < 0 || (idx as u32) >= guide.count {
             panic!("Index out of bounds: {} in list of count {}", idx, guide.count);
         }
-        vector::assoc::assoc(prism, guide.count - 1 - idx, v)
+        vector::assoc::assoc(prism, guide.count - 1 - (idx as u32), v)
     }
 }
 
 impl Reversible for List {}
 impl Sorted for List {}
 impl Notation for List {
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "List|");
-        self.edn(prism, f);
-        write!(f, "|")
-    }
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,
@@ -203,6 +198,7 @@ impl Notation for List {
 }
 
 impl Numeral for List {}
+impl Callable for List {}
 
 #[cfg(test)]
 mod tests {

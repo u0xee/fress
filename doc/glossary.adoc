@@ -6,7 +6,7 @@ alias::
   Imagine you have a public-library reference number
 [.caps]#api#:: application programming interface (and [.caps]#abi# -> application binary interface)
 bespoke:: custom made, made to fit (a specific person or situation)
-commission:: underwrite, bankroll, fund (roots in entrust)d
+commission:: underwrite, bankroll, fund (roots in entrust)
 compile::
   transform an input set of instructions (usually in a human-friendly form),
   into an output set of instructions (usually in a machine-friendly form)

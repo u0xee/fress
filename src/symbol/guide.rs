@@ -125,6 +125,20 @@ impl Guide {
         self
     }
 
+    pub fn store_hash(self) -> Guide {
+        let mut prism = self.prism;
+        let top: u32 = self.hash;
+        let bot: u32 = (self.has_meta_bit << 31) | (self.solidus << 8) | self.count;
+        if cfg!(target_pointer_width = "32") {
+            prism.store_hash(1, top.into());
+            prism.store_hash(2, bot.into());
+        } else {
+            let g: u64 = ((top as u64) << 32) | (bot as u64);
+            prism.store_hash(1, g.into());
+        }
+        self
+    }
+
     pub fn byte_slice(&self) -> &mut [u8] {
         use std::slice::from_raw_parts_mut;
         let p = self.root.line().star() as *mut u8;

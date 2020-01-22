@@ -14,18 +14,10 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn unit(self) -> Unit {
-        Unit::from(self.line)
-    }
-    pub fn segment(self) -> Segment {
-        Segment::from(self)
-    }
-    pub fn offset(&self, x: isize) -> Line {
-        Line { line: unsafe { self.line.offset(x) } }
-    }
-    pub fn star(self) -> *const Unit {
-        self.line
-    }
+    pub fn unit(self) -> Unit { Unit::from(self.line) }
+    pub fn segment(self) -> Segment { Segment::from(self) }
+    pub fn offset(&self, x: isize) -> Line { Line { line: unsafe { self.line.offset(x) } } }
+    pub fn star(self) -> *const Unit { self.line }
 }
 
 impl From<Unit> for Line {

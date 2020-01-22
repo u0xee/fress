@@ -145,7 +145,7 @@ impl Distinguish for Uuid {
 
         use hash::hash_128;
         let h = hash_128(guide.top, guide.bot, 16);
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -164,9 +164,7 @@ impl Associative for Uuid { }
 impl Reversible for Uuid {}
 impl Sorted for Uuid {}
 
-pub fn field(width: u32) -> u64 {
-    (1 << width) - 1
-}
+pub fn field(width: u32) -> u64 { (1 << width as u64) - 1 }
 
 impl Notation for Uuid {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
@@ -179,15 +177,10 @@ impl Notation for Uuid {
         write!(f, "#uuid \"{:08X}-{:04X}-{:04X}-{:04X}-{:012X}\"",
                time_low, time_mid, time_high, clock_seq, node)
     }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Uuid[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
 }
 
 impl Numeral for Uuid {}
+impl Callable for Uuid {}
 
 #[cfg(test)]
 mod tests {

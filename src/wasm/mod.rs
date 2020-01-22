@@ -15,15 +15,10 @@ use handle::Handle;
 // int128enc
 // binary wasm
 
-// module magic \0asm
-// module version 1 0 0 0
 // each section = id byte_count bytes
-
 // sections
 // 1 types: vec(signatures)
 //   signature =  0x60 vec(basic) vec(basic)
-
-
 
 pub fn uleb128(x: u64, out: &mut [u8]) -> u32 {
     unimplemented!()

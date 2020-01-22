@@ -101,37 +101,32 @@ impl Segment {
         }
     }
 
-    pub fn get(&self, index: u32) -> Unit {
-        self[index]
-    }
+    pub fn get(&self, index: u32) -> Unit { self[index] }
 
     pub fn set(&self, index: u32, x: Unit) {
         let mut m = *self;
         m[index] = x;
     }
 
-    pub fn has_index(&self, index: u32) -> bool {
-        index < self.capacity()
-    }
+    pub fn has_index(&self, index: u32) -> bool { index < self.capacity() }
+    pub fn anchor(&self) -> Anchor { self.anchor_line[0].anchor() }
+    pub fn unit(&self) -> Unit { self.anchor_line.unit() }
+    pub fn line_at(&self, base: u32) -> AnchoredLine { AnchoredLine::new(*self, base) }
+    pub fn at(&self, range: Range<u32>) -> AnchoredRange { AnchoredRange::new(*self, range) }
+    pub fn line(&self) -> Line { self.anchor_line }
 
-    pub fn anchor(&self) -> Anchor {
-        self.anchor_line[0].anchor()
-    }
-
-    pub fn unit(&self) -> Unit {
-        self.anchor_line.unit()
-    }
-
-    pub fn line_at(&self, base: u32) -> AnchoredLine {
-        AnchoredLine::new(*self, base)
-    }
-
-    pub fn at(&self, range: Range<u32>) -> AnchoredRange {
-        AnchoredRange::new(*self, range)
-    }
-
-    pub fn line(&self) -> Line {
-        self.anchor_line
+    pub fn store_hash(&self, index: u32, x: Unit) {
+        #[cfg(any(test, feature = "segment_bounds"))]
+            {
+                if index >= self.capacity() {
+                    panic!("segment_bounds: writing index = {}, segment capacity = {}.", index, self.capacity());
+                }
+            }
+        // in the normal write path, we would check that the segment alias count is one
+        // here, the hash is computed on demand, so we may store to a shared segment,
+        // in this case, on purpose.
+        let mut m = *self;
+        m.anchor_line[1 + index] = x;
     }
 
     pub fn print_bits(&self) {
@@ -163,7 +158,6 @@ impl Segment {
     pub fn interactive_print_bits(&self, context_description: &str) {
         use std::io;
         use std::io::Write;
-        use std::ascii::AsciiExt;
         let mut stack = vec![*self];
         let mut command = String::new();
         println!("\n==================== Interactive [{}]", context_description);

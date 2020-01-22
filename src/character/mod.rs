@@ -63,6 +63,16 @@ pub fn store(prism: AnchoredLine, hash: u32, c: u32) {
     }
 }
 
+pub fn store_hash(prism: AnchoredLine, hash: u32, c: u32) {
+    if cfg!(target_pointer_width = "32") {
+        prism.store_hash(1, Unit::from(hash));
+        prism.store_hash(2, Unit::from(c));
+    } else {
+        let x = ((hash as u64) << 32) | c as u64;
+        prism.store_hash(1, Unit::from(x));
+    }
+}
+
 pub fn hydrate(prism: AnchoredLine) -> (u32, u32) {
     if cfg!(target_pointer_width = "32") {
         (prism[1].u32(), prism[2].u32())
@@ -120,11 +130,6 @@ impl Notation for Character {
             _    => { write!(f, "\\{}", ch) }
         }
     }
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Character[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
 }
 
 use std::cmp::Ordering;
@@ -136,7 +141,7 @@ impl Distinguish for Character {
         }
         use hash::hash_64;
         let h = hash_64(c as u64, 4) | (1 << 31);
-        store(prism, h, c);
+        store_hash(prism, h, c);
         h
     }
 
@@ -169,3 +174,4 @@ impl Associative for Character { }
 impl Reversible for Character { }
 impl Sorted for Character { }
 impl Numeral for Character { }
+impl Callable for Character { }

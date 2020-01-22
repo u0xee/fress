@@ -144,7 +144,7 @@ impl Distinguish for FloatPoint {
             use memory::unit::f64_into_u64;
             hash_64(f64_into_u64(x), 8)
         };
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -193,12 +193,6 @@ impl Notation for FloatPoint {
             write!(f, "##-Inf")
         }
     }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "FloatPoint[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
 }
 
 impl Numeral for FloatPoint {
@@ -230,6 +224,8 @@ impl Numeral for FloatPoint {
         unimplemented!()
     }
 }
+
+impl Callable for FloatPoint {}
 
 #[cfg(test)]
 mod tests {

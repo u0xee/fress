@@ -90,6 +90,20 @@ impl Guide {
         self
     }
 
+    pub fn store_hash(self) -> Guide {
+        let mut prism = self.prism;
+        let top: u32 = self.hash;
+        let bot: u32 = self.count;
+        if cfg!(target_pointer_width = "32") {
+            prism.store_hash(1, top.into());
+            prism.store_hash(2, bot.into());
+        } else {
+            let g: u64 = ((top as u64) << 32) | (bot as u64);
+            prism.store_hash(1, g.into());
+        }
+        self
+    }
+
     pub fn capacity_in_bytes(&self) -> u32 {
         let c = self.prism.segment().capacity();
         let unit_capacity = c - self.root.index();

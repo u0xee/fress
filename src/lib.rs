@@ -10,6 +10,8 @@
 #![doc(html_logo_url = "/images/logo/shield.svg")]
 #![doc(html_favicon_url = "/favicon.ico")]
 
+extern crate core;
+
 pub mod array;
 pub mod atom;
 pub mod channel;
@@ -30,6 +32,7 @@ pub mod learn;
 pub mod list;
 pub mod map;
 pub mod memory;
+pub mod meta;
 pub mod queue;
 pub mod random;
 pub mod range;
@@ -122,6 +125,7 @@ pub fn intersection(s: Value, t: Value) -> Value { unimplemented!() }
 pub fn is_subset(s: &Value, t: &Value) -> bool { unimplemented!() }
 pub fn is_superset(s: &Value, t: &Value) -> bool { unimplemented!() }
 pub fn into(sink: Value, xf: transduce::Transducers, source: Value) -> Value { source.pour(xf, sink) }
+pub fn right_into(sink: Value, source: Value) -> Value { into(sink, transduce::Transducers::new(), source) }
 pub fn reduce(red: u32, xf: u32, f: u32) -> Value { unimplemented!() }
 pub fn educe(red: u32, xf: u32) -> u32 { unimplemented!() }
 pub fn max_key(c: &Value, f: u32) -> &Value { unimplemented!() }
@@ -146,7 +150,7 @@ pub fn is_hash_map(v: &Value) -> bool { unimplemented!() }
 pub fn is_hash_set(v: &Value) -> bool { unimplemented!() }
 pub fn is_sort_map(v: &Value) -> bool { unimplemented!() }
 pub fn is_sort_set(v: &Value) -> bool { unimplemented!() }
-pub fn is_aggregate(v: &Value) -> bool { unimplemented!() }
+pub fn is_aggregate(v: &Value) -> bool { v.is_aggregate() }
 pub fn is_sequential(v: &Value) -> bool { unimplemented!() }
 pub fn is_associative(v: &Value) -> bool { unimplemented!() }
 pub fn is_inst(v: &Value) -> bool { unimplemented!() }

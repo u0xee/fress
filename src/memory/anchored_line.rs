@@ -15,27 +15,14 @@ pub struct AnchoredLine {
 }
 
 impl AnchoredLine {
-    pub fn new(seg: Segment, index: u32) -> AnchoredLine {
-        AnchoredLine { seg, index }
-    }
-
-    pub fn get(&self, index: i32) -> Unit {
-        self[index]
-    }
-
+    pub fn new(seg: Segment, index: u32) -> AnchoredLine { AnchoredLine { seg, index } }
+    pub fn get(&self, index: i32) -> Unit { self[index] }
     pub fn set(&self, index: i32, x: Unit) {
         let mut m = *self;
         m[index] = x;
     }
-
-    pub fn segment(&self) -> Segment {
-        self.seg
-    }
-
-    pub fn index(&self) -> u32 {
-        self.index
-    }
-
+    pub fn segment(&self) -> Segment { self.seg }
+    pub fn index(&self) -> u32 { self.index }
     pub fn offset(&self, offset: i32) -> AnchoredLine {
         AnchoredLine { seg: self.seg, index: ((self.index as i32) + offset) as u32 }
     }
@@ -45,9 +32,7 @@ impl AnchoredLine {
         self.seg.has_index(i)
     }
 
-    pub fn with_seg(&self, seg: Segment) -> AnchoredLine {
-        AnchoredLine { seg, index: self.index }
-    }
+    pub fn with_seg(&self, seg: Segment) -> AnchoredLine { AnchoredLine { seg, index: self.index } }
 
     pub fn line(&self) -> Line {
         if !self.has_index(0) {
@@ -58,6 +43,10 @@ impl AnchoredLine {
 
     pub fn span(&self, width: u32) -> AnchoredRange {
         AnchoredRange::new(self.seg, self.index..(self.index + width))
+    }
+
+    pub fn store_hash(&self, index: u32, x: Unit) {
+        self.seg.store_hash(index, x)
     }
 }
 

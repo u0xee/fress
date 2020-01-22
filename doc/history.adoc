@@ -16,9 +16,13 @@ Click on the map to jump to sections like:
 
 === Programming Languages
 * 1880-1951 <<Punched-Card-Equipment>> Early Punched Card Equipment
+* 1945 <<EDVAC>>
+* 1946 <<ENIAC>>
+* 1948 <<Merge-Sort>>
 * 1950 <<EDSAC>>
 * 1952 <<Subroutine>>
 * 1957 <<FORTRAN>>
+* 1960 <<ALGOL>>
 * 1960 <<LISP>>, <<LISP-History>>
 * 1964 <<Landin-Eval>>
 * 1966 <<Landin-Next>>
@@ -51,7 +55,7 @@ Click on the map to jump to sections like:
 * 1987 <<No-Silver-Bullet>>
 * 1993 <<Baker-Equality>>
 * 1994 <<Parnas-Aging>>
-* 2006 <<Mosely-Marks>>
+* 2006 <<Moseley-Marks>>
 * Hickey
 
 === Functional Programming
@@ -108,6 +112,8 @@ Click on the map to jump to sections like:
 * 1977 <<Ackerman-Memory>>
 * 1982 <<Data-Flow-Languages>>
 * 1984 <<Ackerman-Thesis>>
+* 1989 <<Nikhil-Dataflow>>
+* 1992 <<Bawden-Thesis>>
 * 1994 <<Whiting-History>>
 
 === Tree Structures
@@ -240,18 +246,21 @@ Click on the map to jump to sections like:
 * 2019 <<Weiss>>
 
 ==== Linear Use
-* 2002 <<Fahndrich-DeLine>>
-* 1994 <<Bellin-Pi-Calculus>>
-* 1991 <<Wakeling>>
+* 1986 <<Hudak-RC>>
+* 1987 <<Clean>>
 * 1987 <<Girard>>
 * 1990 <<Wadler-Linear>>
-* 1992 <<Baker-Linear>>
-* 1995 <<Baker-Use-Once>>
 * 1990 <<Baker-Unify>>
-* 1996 <<Chirimar>>
-* 1986 <<Hudak-RC>>
+* 1991 <<Wakeling>>
 * 1991 <<Odersky-Destructive>>
+* 1992 <<Baker-Linear>>
 * 1992 <<Odersky-Observers>>
+* 1992 <<Bawden-Thesis>>
+* 1994 <<Bellin-Pi-Calculus>>
+* 1995 <<Baker-Use-Once>>
+* 1996 <<Chirimar>>
+* 2002 <<Fahndrich-DeLine>>
+* 2010 <<Haller>>
 
 .Copy Elimination
 * 1977 <<Barth>>

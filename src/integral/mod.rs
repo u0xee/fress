@@ -113,6 +113,12 @@ impl Integral {
         if negate { x = -x; }
         Some(Integral::new(x).handle())
     }
+
+    pub fn as_i64(prism: AnchoredLine) -> i64 {
+        let guide = Guide::hydrate(prism);
+        let x = hydrate(guide.root);
+        x
+    }
 }
 
 pub fn store(line: AnchoredLine, x: i64) {
@@ -158,7 +164,7 @@ impl Distinguish for Integral {
             let x = hydrate(guide.root) as u64;
             hash_64(x, 8)
         };
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -194,12 +200,6 @@ impl Notation for Integral {
         let guide = Guide::hydrate(prism);
         let x = hydrate(guide.root);
         write!(f, "{}", x)
-    }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Integral[");
-        self.edn(prism, f);
-        write!(f, "]")
     }
 }
 
@@ -244,6 +244,8 @@ impl Numeral for Integral {
     }
 }
 
+impl Callable for Integral {}
+
 // big int as string
 use string;
 pub static BIGINT_SENTINEL: u8 = 0;
@@ -285,13 +287,7 @@ impl Notation for BigInt {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = string::guide::Guide::hydrate(prism[1].handle().prism());
         write!(f, "{}", guide.str())
-    }
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BigInt[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
-}
+    } }
 impl Numeral for BigInt {}
 pub fn big_int(negate: bool, m: &[u8]) -> Handle {
     use std::str::from_utf8;
@@ -304,6 +300,8 @@ pub fn big_int(negate: bool, m: &[u8]) -> Handle {
     prism.set(1, t);
     s.unit().handle()
 }
+
+impl Callable for BigInt {}
 
 #[cfg(test)]
 mod tests {

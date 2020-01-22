@@ -39,6 +39,11 @@ impl Symbol {
         let b = format!("{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
         Symbol::new(b.as_bytes(), prefix.len() as u32)
     }
+
+    pub fn has_namespace(prism: AnchoredLine) -> bool {
+        let guide = Guide::hydrate(prism);
+        guide.solidus != 0
+    }
 }
 
 pub fn units_for(byte_count: u32) -> u32 {
@@ -75,7 +80,7 @@ impl Distinguish for Symbol {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -128,14 +133,10 @@ impl Notation for Symbol {
         let guide = Guide::hydrate(prism);
         write!(f, "{}", guide.str())
     }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let guide = Guide::hydrate(prism);
-        write!(f, "Symbol[{}]", guide.str())
-    }
 }
 
 impl Numeral for Symbol { }
+impl Callable for Symbol { }
 
 #[cfg(test)]
 mod tests {

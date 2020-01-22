@@ -91,9 +91,17 @@ impl Handle {
         mechanism::as_dispatch(&p).tear_down(prism);
     }
 
-    pub fn type_sentinel(self) -> *const u8 {
+    pub fn unaliased(self) -> Handle {
         if self.is_ref() {
             let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).unaliased(prism).handle()
+        } else { unimplemented!() }
+    }
+
+    pub fn type_sentinel(self) -> *const u8 {
+        if self.is_ref() {
+            let prism = self.logical_value();
             let p = prism[0];
             mechanism::as_dispatch(&p).type_sentinel()
         } else {
@@ -180,6 +188,14 @@ impl Handle {
             mechanism::as_dispatch(&p).with_meta(prism, m.unit()).handle()
         } else { unimplemented!() }
     }
+
+    pub fn invoke1(self, a: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).invoke1(prism, a.unit()).handle()
+        } else { unimplemented!() }
+    }
 }
 
 impl fmt::Display for Handle {
@@ -194,7 +210,8 @@ impl fmt::Display for Handle {
                     else if self.is_true() { "true" } else { "false" };
                 write!(f, "{}", name)
             } else if self.is_imm_int() {
-                unimplemented!()
+                let x: i64 = self.unit.into();
+                write!(f, "{}", x >> 4)
             } else if self.is_imm_float() {
                 unimplemented!()
             } else if self.is_imm_char() {
@@ -338,24 +355,101 @@ impl Handle {
         let mut stack2 = xf.apply(stack);
         Handle::from(self.reduce(&mut stack2))
     }
+
+    pub fn as_i64(self) -> i64 {
+        if self.is_ref() {
+            if let Some(prism) = self.integral_prism() {
+                use integral::Integral;
+                Integral::as_i64(prism)
+            } else {
+                unimplemented!("Can't turn {} into an integer.", self)
+            }
+        } else {
+            if self.is_imm_int() {
+                let x: i64 = self.unit.into();
+                (x >> 4)
+            } else {
+                unimplemented!("Can't turn {} into an integer.", self)
+            }
+        }
+    }
 }
 
 impl Handle {
-    pub fn is_string(self) -> bool {
+    pub fn prism_for(self, sentinel: *const u8) -> Option<AnchoredLine> {
+        if self.is_ref() {
+            let prism = self.logical_value();
+            let p = prism[0];
+            if sentinel == mechanism::as_dispatch(&p).type_sentinel() {
+                Some(prism)
+            } else { None }
+        } else { None }
+    }
+
+    pub fn integral_prism(self) -> Option<AnchoredLine> {
+        use integral::INTEGRAL_SENTINEL;
+        self.prism_for((& INTEGRAL_SENTINEL) as *const u8)
+    }
+    pub fn is_integral(self) -> bool { self.integral_prism().is_some() }
+
+    pub fn string_prism(self) -> Option<AnchoredLine> {
         use string::STR_SENTINEL;
-        self.type_sentinel() == (& STR_SENTINEL) as *const u8
+        self.prism_for((& STR_SENTINEL) as *const u8)
     }
-    pub fn is_vector(self) -> bool {
-        use vector::VECTOR_SENTINEL;
-        self.type_sentinel() == (& VECTOR_SENTINEL) as *const u8
+    pub fn is_string(self) -> bool { self.string_prism().is_some() }
+
+    pub fn symbol_prism(self) -> Option<AnchoredLine> {
+        use symbol::SYMBOL_SENTINEL;
+        self.prism_for((& SYMBOL_SENTINEL) as *const u8)
     }
-    pub fn is_list(self) -> bool {
+    pub fn is_symbol(self) -> bool { self.symbol_prism().is_some() }
+
+    pub fn list_prism(self) -> Option<AnchoredLine> {
         use list::LIST_SENTINEL;
-        self.type_sentinel() == (& LIST_SENTINEL) as *const u8
+        self.prism_for((& LIST_SENTINEL) as *const u8)
     }
-    pub fn is_char(self) -> bool {
-        use character::CHARACTER_SENTINEL;
-        self.type_sentinel() == (& CHARACTER_SENTINEL) as *const u8
+    pub fn is_list(self) -> bool { self.list_prism().is_some() }
+
+    pub fn vector_prism(self) -> Option<AnchoredLine> {
+        use vector::VECTOR_SENTINEL;
+        self.prism_for((& VECTOR_SENTINEL) as *const u8)
+    }
+    pub fn is_vector(self) -> bool { self.vector_prism().is_some() }
+
+    pub fn is_set(self) -> bool {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).is_set()
+        } else { false }
+    }
+
+    pub fn is_map(self) -> bool {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).is_map()
+        } else { false }
+    }
+
+    pub fn is_aggregate(self) -> bool {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            mechanism::as_dispatch(&p).is_aggregate()
+        } else { false }
+    }
+}
+
+impl Handle {
+    pub fn has_namespace(self) -> bool {
+        if let Some(prism) = self.symbol_prism() {
+            use symbol::Symbol;
+            Symbol::has_namespace(prism)
+        } else {
+            // keyword
+            unimplemented!()
+        }
     }
 }
 

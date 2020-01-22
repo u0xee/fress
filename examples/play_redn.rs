@@ -12,21 +12,25 @@ fn parse_diagnostics(s: String) {
     use fress::handle::Handle;
     use fress::edn;
     use fress::edn::reader::{EdnReader, ReadResult};
-    let mut reader = EdnReader::new();
 
+    let mut reader = EdnReader::new();
     // loop while bytes left, reading and reporting on errors or successes
     let r = edn::read(&mut reader, s.as_bytes());
     match r {
         ReadResult::Ok { bytes_used, value } => {
-            println!("bytes_used: {}, {:?}", bytes_used, value.handle());
-            // free value resources
+            println!("bytes_used: {}, {}", bytes_used, value.handle());
+            value.handle().retire();
         },
         _ => {
             println!("{:?}", r);
         },
     }
-    // report errors with line, col numbers
-    // parsing diagnostics (what was read, where, begin-end of data structures, whitespace
+    let x: Value = 45.into();
+    let y: Value = 43.into();
+    let w = fress::read(":name").unwrap();
+    let z = fress::read("{:name 4 :drive 5}").unwrap();
+    println!("XXX {}", z.contains(&w));
+    println!("XXX {}", x < y);
 }
 
 fn main() {
@@ -40,7 +44,7 @@ fn main() {
     use std::fs;
     let s = fs::read_to_string(&filename).unwrap();
     println!("@@ {}", &filename);
-    println!("   0 2 4 6 8 a c e");
+    println!("   0 2 4 6 8 a c e 6 8 20  24  28  32  36  40  44  48  52  56  60");
     for (line, txt) in s.lines().enumerate() {
         println!("{:2} |{}", line + 1, txt);
     }

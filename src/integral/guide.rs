@@ -110,5 +110,19 @@ impl Guide {
         self.store_at(self.prism);
         self
     }
+
+    pub fn store_hash(self) -> Guide {
+        let mut prism = self.prism;
+        let top: u32 = self.hash;
+        let bot: u32 = (self.is_big_bit << 31) | self.unit_count;
+        if cfg!(target_pointer_width = "32") {
+            prism.store_hash(1, top.into());
+            prism.store_hash(2, bot.into());
+        } else {
+            let g: u64 = ((top as u64) << 32) | (bot as u64);
+            prism.store_hash(1, g.into());
+        }
+        self
+    }
 }
 

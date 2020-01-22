@@ -24,7 +24,8 @@ Sequential +
 Associative +
 Reversible +
 Sorted +
-Numeral {
+Numeral +
+Callable {
     fn tear_down(&self, prism: AnchoredLine) { unimplemented!() }
     fn unaliased(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn logical_value(&self, prism: AnchoredLine) -> AnchoredLine { prism }
@@ -35,8 +36,11 @@ pub trait Identification {
     fn type_sentinel(&self) -> *const u8 { unimplemented!() }
 }
 
-pub trait Notation {
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
+pub trait Notation : Identification {
+    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "^{} ", self.type_name());
+        self.edn(prism, f)
+    }
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
     fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> { unimplemented!() }
 }
@@ -48,6 +52,7 @@ pub trait Distinguish {
 }
 
 pub trait Aggregate {
+    fn is_aggregate(&self) -> bool { false }
     fn count(&self, prism: AnchoredLine) -> u32 { unimplemented!() }
     fn empty(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit { unimplemented!() }
@@ -61,10 +66,13 @@ pub trait Aggregate {
 }
 
 pub trait Sequential {
+    fn is_sequential(&self) -> bool { false }
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit { unimplemented!() }
 }
 
 pub trait Associative {
+    fn is_map(&self) -> bool { false }
+    fn is_set(&self) -> bool { false }
     fn contains(&self, prism: AnchoredLine, x: Unit) -> bool { unimplemented!() }
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) { unimplemented!() }
     fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit { unimplemented!() }
@@ -79,6 +87,7 @@ pub trait Sorted {
 }
 
 pub trait Numeral {
+    fn is_numeral(&self) -> bool { false }
     fn inc(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn dec(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
     fn add(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
@@ -89,6 +98,13 @@ pub trait Numeral {
     fn divide(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
     fn remainder(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
     fn modulus(&self, prism: AnchoredLine, other: Unit) -> Unit { unimplemented!() }
+}
+
+pub trait Callable {
+    fn invoke0(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
+    fn invoke1(&self, prism: AnchoredLine, a: Unit) -> Unit { unimplemented!() }
+    fn invoke2(&self, prism: AnchoredLine, a: Unit, b: Unit) -> Unit { unimplemented!() }
+    fn invoke3(&self, prism: AnchoredLine, a: Unit, b: Unit, c: Unit) -> Unit { unimplemented!() }
 }
 
 pub trait Binary {

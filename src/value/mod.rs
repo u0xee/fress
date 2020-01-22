@@ -13,7 +13,7 @@ use std::ops;
 use memory::*;
 use handle::*;
 use dispatch::*;
-use transduce::{Transducer, Transducers};
+use transduce::{Transducer, Transducers, Process};
 
 pub mod operators;
 pub mod conversions;
@@ -60,7 +60,14 @@ impl Value {
         unsafe { &*v }
     }
 
+    pub fn is_aggregate(&self) -> bool { self.handle().is_aggregate() }
+    pub fn is_list(&self) -> bool { self.handle().is_list() }
+    pub fn is_vector(&self) -> bool { self.handle().is_vector() }
+    pub fn is_set(&self) -> bool { self.handle().is_set() }
+    pub fn is_map(&self) -> bool { self.handle().is_map() }
+    pub fn is_symbol(&self) -> bool { self.handle().is_symbol() }
     pub fn count(&self) -> u32 { self.handle().count() }
+    pub fn is_empty(&self) -> bool { self.count() == 0 }
     pub fn hash(&self) -> u32 { self.handle().hash() }
     pub fn empty(&self) -> Value { self.handle().empty().value() }
     pub fn contains(&self, k: &Value) -> bool { self.handle().contains(k.handle()) }
@@ -69,6 +76,11 @@ impl Value {
         let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
         displaced.retire();
         c.value()
+    }
+
+    pub fn assoc_out(self, k: Value, v: Value) -> (Value, Value) {
+        let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
+        (c.value(), displaced.value())
     }
 
     pub fn dissoc(self, k: &Value) -> Value { self.consume().dissoc(k.handle()).value() }
@@ -90,10 +102,19 @@ impl Value {
 
     pub fn with_meta(self, m: Value) -> Value { self.consume().with_meta(m.consume()).value() }
 
+    pub fn has_namespace(&self) -> bool { self.handle().has_namespace() }
+
     pub fn inc(self) -> Value { self.consume().inc().value() }
     pub fn dec(self) -> Value { self.consume().dec().value() }
     pub fn modulus(self, divisor: Value) -> Value {
         self.consume().modulus(divisor.consume()).value()
+    }
+
+    pub fn reduce(self, stack: &mut [Box<Process>]) -> Value {
+        let s = self.consume();
+        let ret = s.reduce(stack);
+        s.retire();
+        ret
     }
 
     pub fn pour(self, xf: Transducers, sink: Value) -> Value {
@@ -101,6 +122,10 @@ impl Value {
         let ret = s.pour(xf, sink.consume()).value();
         s.retire();
         ret
+    }
+
+    pub fn as_i64(&self) -> i64 {
+        self.handle().as_i64()
     }
 }
 
@@ -136,21 +161,15 @@ impl fmt::Debug for Value {
 // iterator, intoiterator
 
 impl default::Default for Value {
-    fn default() -> Self {
-        Handle::nil().value()
-    }
+    fn default() -> Self { Value::nil() }
 }
 
 impl Clone for Value {
-    fn clone(&self) -> Self {
-        self.split_out()
-    }
+    fn clone(&self) -> Self { self.split_out() }
 }
 
 impl PartialEq for Value {
-    fn eq(&self, other: &Value) -> bool {
-        self.handle().eq(other.handle())
-    }
+    fn eq(&self, other: &Value) -> bool { self.handle().eq(other.handle()) }
 }
 
 impl PartialOrd for Value {

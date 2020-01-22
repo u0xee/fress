@@ -135,7 +135,7 @@
   the more things change, the more they are the same._ ACM [.acro]#SIGPLAN OOPS# Messenger 4.4.
   http://www.pipeline.com/~hbaker1/ObjectIdentity.html[source^]
 
-* [[[Baker-Pointers]]] *Baker*, Henry G. (1994) _Minimizing reference count updating with deferred and
+* [[[Baker-Pointers]]] Henry G. *Baker* (1994) _Minimizing reference count updating with deferred and
   anchored pointers for functional data structures._ ACM [.acro]#SIGPLAN# Notices 29.9.
   http://www.pipeline.com/~hbaker1/LRefCounts.html[source^]
 
@@ -150,6 +150,14 @@
 * [[[Barth]]] Jeffrey *Barth* (1977) _Shifting garbage collection overhead to compile time._
   Comm. of ACM 20.7.
   {scholar}barth&title=shifting+garbage+collection+overhead+to+compile+time[search^]
+
+* [[[Bawden-State]]] Alan *Bawden* (1988) _Analyzing the State Behavior of Programs._
+  Working Paper 311, MIT Artificial Intelligence Lab.
+  {scholar}bawden&title=analyzing+the+state+behavior+of+programs[search^]
+
+* [[[Bawden-Thesis]]] Alan *Bawden* (1992) _Linear Graph Reduction: Confronting the Cost of Naming._
+  Doctoral thesis, Adviser Gerald Jay *Sussman*, MIT.
+  {scholar}bawden&title=linear+graph+reduction[search^]
 
 * [[[Binary-B-tree]]] Rudolf *Bayer* (1971) _Binary B-trees for virtual memory._
   Proc. of ACM [.acro]#SIGFIDET# (now [.acro]#SIGMOD#) Workshop on Data Description, Access and Control.
@@ -271,6 +279,10 @@
 * [[[Brooks-Compiler]]] Rodney *Brooks*, Richard *Gabriel* and Guy *Steele* (1982)
   _An optimizing compiler for lexically scoped [.acro]#LISP#._ ACM [.acro]#SIGPLAN# Notices 17.6.
   {scholar}brooks&title=an+optimizing+compiler+for+lexically+scoped+lisp[search^]
+
+* [[[Clean]]] Tom *Brus* et al (1987) _Clean: a Language for Functional Graph Rewriting._
+  Conf. on Functional Languages and Computer Architecture. Springer, Berlin, Heidelberg.
+  {scholar}brus&title=clean+a+language+for+functional+graph+rewriting[search^]
 
 * [[[Burger-Print]]] Robert *Burger* and R. Kent *Dybvig* (1996) _Printing floating-point numbers quickly and accurately._
   ACM [.acro]#SIGPLAN# Notices 31.5.
@@ -538,6 +550,11 @@
   ACM [.acro]#SIGPLAN# Notices 24.7.
   {scholar}goldberg&title=generational+reference+counting[search^]
 
+* [[[ENIAC]]] Herman *Goldstine* and Adele *Goldstine* (1946)
+  _The electronic numerical integrator and computer [.acro]#ENIAC#._
+  Mathematics of Computation 2.15.
+  {scholar}goldstine&title=the+electronic+numerical+integrator+and+computer[search^]
+
 * [[[Gopinath-Thesis]]] K. *Gopinath* (1988) _Copy Elimination in Single Assignment Languages._
   Doctoral thesis, Stanford University.
   {scholar}gopinath&title=copy+elimination+in+single+assignment+languages[search^]
@@ -569,6 +586,10 @@
   {scholar}guzman&title=on+expressing+the+mutation+of+state+in+a+functional+programming+language[search^]
 
 [[bib-h]]
+* [[[Haller]]] Philipp *Haller* and Martin *Odersky* (2010) _Capabilities for Uniqueness and Borrowing._
+  European Conf. on Object Oriented Programming. Springer, Berlin, Heidelberg.
+  {scholar}haller&title=capabilities+for+uniqueness+and+borrowing[search^]
+
 * [[[Fressian]]] Stuart *Halloway* (2012) _[.caps]#Fressian# extensible binary data notation._
   http://fressian.org[fressian.org^]
 
@@ -897,7 +918,12 @@
   _Index structuring in inverted data bases by [.acro]#TRIES#._ The Computer Journal 20.4.
   {scholar}nicklas&title=index+structuring+in+inverted+data+bases+by+tries[search^]
 
-* [[[Nikhil]]] Rishiyur *Nikhil* and Keshav *Pingali* (1989) _I-structures: Data structures for parallel computing._
+* [[[Nikhil-Dataflow]]] Rishiyur *Nikhil* (1989) _Can dataflow subsume von Neumann computing?_
+  ACM [.acro]#SIGARCH# 17.3.
+  {scholar}nikhil&title=can+dataflow+subsume+von+neumann+computing[search^]
+
+* [[[Nikhil-Structures]]] Rishiyur *Nikhil* and Keshav *Pingali* (1989)
+  _I-structures: Data structures for parallel computing._
   ACM Transactions on Programming Languages and Systems 11.4.
   {scholar}nikhil&title=data+structures+for+parallel+computing[search^]
 
@@ -1131,6 +1157,20 @@
   {scholar}ungar&title=self+the+power+of+simplicity[search^]
 
 [[bib-v]]
+* [[[EDVAC]]] John *von Neumann* (1945) _First Draft of a Report on the [.acro]#EDVAC#._
+  Univ. of Pennsylvania.
+  {scholar}von+neumann&title=first+draft+of+a+report+on+the+edvac[search^]
+
+* [[[Merge-Sort]]] John *von Neumann* and Herman *Goldstine* (1948)
+  _Planning and coding of problems for an electronic computing instrument._
+  Institute for Advanced Study, Princeton NJ.
+  {scholar}von+neumann&title=planning+and+coding+of+problems+for+an+electronic+computing+instrument[search^]
+
+* [[[Python]]] Guido *Van Rossum* and Fred *Drake* Jr (1995) [.caps]#Python# reference manual.
+  Amsterdam: Centrum voor Wiskunde en Informatica.
+  {scholar}van+rossum&title=python+reference+manual[search^],
+  https://www.python.org/[python.org^]
+
 * [[[Vanderburg]]] Glenn *Vanderburg* (2012) _Real Software Engineering._
   Keynote Address Nov. 7, QCon San Francisco, Hyatt Regency San Francisco, InfoQ.
   https://www.infoq.com/presentations/Software-Engineering[infoq.com^] --
@@ -1199,5 +1239,5 @@ to be _spent in finding errors in my own programs._"
 
 [[bib-y]]
 * [[[UTF-8]]] Francois *Yergeau* (2003) _UTF-8 -- a transformation format of ISO 10646._
-  STD 63, RFC 3629, [.acro]#DOI 10.17487/RFC3629#. {rfc}3629[source^]
+  STD 63, RFC 3629, [.acro]#DOI 10.17487/RFC3629#. {rfc}3629[source^] https://en.wikipedia.org/wiki/UTF-8[wiki^]
 

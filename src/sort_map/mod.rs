@@ -103,6 +103,7 @@ impl Sorted for SortedMap {}
 
 impl Notation for SortedMap {}
 impl Numeral for SortedMap {}
+impl Callable for SortedMap {}
 
 pub fn next_power(x: u32) -> u32 {
     (x + 1).next_power_of_two()

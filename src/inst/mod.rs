@@ -307,7 +307,7 @@ impl Distinguish for Inst {
         let (d, t) = as_u64s(&guide.point);
         use hash::hash_128;
         let h = hash_128(d, t, 16);
-        guide.set_hash(h).store().hash
+        guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -352,15 +352,10 @@ impl Notation for Inst {
         write!(f, "{}{:02}:{:02}\"",
                if p.off_neg == 0 { '+' } else { '-' }, p.off_hour, p.off_min)
     }
-
-    fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Inst[");
-        self.edn(prism, f);
-        write!(f, "]")
-    }
 }
 
 impl Numeral for Inst {}
+impl Callable for Inst {}
 
 #[cfg(test)]
 mod tests {

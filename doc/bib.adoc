@@ -103,7 +103,7 @@
   Symposium on Implementation and Application of Functional Languages. Springer, Berlin, Heidelberg.
   {scholar}bagwell&title=fast+functional+lists[search^]
 
-* [[[RRB-Tree]]] Phil *Bagwell* and T. *Rompf* (2011) _[.caps]#RRB-Trees#: Efficient Immutable Vectors._
+* [[[RRB-Tree]]] Phil *Bagwell* and Tiark *Rompf* (2011) _[.caps]#RRB-Trees#: Efficient Immutable Vectors._
   Technical Report [.acro]#EPFL-REPORT-169879#, Ecole Polytechnique Fédérale de Lausanne.
   {scholar}bagwell&title=rrb+trees+efficient+immutable+vectors[search^]
 
@@ -198,7 +198,7 @@
   ACM Transactions on Database Systems 8.4.
   {scholar}bernstein&title=multiversion+concurrency+control[search^]
 
-* [[[Keccak-Reference]]] Guido *Bertoni*, Joan *Daemen*, Michaël *Peeters* and G. V. *Assche* (2011)
+* [[[Keccak-Reference]]] Guido *Bertoni*, Joan *Daemen*, Michaël *Peeters* and Gilles Van *Assche* (2011)
   _The [.caps]#Keccak# Reference._ Submission to NIST (Round 3) 13.
   https://keccak.team/files/Keccak-reference-3.0.pdf[source^]
 

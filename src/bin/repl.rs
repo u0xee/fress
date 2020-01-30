@@ -19,7 +19,7 @@ fn n() {
     loop {
         //io::stdout().flush().ok().expect("Could not flush stdout.");
         let v = read_one_stdin(&mut reader);
-        // if :repl/quit, stop
+        // TODO if :repl/quit, stop
         let result = eval::eval(v);
         println!("■■  {}   ", result);
     }

@@ -66,6 +66,7 @@ impl Value {
     pub fn is_set(&self) -> bool { self.handle().is_set() }
     pub fn is_map(&self) -> bool { self.handle().is_map() }
     pub fn is_symbol(&self) -> bool { self.handle().is_symbol() }
+    pub fn is_integral(&self) -> bool { self.handle().is_integral() }
     pub fn count(&self) -> u32 { self.handle().count() }
     pub fn is_empty(&self) -> bool { self.count() == 0 }
     pub fn hash(&self) -> u32 { self.handle().hash() }
@@ -124,9 +125,7 @@ impl Value {
         ret
     }
 
-    pub fn as_i64(&self) -> i64 {
-        self.handle().as_i64()
-    }
+    pub fn as_i64(&self) -> i64 { self.handle().as_i64() }
 }
 
 impl From<Handle> for Value {

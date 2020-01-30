@@ -10,12 +10,9 @@ use ::{read, is_aggregate, hash_map, hash_set, list, vector, nil, tru, fals};
 use right_into;
 use transduce::Process;
 
-pub fn structure(v: Value) -> Result<(Value, Value), String> {
-    let globals = read("{+ fress/+, conj fress/conj, *ns* user}").unwrap();
-    //let globals = hash_map();
-    //let locals = read("#{a b c dog}").unwrap();
+pub fn structure(v: Value, globals: &Value) -> Result<(Value, Value), String> {
     let locals = hash_set();
-    let r = res(v, &globals, &locals, nil());
+    let r = res(v, globals, &locals, nil());
     match r {
         Err(s) => { return Err(s) },
         Ok((resolved, locals_used, notes)) => {
@@ -36,6 +33,8 @@ pub fn structure(v: Value) -> Result<(Value, Value), String> {
 
 // TODO propagate recur like a local use
 // TODO on loop-tail recur and non-recur branches, mark in notes as exiting loop path
+// TODO check arity collisions in multi-body fns
+// TODO normalize things like loop w/o recur -> let, recur targeting fn args, destructuring bindings
 
 pub fn resolve_symbol(s: &Value, globals: &Value, locals: &Value) -> Option<Value> {
     if s.is_symbol() {
@@ -380,7 +379,7 @@ pub fn res_if(a: Value, globals: &Value, locals: &Value, tail_of: Value)
               -> Result<(Value, Value, Value), String> {
     // (if test then _)
     let ct = a.count();
-    assert!(ct == 3 || ct == 4);
+    assert!(ct == 3 || ct == 4); // return Err
 
     let mut aa = a.split_out();
     let mut locals_used = hash_map();
@@ -408,6 +407,7 @@ pub fn res_if(a: Value, globals: &Value, locals: &Value, tail_of: Value)
         Err(s) => { return Err(s) },
     }
 
+    // if in loop tail, and exactly one branch returns "recur", flag in notes as loop exit branch
     if ct == 4 {
         let el = a.nth(3);
         let r = res(el.split_out(), globals, locals, tail_of);
@@ -537,9 +537,11 @@ pub fn res_recur(a: Value, globals: &Value, locals: &Value, tail_of: Value)
     // (recur 1 2)
     let ct = a.count();
     if !tail_of.is_vector() {
+        // return Err
         panic!("Recur not in tail position!");
     }
     if tail_of.count() != (ct - 1) {
+        // return Err
         panic!("Recur does not match, in number of arguments.");
     }
     let recur_sym = a.nth(0).split_out();

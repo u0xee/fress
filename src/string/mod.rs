@@ -105,14 +105,21 @@ impl Str {
         Ok(guide.set_count(fill as u32).store().segment().unit().handle())
     }
 
-    pub fn new_value_from_str(source: &str) -> Value {
-        Str::new_from_str(source).value()
-    }
+    pub fn new_value_from_str(source: &str) -> Value { Str::new_from_str(source).value() }
 }
 
 pub fn units_for(byte_count: u32) -> u32 {
     let (b, c) = if cfg!(target_pointer_width = "32") { (4, 2) } else { (8, 3) };
     (byte_count + b - 1) >> c
+}
+
+pub fn byte_slice(prism: &AnchoredLine) -> &[u8] {
+    use std::slice::from_raw_parts;
+    let guide = Guide::hydrate(*prism);
+    let b = guide.byte_slice(guide.count);
+    unsafe {
+        from_raw_parts(b.as_ptr(), b.len())
+    }
 }
 
 impl Dispatch for Str {

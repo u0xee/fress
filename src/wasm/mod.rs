@@ -15,17 +15,28 @@ use handle::Handle;
 // int128enc
 // binary wasm
 
-// each section = id byte_count bytes
-// sections
-// 1 types: vec(signatures)
-//   signature =  0x60 vec(basic) vec(basic)
-
-pub fn uleb128(x: u64, out: &mut [u8]) -> u32 {
-    unimplemented!()
+pub fn uleb128(buf: &mut Vec<u8>, x: u64) {
+    let mut x = x;
+    loop {
+        if (x >> 7) == 0 {
+            buf.push(x as u8);
+            return;
+        }
+        buf.push(x as u8 | 0x80);
+        x = x >> 7;
+    }
 }
-
-pub fn sleb128(x: u64, out: &mut [u8]) -> u32 {
-    unimplemented!()
+pub fn sleb128(buf: &mut Vec<u8>, x: i64) {
+    let mut x = x;
+    loop {
+        let y = x >> 6;
+        if y == 0 || y == -1 {
+            buf.push(x as u8 & 0x7F); // clear top bit
+            return;
+        }
+        buf.push(x as u8 | 0x80); // set top bit
+        x = x >> 7;
+    }
 }
 
 pub struct Op {}
@@ -58,6 +69,9 @@ impl Op {
     pub const MEM_PAGES: u8 = 0x3F;
     pub const MEM_GROW: u8 = 0x40;
     pub const I32_CONST: u8 = 0x41;
+    pub const I64_CONST: u8 = 0x42;
+    pub const F32_CONST: u8 = 0x43;
+    pub const F64_CONST: u8 = 0x44;
     pub const I32_EQZ: u8 = 0x45;
 }
 pub struct Type {}
@@ -67,7 +81,7 @@ impl Type {
     pub const F32: u8 = 0x7D;
     pub const F64: u8 = 0x7C;
     pub const VOID: u8 = 0x40;
-    pub const FN: u8 = 0x60; //vec(args) vec(results)
+    pub const FN: u8 = 0x60; // vec(args) vec(results)
     pub const MIN: u8 = 0x00;
     pub const MIN_MAX: u8 = 0x01;
     pub const FN_REF: u8 = 0x70;
@@ -93,7 +107,7 @@ impl Section {
 // vectors are u32 length, then elements
 // names are vector of bytes (utf-8)
 
-pub const MAGIC: [u8; 4] = [0x00, 0x61, 0x73, 0x6D];
+pub const MAGIC: [u8; 4] = [0x00, 0x61, 0x73, 0x6D]; // b"\0asm"
 pub const VERSION: [u8; 4] = [0x01, 0x00, 0x00, 0x00];
 pub const PAGE_SIZE: u32 = 1 << 16;
 

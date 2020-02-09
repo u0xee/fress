@@ -59,7 +59,7 @@ pub fn compile_top_level(form: &Value, notes: &Value) -> Box<Context> {
         constant_data: vec![],
         vtable: vector(),
         funcs: vec![Func { // static init function, takes global map (source of vars, :kw etc)
-            argc: 1, localc: 1, code_bytes: vec![], current_depth: 0,
+            argc: 1, localc: 0, code_bytes: vec![], current_depth: 0,
             loop_point: 0, recur_targets: vec![], loop_terminals: vec![],
             try_point: 0, try_pinned: hash_set(),
         }, Func { // top level form
@@ -80,6 +80,8 @@ pub fn compile_top_level(form: &Value, notes: &Value) -> Box<Context> {
         unimplemented!();
     }
     let init_f: &mut Func = ctx.funcs.get_mut(0).unwrap();
+    init_f.code_bytes.push(wasm::Op::LOCAL);
+    init_f.code_bytes.push(0u8);
     init_f.code_bytes.push(wasm::Op::END);
     let top_f: &mut Func = ctx.funcs.get_mut(1).unwrap();
     top_f.code_bytes.push(wasm::Op::END);
@@ -91,7 +93,7 @@ pub fn register_import(ctx: &mut Context, description: &Value) -> u32 {
     let name = description.get(&name_k);
     let idx = ctx.imports.get(name).split_out();
     if idx.is_integral() {
-        unimplemented!()
+        idx.as_i64() as u32
     } else {
         let ct = ctx.import_v.count();
         use std::mem::replace;
@@ -228,7 +230,6 @@ pub fn comp_call(ctx: &mut Context, form: &Value, notes: &Value, captured: &Valu
         // (x 2) (:kw m) (some/f 7) var reference
         unimplemented!()
     }
-    unimplemented!()
 }
 pub fn comp_vector(ctx: &mut Context, form: &Value, notes: &Value, captured: &Value,
                    named: &Value, terminal: &Value, dormant: &Value, vacant: &Value) -> Value {

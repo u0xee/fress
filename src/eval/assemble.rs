@@ -159,27 +159,27 @@ pub fn import_section(ctx: &Context, sigs: Vec<u32>) -> Vec<u8> {
     let total_ct = 4 /*memory, table, bases*/ + ctx.import_v.count();
     wasm::uleb128(&mut buf, total_ct as u64);
     {
-        let mem = read("[\"fress\" \"_memory\"]").unwrap();
+        let mem = read("[\"sys\" \"memory\"]").unwrap();
         name_pair_to_buf(&mut buf, &mem);
         buf.push(2u8); // memory
         buf.push(wasm::Type::MIN);
         buf.push(0u8);
 
-        let mem_base = read("[\"fress\" \"_memory_base\"]").unwrap();
+        let mem_base = read("[\"sys\" \"memory_base\"]").unwrap();
         name_pair_to_buf(&mut buf, &mem_base);
         buf.push(3u8); // global
         buf.push(wasm::Type::I32);
         buf.push(wasm::Type::GLOBAL_CONST);
     }
     {
-        let tab = read("[\"fress\" \"_table\"]").unwrap();
+        let tab = read("[\"sys\" \"table\"]").unwrap();
         name_pair_to_buf(&mut buf, &tab);
         buf.push(1u8); // table
         buf.push(wasm::Type::FN_REF);
         buf.push(wasm::Type::MIN);
         buf.push(0u8);
 
-        let tab_base = read("[\"fress\" \"_table_base\"]").unwrap();
+        let tab_base = read("[\"sys\" \"table_base\"]").unwrap();
         name_pair_to_buf(&mut buf, &tab_base);
         buf.push(3u8); // global
         buf.push(wasm::Type::I32);

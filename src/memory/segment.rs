@@ -185,9 +185,7 @@ impl Segment {
 }
 
 impl From<Unit> for Segment {
-    fn from(unit: Unit) -> Self {
-        Segment::from(unit.line())
-    }
+    fn from(unit: Unit) -> Self { Segment::from(unit.line()) }
 }
 
 impl From<Line> for Segment {

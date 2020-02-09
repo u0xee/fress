@@ -54,9 +54,6 @@ pub mod wasm;
 #[doc(inline)]
 pub use value::Value;
 
-#[no_mangle]
-pub extern fn fress_nil() -> usize { 7 }
-
 pub fn nil()  -> Value { Value::nil() }
 pub fn tru()  -> Value { Value::tru() }
 pub fn fals() -> Value { Value::fals() }

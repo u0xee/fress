@@ -10,7 +10,6 @@ readme = "README.adoc"
 keywords = ["information", "io", "persistent", "edn", "fressian"]
 categories = ["data-structures", "algorithms", "encoding", "parser-implementations", "wasm"]
 license = "EPL-1.0"
-maintenance = { status = "experimental" }
 
 [lib]
 crate-type = ["rlib", "staticlib", "cdylib"]

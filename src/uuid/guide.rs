@@ -71,7 +71,7 @@ impl Guide {
     }
 
     pub fn store_hash(self) -> Guide {
-        let mut prism = self.prism;
+        let prism = self.prism;
         if cfg!(target_pointer_width = "32") {
             prism.store_hash(1, self.hash.into());
         } else {

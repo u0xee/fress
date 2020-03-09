@@ -5,13 +5,10 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use std::str::from_utf8;
+//use std::str::from_utf8;
 use std::fmt;
-use std::io;
 use memory::*;
 use dispatch::*;
-use transduce::{Process};
-use value::Value;
 use handle::Handle;
 
 pub mod guide;
@@ -19,9 +16,7 @@ use self::guide::{Guide, Point};
 
 pub static INST_SENTINEL: u8 = 0;
 
-pub struct Inst {
-    prism: Unit,
-}
+pub struct Inst { }
 
 pub fn sign(b: u8) -> bool { b == b'+' || b == b'-' }
 pub fn digit(b: u8) -> bool { b.wrapping_sub(b'0') < 10 }
@@ -344,10 +339,10 @@ impl Notation for Inst {
         let guide = Guide::hydrate(prism);
         let p = add_offset(&guide.point);
         write!(f, "#inst \"{:04}-{:02}-{:02}T{:02}:{:02}:{:02}",
-               p.year, p.month, p.day, p.hour, p.min, p.sec);
+               p.year, p.month, p.day, p.hour, p.min, p.sec)?;
         if p.nano != 0 {
             let (width, digits) = width_digits(p.nano);
-            write!(f, ".{:0w$}", digits, w = width);
+            write!(f, ".{:0w$}", digits, w = width)?;
         }
         write!(f, "{}{:02}:{:02}\"",
                if p.off_neg == 0 { '+' } else { '-' }, p.off_hour, p.off_min)

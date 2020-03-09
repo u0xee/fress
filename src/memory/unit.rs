@@ -10,7 +10,6 @@ use std::fmt;
 use std::mem::transmute;
 use std::cmp::{Eq, PartialEq, Ord, PartialOrd};
 use memory::*;
-use value::Value;
 use handle::Handle;
 
 /// A Unit is one processor word. Here, 64 or 32 bits.

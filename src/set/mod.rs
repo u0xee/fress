@@ -17,9 +17,7 @@ use vector::guide::Guide;
 
 pub static SET_SENTINEL: u8 = 0;
 
-pub struct Set {
-    prism: Unit,
-}
+pub struct Set { }
 
 // Set library:
 // intersection, union, difference, symmetric difference
@@ -27,11 +25,13 @@ pub struct Set {
 
 impl Set {
     pub fn new() -> Unit {
+        log!("set new");
         let guide = {
-            let s = Segment::new(3 + map::size(1));
+            let cap = 1 /*prism*/ + Guide::units() + 1 /*pop*/ + map::size(1);
+            let s = Segment::new(cap);
             let prism = s.line_at(0);
             prism.set(0, mechanism::prism::<Set>());
-            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+            let g = Guide::hydrate_top_bot(prism, 0, 0);
             g
         };
         guide.root.set(-1, map::pop::Pop::new().unit());
@@ -45,7 +45,9 @@ impl Set {
 
 impl Dispatch for Set {
     fn tear_down(&self, prism: AnchoredLine) {
-        map::tear_down::tear_down(prism, 0)
+        group!("set tear down");
+        map::tear_down::tear_down(prism, 0);
+        group_end!();
     }
 
     fn unaliased(&self, prism: AnchoredLine) -> Unit {
@@ -54,13 +56,9 @@ impl Dispatch for Set {
 }
 
 impl Identification for Set {
-    fn type_name(&self) -> &'static str {
-        "Set"
-    }
+    fn type_name(&self) -> &'static str { "Set" }
 
-    fn type_sentinel(&self) -> *const u8 {
-        (& SET_SENTINEL) as *const u8
-    }
+    fn type_sentinel(&self) -> *const u8 { (& SET_SENTINEL) as *const u8 }
 }
 
 impl Distinguish for Set {
@@ -69,12 +67,13 @@ impl Distinguish for Set {
         if guide.has_hash() {
             return guide.hash;
         }
+        group!("set hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
         }
         impl Process for Pointer {
-            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+            fn inges(&mut self, stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
                 let vh = v.hash() as u64;
                 let h = cycle_abc(181, (vh << 32) | vh);
                 unsafe {
@@ -82,15 +81,17 @@ impl Distinguish for Set {
                 }
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
         let mut y = cycle_abc(97, PI[487] + guide.count as u64);
-        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
+        let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = map::reduce::reduce(prism, &mut procs, 0);
         let h = cycle_abc(27, y) as u32;
+        log!("hash of set {:#08X}", h);
+        group_end!();
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
@@ -98,7 +99,10 @@ impl Distinguish for Set {
         if o.is_ref() {
             let o_prism = o.logical_value();
             if prism[0] == o_prism[0] {
-                map::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 0)
+                group!("set eq");
+                let res = map::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 0);
+                group_end!();
+                res
             } else {
                 false
             }
@@ -122,7 +126,9 @@ impl Aggregate for Set {
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
         let k = x;
         let h = k.handle().hash();
+        group!("set conj");
         let (g, key_slot) = map::assoc::assoc(prism, k, h, 0);
+        group_end!();
         match key_slot {
             Ok(new_slot) => {
                 new_slot.set(0, k);
@@ -144,7 +150,7 @@ impl Aggregate for Set {
         }
     }
 
-    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value {
         map::reduce::reduce(prism, process, 0)
     }
 }
@@ -182,21 +188,21 @@ impl Notation for Set {
         }
 
         impl Process for Printer {
-            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+            fn inges(&mut self, stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
                 use std::mem::transmute;
                 write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
                        "{}{}",
                        if self.is_first { self.is_first = false; "" } else { " " },
-                       v);
+                       v).unwrap();
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
-        write!(f, "#{{");
-        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
+        write!(f, "#{{")?;
+        let mut procs: [Box<dyn Process>; 1] = [Box::new(Printer::new(f))];
         let _ = map::reduce::reduce(prism, &mut procs, 0);
         write!(f, "}}")
     }

@@ -7,13 +7,10 @@
 
 use std::cmp;
 use std::fmt;
-use std::str::FromStr;
 use std::default;
 use std::ops;
-use memory::*;
 use handle::*;
-use dispatch::*;
-use transduce::{Transducer, Transducers, Process};
+use transduce::{Transducers, Process};
 
 pub mod operators;
 pub mod conversions;
@@ -111,7 +108,7 @@ impl Value {
         self.consume().modulus(divisor.consume()).value()
     }
 
-    pub fn reduce(self, stack: &mut [Box<Process>]) -> Value {
+    pub fn reduce(self, stack: &mut [Box<dyn Process>]) -> Value {
         let s = self.consume();
         let ret = s.reduce(stack);
         s.retire();

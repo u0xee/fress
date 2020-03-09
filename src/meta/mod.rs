@@ -8,14 +8,12 @@
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use value::Value;
+//use value::Value;
 use handle::Handle;
 
 pub static META_SENTINEL: u8 = 0;
 
-pub struct Meta {
-    prism: Unit,
-}
+pub struct Meta { }
 
 impl Meta {
     pub fn with_meta(v: Handle, m: Handle) -> Unit {
@@ -53,7 +51,7 @@ impl Identification for Meta {
     fn type_sentinel(&self) -> *const u8 { (& META_SENTINEL) as *const u8 }
 }
 
-use std::cmp::Ordering;
+//use std::cmp::Ordering;
 impl Distinguish for Meta {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let x = prism[1].handle().hash();

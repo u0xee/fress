@@ -148,7 +148,7 @@ impl Guide {
     }
 
     pub fn store_hash(self) -> Guide {
-        let mut prism = self.prism;
+        let prism = self.prism;
         let top: u32 = self.hash;
         let bot: u32 = (self.is_compact_bit << 31) | (self.has_meta_bit << 30) | self.count;
         if cfg!(target_pointer_width = "32") {

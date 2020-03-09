@@ -6,13 +6,14 @@
 // You must not remove this notice, or any other, from this software.
 
 use value::Value;
-use ::{read, is_aggregate, hash_map, hash_set, list, vector, nil, tru, fals};
+use ::{read, hash_map, hash_set, vector, nil};
 use wasm;
 
 #[derive(Debug)]
 pub struct Func {
     pub argc: u32,
     pub localc: u32, // vec of local types [i32 i32 f64 etc]
+    // captured {a 7, b 5}
     pub code_bytes: Vec<u8>,
     pub current_depth: u32,
 
@@ -29,12 +30,10 @@ pub struct Func {
 // -register var->idx (globals)
 // -register imported fns (external fns)
 // -register vtable segment
-// -register extra local
 
-// captured {a 7, b 5}
-// named    {c 2, d 5, e 9}  terminal #{c d}
-// dormant  #{1 2 3} shadowed by let/loop, or gathering up args to a call.
-// vacant   #{4 7} or vector, previously terminal along this path
+// named   {c 2, d 5, e 9}  terminal #{c d}
+// dormant #{1 2 3} shadowed by let/loop, or gathering up args to a call.
+// vacant  #{4 7} or vector, previously terminal along this path
 
 #[derive(Debug)]
 pub struct Context {
@@ -75,7 +74,7 @@ pub fn compile_top_level(form: &Value, notes: &Value) -> Box<Context> {
         let v = vector();
         comp(&mut ctx, form, notes, &m, &m, &s, &s, &v)
     };
-    let value_sym = read("value").unwrap();
+    let value_sym = read("value ").unwrap();
     if res != value_sym {
         unimplemented!();
     }
@@ -89,7 +88,7 @@ pub fn compile_top_level(form: &Value, notes: &Value) -> Box<Context> {
 }
 
 pub fn register_import(ctx: &mut Context, description: &Value) -> u32 {
-    let name_k = read(":name").unwrap();
+    let name_k = read(":name ").unwrap();
     let name = description.get(&name_k);
     let idx = ctx.imports.get(name).split_out();
     if idx.is_integral() {
@@ -139,6 +138,8 @@ pub fn comp(ctx: &mut Context, form: &Value, notes: &Value, captured: &Value,
 }
 pub fn comp_local(ctx: &mut Context, form: &Value, notes: &Value, captured: &Value,
                   named: &Value, terminal: &Value, dormant: &Value, vacant: &Value) -> Value {
+    // local x, if named and further if terminal, else captured
+    // emit bytecode to access frame local or captured
     unimplemented!()
 }
 pub fn comp_var(ctx: &mut Context, form: &Value, notes: &Value, captured: &Value,
@@ -181,8 +182,9 @@ pub fn comp_let(ctx: &mut Context, form: &Value, notes: &Value, captured: &Value
     // emit bytecode to store to local. Use counts to determine when terminal.
     // if shadowing, save off shadowed to dormant set
     // for each form in body, cont. computing terminals and vacants.
-    // local x, if named and further if terminal, else captured
-    // emit bytecode to access frame local or captured
+
+    log!("notes {}", notes);
+    // TODO
     unimplemented!()
 }
 pub fn comp_loop(ctx: &mut Context, form: &Value, notes: &Value, captured: &Value,

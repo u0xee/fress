@@ -6,7 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use value::Value;
-use ::{read, is_aggregate, hash_map, hash_set, list, vector, nil, tru, fals};
+use ::{read, hash_map, vector};
 use wasm;
 use super::compile::{Func, Context};
 
@@ -53,8 +53,8 @@ pub fn append_section(buf: &mut Vec<u8>, sec_id: u8, sec: &[u8]) {
 }
 
 pub fn signatures(ctx: &Context) -> (Value, Vec<u32>, Vec<u32>) {
-    let args_key = read(":args").unwrap();
-    let ret_key = read(":ret").unwrap();
+    let args_key = read(":args ").unwrap();
+    let ret_key = read(":ret ").unwrap();
     let type_map = read("{value i32, i32 i32, i64 i64}").unwrap();
     let mut sigs = vector();
     let mut sig_map = hash_map();
@@ -115,12 +115,14 @@ pub fn wasm_signature(type_map: &Value, args: &Value, ret: &Value) -> Value {
 }
 
 pub fn argc_to_wasm_signature(argc: u32) -> Value {
-    let sym_i32 = read("i32").unwrap();
+    let sym_i32 = read("i32 ").unwrap();
     let mut arg_v = vector();
     for i in 0..argc {
         arg_v = arg_v.conj(sym_i32.split_out());
     }
-    vector().conj(arg_v).conj(vector().conj(sym_i32))
+    let ret = vector().conj(arg_v).conj(vector().conj(sym_i32));
+    log!("argc {}, wasm signature {}", argc, &ret);
+    ret
 }
 
 pub fn signature_section(sigs: &Value) -> Vec<u8> {

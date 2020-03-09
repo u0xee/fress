@@ -39,14 +39,14 @@ pub const MAX_LEVELS: u32 = (32 + BITS - 1) / BITS;
 pub static MAP_SENTINEL: u8 = 0;
 
 /// Map dispatch.
-pub struct Map {
-    prism: Unit,
-}
+pub struct Map { }
 
 impl Map {
     pub fn new() -> Unit {
+        log!("map new");
         let guide = {
-            let s = Segment::new(3 + size(1));
+            let cap = 1 /*prism*/ + Guide::units() + 1 /*pop*/ + size(1);
+            let s = Segment::new(cap);
             let prism = s.line_at(0);
             prism.set(0, mechanism::prism::<Map>());
             let g = Guide::hydrate_top_bot(prism, 0, 0);
@@ -56,29 +56,23 @@ impl Map {
         guide.store().segment().unit()
     }
 
-    pub fn new_value() -> Value {
-        Map::new().handle().value()
-    }
+    pub fn new_value() -> Value { Map::new().handle().value() }
 }
 
 impl Dispatch for Map {
     fn tear_down(&self, prism: AnchoredLine) {
-        tear_down::tear_down(prism, 1)
+        group!("map tear down");
+        tear_down::tear_down(prism, 1);
+        group_end!();
     }
-
     fn unaliased(&self, prism: AnchoredLine) -> Unit {
         unaliased_root(Guide::hydrate(prism), 1).segment().unit()
     }
 }
 
 impl Identification for Map {
-    fn type_name(&self) -> &'static str {
-        "Map"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& MAP_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "Map" }
+    fn type_sentinel(&self) -> *const u8 { (& MAP_SENTINEL) as *const u8 }
 }
 
 impl Distinguish for Map {
@@ -87,12 +81,13 @@ impl Distinguish for Map {
         if guide.has_hash() {
             return guide.hash;
         }
+        group!("map hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
         }
         impl Process for Pointer {
-            fn inges_kv(&mut self, stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+            fn inges_kv(&mut self, stack: &mut [Box<dyn Process>], k: &Value, v: &Value) -> Option<Value> {
                 let kh = k.hash() as u64;
                 let vh = v.hash() as u64;
                 let h = cycle_abc(256, (kh << 32) | vh);
@@ -101,13 +96,15 @@ impl Distinguish for Map {
                 }
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { Handle::nil().value() }
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value { Handle::nil().value() }
         }
 
         let mut y = cycle_abc(58, PI[123] + guide.count as u64);
-        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
+        let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs, 1);
         let h = cycle_abc(179, y) as u32;
+        log!("hash of map {:#08X}", h);
+        group_end!();
         guide.set_hash(h).store_hash().hash
     }
 
@@ -116,7 +113,10 @@ impl Distinguish for Map {
         if o.is_ref() {
             let o_prism = o.logical_value();
             if prism[0] == o_prism[0] {
-                eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 1)
+                group!("map eq");
+                let res = eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 1);
+                group_end!();
+                res
             } else {
                 false
             }
@@ -146,7 +146,7 @@ impl Aggregate for Map {
         }
     }
 
-    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value {
         reduce::reduce(prism, process, 1)
     }
 }
@@ -161,7 +161,9 @@ impl Associative for Map {
 
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let h = k.handle().hash();
+        group!("map assoc");
         let (g, key_slot) = assoc::assoc(prism, k, h, 1);
+        group_end!();
         match key_slot {
             Ok(new_slot) => {
                 new_slot.set(0, k);
@@ -202,21 +204,21 @@ impl Notation for Map {
         }
 
         impl Process for Printer {
-            fn inges_kv(&mut self, stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+            fn inges_kv(&mut self, stack: &mut [Box<dyn Process>], k: &Value, v: &Value) -> Option<Value> {
                 use std::mem::transmute;
                 write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
                        "{}{} {}",
                        if self.is_first { self.is_first = false; "" } else { ", " },
-                       k, v);
+                       k, v).unwrap();
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
-        write!(f, "{{");
-        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
+        write!(f, "{{")?;
+        let mut procs: [Box<dyn Process>; 1] = [Box::new(Printer::new(f))];
         let _ = reduce::reduce(prism, &mut procs, 1);
         write!(f, "}}")
     }
@@ -225,14 +227,8 @@ impl Notation for Map {
 impl Numeral for Map {}
 impl Callable for Map {}
 
-pub fn next_power(x: u32) -> u32 {
-    (x + 1).next_power_of_two()
-}
-
-pub fn cap_at_arity_width(power: u32) -> u32 {
-    power >> (power >> (BITS + 2))
-}
-
+pub fn next_power(x: u32) -> u32 { (x + 1).next_power_of_two() }
+pub fn cap_at_arity_width(power: u32) -> u32 { power >> (power >> (BITS + 2)) }
 /// Sizes a unit count to a power of two.
 ///
 /// With BITS as 5, it returns 8, 16, 32, 64.

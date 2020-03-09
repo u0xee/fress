@@ -7,11 +7,9 @@
 
 //! Sorted balanced tree, supporting maps and sets.
 
-use std::fmt;
 use memory::*;
 use dispatch::*;
 use value::*;
-use handle::Handle;
 use vector::guide::Guide;
 
 /// Defines branching factor.
@@ -27,9 +25,7 @@ pub const MAX_LEVELS: u32 = (32 + BITS - 1) / BITS;
 pub static SORTED_MAP_SENTINEL: u8 = 0;
 
 /// SortedMap dispatch.
-pub struct SortedMap {
-    prism: Unit,
-}
+pub struct SortedMap { }
 
 impl SortedMap {
     pub fn new() -> Unit {
@@ -37,11 +33,11 @@ impl SortedMap {
             let s = Segment::new(3 + size(1));
             let prism = s.line_at(0);
             prism.set(0, mechanism::prism::<SortedMap>());
-            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+            let g = Guide::hydrate_top_bot(prism, 0, 0);
             g
         };
+        //guide.store().segment().unit()
         unimplemented!();
-        guide.store().segment().unit()
     }
 
     pub fn new_value() -> Value {

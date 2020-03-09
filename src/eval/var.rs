@@ -6,8 +6,6 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::unit::Unit;
-use handle::Handle;
-use value::Value;
 
 // structure used for static init, global environment:
 // map of all vars, (:kw?)
@@ -15,9 +13,7 @@ use value::Value;
 pub static VAR_SENTINEL: u8 = 0;
 
 /// Var dispatch.
-pub struct Var {
-    prism: Unit,
-}
+pub struct Var { }
 
 impl Var {
     pub fn new() -> Unit {

@@ -97,10 +97,11 @@ impl From<&str> for Value {
 impl FromStr for Value {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        group!("read edn from {:?}", s);
         let b = s.as_bytes();
         let mut reader = EdnReader::new();
-        match edn::read(&mut reader, b) {
-            ReadResult::Ok { bytes_used, value } => {
+        let ret = match edn::read(&mut reader, b) {
+            ReadResult::Ok { value, .. } => {
                 Ok(value.handle().value())
             },
             ReadResult::NeedMore { bytes_not_used } => {
@@ -112,21 +113,23 @@ impl FromStr for Value {
                     v
                 };
                 match edn::read(&mut reader, &trailing_space[..]) {
-                    ReadResult::Ok { bytes_used, value } => {
+                    ReadResult::Ok { value, .. } => {
                         Ok(value.handle().value())
                     },
-                    ReadResult::NeedMore { bytes_not_used } => {
+                    ReadResult::NeedMore { .. } => {
                         Err(format!("Incomplete edn element: {:?}", s))
                     },
                     ReadResult::Error { location, message } => {
-                        Err(message)
+                        Err(format!("{:?} {}", location, message))
                     },
                 }
             },
             ReadResult::Error { location, message } => {
-                Err(message)
+                Err(format!("{:?} {}", location, message))
             },
-        }
+        };
+        group_end!();
+        ret
     }
 }
 
@@ -152,8 +155,11 @@ impl<T: Into<Value>> From<Vec<T>> for Value {
 }
 
 // tuples
+/*
 impl<A, B> From<(A, B)> for Value {
     fn from(x: (A, B)) -> Self {
         unimplemented!()
     }
 }
+*/
+

@@ -10,7 +10,7 @@ use std::cmp;
 use memory::*;
 use dispatch::*;
 use value::*;
-use transduce::{Transducer, Transducers, Process};
+use transduce::{Transducers, Process};
 
 #[derive(Copy, Clone)]
 pub struct Handle {
@@ -133,6 +133,7 @@ impl Handle {
     }
 
     pub fn eq(self, other: Handle) -> bool {
+        log!("handle eq");
         if self.unit == other.unit { return true; }
         if self.is_ref() {
             let prism = self.prism();
@@ -162,6 +163,7 @@ impl Handle {
     }
 
     pub fn hash(self) -> u32 {
+        log!("handle hash");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -231,8 +233,8 @@ impl fmt::Debug for Handle {
             let p = prism[0];
             mechanism::as_dispatch(&p).debug(prism, f)
         } else {
-            write!(f, "{}<", self.type_name());
-            fmt::Display::fmt(self, f);
+            write!(f, "{}<", self.type_name())?;
+            fmt::Display::fmt(self, f)?;
             write!(f, ">")
         }
     }
@@ -273,6 +275,7 @@ impl Handle {
     }
 
     pub fn conj(self, x: Handle) -> Handle {
+        log!("handle conj");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -290,6 +293,7 @@ impl Handle {
     }
 
     pub fn assoc(self, k: Handle, v: Handle) -> (Handle, Handle) {
+        log!("handle assoc");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -308,6 +312,7 @@ impl Handle {
     }
 
     pub fn get(self, k: Handle) -> *const Handle {
+        log!("handle get");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -317,6 +322,7 @@ impl Handle {
     }
 
     pub fn nth(self, idx: u32) -> *const Handle {
+        log!("handle nth");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -325,7 +331,8 @@ impl Handle {
         } else { unimplemented!() }
     }
 
-    pub fn reduce(self, stack: &mut [Box<Process>]) -> Value {
+    pub fn reduce(self, stack: &mut [Box<dyn Process>]) -> Value {
+        log!("handle reduce");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -338,20 +345,20 @@ impl Handle {
             c: Handle,
         }
         impl Process for Collect {
-            fn ingest   (&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
+            fn ingest   (&mut self, stack: &mut [Box<dyn Process>], v: Value) -> Option<Value> {
                 self.c = self.c.conj(Handle::from(v));
                 None
             }
-            fn ingest_kv(&mut self, stack: &mut [Box<Process>], k: Value, v: Value)
+            fn ingest_kv(&mut self, stack: &mut [Box<dyn Process>], k: Value, v: Value)
                          -> Option<Value> {
                 let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
                 displaced.retire();
                 self.c = c;
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { self.c.value() }
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value { self.c.value() }
         }
-        let stack: Vec<Box<Process>> = vec!(Box::new(Collect { c: sink }));
+        let stack: Vec<Box<dyn Process>> = vec!(Box::new(Collect { c: sink }));
         let mut stack2 = xf.apply(stack);
         Handle::from(self.reduce(&mut stack2))
     }

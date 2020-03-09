@@ -7,26 +7,26 @@
 
 use super::*;
 use super::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transduce::{ingest, inges, last_call, Process};
+use transduce::{inges, last_call, Process};
 
 pub struct Conjer {
     pub acc: Value,
 }
 impl Process for Conjer {
-    fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+    fn inges(&mut self, _stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
         use std::mem;
         let x = mem::replace(&mut self.acc, Handle::nil().value());
         let y = x.conj(v.split_out());
         mem::replace(&mut self.acc, y);
         None
     }
-    fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+    fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value {
         use std::mem;
         mem::replace(&mut self.acc, Handle::nil().value())
     }
 }
 
-pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value {
+pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<dyn Process>]) -> Value {
     let guide = Guide::hydrate(prism);
     let count = guide.count;
     if count <= TAIL_CAP {
@@ -63,7 +63,7 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>]) -> Value 
     }
 }
 
-pub fn reduce_tree(guide: Guide, tailoff: u32, process_stack: &mut [Box<Process>]) -> Value {
+pub fn reduce_tree(guide: Guide, tailoff: u32, process_stack: &mut [Box<dyn Process>]) -> Value {
     let last_tree_index = tailoff - 1;
     let stack_space = [BLANK; 8];
     let mut stack = NodeRecordStack::new(stack_space.as_ptr());
@@ -90,7 +90,7 @@ pub fn reduce_tree(guide: Guide, tailoff: u32, process_stack: &mut [Box<Process>
     last_call(process_stack)
 }
 
-pub fn base_case(node: &NodeRecord, process_stack: &mut [Box<Process>]) -> Option<Value> {
+pub fn base_case(node: &NodeRecord, process_stack: &mut [Box<dyn Process>]) -> Option<Value> {
     for i in 0..node.child_count {
         let a_tail = node.first_child[i as i32].segment();
         for j in 0..TAIL_CAP {
@@ -104,7 +104,7 @@ pub fn base_case(node: &NodeRecord, process_stack: &mut [Box<Process>]) -> Optio
     None
 }
 
-pub fn step(stack: &mut NodeRecordStack, process_stack: &mut [Box<Process>],
+pub fn step(stack: &mut NodeRecordStack, process_stack: &mut [Box<dyn Process>],
             last_tree_index: u32) -> Option<Value> {
     let top = stack.top();
     if top.height == 2 {

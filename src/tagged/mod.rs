@@ -8,17 +8,13 @@
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use value::Value;
 use handle::Handle;
 
 pub mod guide;
-use self::guide::Guide;
 
 pub static TAGGED_SENTINEL: u8 = 0;
 
-pub struct Tagged {
-    prism: Unit,
-}
+pub struct Tagged { }
 
 impl Tagged {
     pub fn new(sym: Handle, val: Handle) -> Unit {
@@ -46,7 +42,6 @@ impl Identification for Tagged {
     fn type_sentinel(&self) -> *const u8 { (& TAGGED_SENTINEL) as *const u8 }
 }
 
-use std::cmp::Ordering;
 impl Distinguish for Tagged {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let x = prism[1].handle().hash();

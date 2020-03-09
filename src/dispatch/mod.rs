@@ -6,7 +6,6 @@
 // You must not remove this notice, or any other, from this software.
 
 use memory::*;
-use handle::Handle;
 use value::Value;
 use transduce::{Process};
 pub mod mechanism;
@@ -38,11 +37,11 @@ pub trait Identification {
 
 pub trait Notation : Identification {
     fn debug(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "^{} ", self.type_name());
+        write!(f, "^{} ", self.type_name())?;
         self.edn(prism, f)
     }
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result { unimplemented!() }
-    fn fressian(&self, prism:AnchoredLine, w: &mut io::Write) -> io::Result<usize> { unimplemented!() }
+    fn fressian(&self, prism:AnchoredLine, w: &mut dyn io::Write) -> io::Result<usize> { unimplemented!() }
 }
 
 pub trait Distinguish {
@@ -61,7 +60,7 @@ pub trait Aggregate {
     fn peek(&self, prism: AnchoredLine) -> *const Unit { unimplemented!() }
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { unimplemented!() }
     fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit { unimplemented!() }
-    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value { unimplemented!() }
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value { unimplemented!() }
     fn fold(&self, prism: AnchoredLine) -> Unit { unimplemented!() }
 }
 

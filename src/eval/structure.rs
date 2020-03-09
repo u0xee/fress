@@ -6,8 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use value::Value;
-use ::{read, is_aggregate, hash_map, hash_set, list, vector, nil, tru, fals};
-use right_into;
+use ::{read, hash_map, hash_set, list, vector, nil, right_into};
 use transduce::Process;
 
 pub fn structure(v: Value, globals: &Value) -> Result<(Value, Value), String> {
@@ -38,16 +37,19 @@ pub fn structure(v: Value, globals: &Value) -> Result<(Value, Value), String> {
 
 pub fn resolve_symbol(s: &Value, globals: &Value, locals: &Value) -> Option<Value> {
     if s.is_symbol() {
+        log!("Resolving symbol {}", s);
         if s.has_namespace() {
             // check exists in globals
             Some(s.split_out())
         } else {
             if locals.contains(s) {
+                log!("Found in locals {}", s);
                 Some(s.split_out())
             } else {
                 // like *ns* *macros*, *aliases*
                 let r = &globals[s];
                 if r.is_symbol() {
+                    log!("Found in globals {}", s);
                     Some(r.split_out())
                 } else {
                     None
@@ -108,14 +110,20 @@ pub fn res(v: Value, globals: &Value, locals: &Value, tail_of: Value)
 }
 
 pub fn is_macro(s: &Value, globals: &Value) -> bool {
-    let macros = read("*macros*").unwrap();
-    let macro_set = globals.get(&macros);
-    if macro_set.is_nil() { false } else { macro_set.contains(s) }
+    group!("structure is_macro? on symbol {}", s);
+    let ret = {
+        let macros = read("*macros* ").unwrap();
+        let macro_set = globals.get(&macros);
+        if macro_set.is_nil() { false } else { macro_set.contains(s) }
+    };
+    group_end!();
+    ret
 }
 
 pub fn res_call(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                 -> Result<(Value, Value, Value), String> {
     // (def cat (fn [x] (fn [y] (+ x y))))
+    group!("Resolving a call");
     let mut aa = a.split_out();
     let mut locals_used = hash_map();
     let mut notes = hash_map();
@@ -135,11 +143,13 @@ pub fn res_call(a: Value, globals: &Value, locals: &Value, tail_of: Value)
     }
     let locals_set = set_of_keys(locals_used.split_out());
     let last_note = notes.assoc(aa.split_out(), locals_used);
+    group_end!();
     Ok((aa, locals_set, last_note))
 }
 
 pub fn res_vector(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                   -> Result<(Value, Value, Value), String> {
+    group!("Resolving a vector");
     let mut aa = a.split_out();
     let mut locals_used = hash_map();
     let mut notes = hash_map();
@@ -156,11 +166,15 @@ pub fn res_vector(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                     notes = right_into(notes, nt);
                 }
             },
-            Err(s) => { return Err(s) },
+            Err(s) => {
+                group_end!();
+                return Err(s)
+            },
         }
     }
     let locals_set = set_of_keys(locals_used.split_out());
     let last_note = notes.assoc(aa.split_out(), locals_used);
+    group_end!();
     Ok((aa, locals_set, last_note))
 }
 
@@ -233,27 +247,31 @@ pub fn res_map(a: Value, globals: &Value, locals: &Value, tail_of: Value)
 pub fn res_def(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                -> Result<(Value, Value, Value), String> {
     // (def a _)
+    group!("Resolving a def");
     let ct = a.count();
     assert!(ct == 2 || ct == 3);
     let name = a.nth(1);
     assert!(name.is_symbol() && !name.has_namespace());
-    if ct == 3 {
+    let ret = if ct == 3 {
         // add name to globals map
         let r = res(a.nth(2).split_out(), globals, locals, nil());
         match r {
             Ok((resolved, locals_used, notes)) => {
-                return Ok((a.assoc(2.into(), resolved), locals_used, notes))
+                Ok((a.assoc(2.into(), resolved), locals_used, notes))
             },
-            Err(s) => { return Err(s) },
+            Err(s) => { Err(s) },
         }
     } else {
-        return Ok((a, nil(), nil()))
-    }
+        Ok((a, nil(), nil()))
+    };
+    group_end!();
+    ret
 }
 
 pub fn res_do(a: Value, globals: &Value, locals: &Value, tail_of: Value)
               -> Result<(Value, Value, Value), String> {
     // (do _ _)
+    group!("Resolving do");
     let mut aa = a.split_out();
     let mut locals_used = hash_map();
     let mut notes = hash_map();
@@ -269,11 +287,15 @@ pub fn res_do(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                 locals_used = merge_counts(locals_used, used);
                 if !nt.is_nil() { notes = right_into(notes, nt); }
             },
-            Err(s) => { return Err(s) },
+            Err(s) => {
+                group_end!();
+                return Err(s)
+            },
         }
     }
     let locals_set = set_of_keys(locals_used.split_out());
     let last_note = notes.assoc(aa.split_out(), locals_used);
+    group_end!();
     Ok((aa, locals_set, last_note))
 }
 
@@ -282,6 +304,7 @@ pub fn res_fn(a: Value, globals: &Value, locals: &Value, tail_of: Value)
     // (fn name? [x y] _ _ _)
     // (fn name? ([x y] _ _ _)
     //           ([x y z] _ _ _))
+    group!("Resolving fn");
     let (body, fn_sym, name, locals_with_name) = {
         let (a2, fn_sym) = a.pop();
         if a2.peek().is_symbol() {
@@ -303,7 +326,10 @@ pub fn res_fn(a: Value, globals: &Value, locals: &Value, tail_of: Value)
         let b = bodies.nth(i);
         let r = res_fn_body(b.split_out(), globals, &locals_with_name);
         match r {
-            Err(s) => { return Err(s) },
+            Err(s) => {
+                group_end!();
+                return Err(s)
+            },
             Ok((resolved, used, nt)) => {
                 bodies2 = bodies2.assoc(i.into(), resolved);
                 locals_set = right_into(locals_set, used);
@@ -324,12 +350,14 @@ pub fn res_fn(a: Value, globals: &Value, locals: &Value, tail_of: Value)
         locals_set = locals_set.dissoc(&name);
     }
     let last_note = notes.assoc(resolved.split_out(), locals_set.split_out());
+    group_end!();
     Ok((resolved, locals_set, last_note))
 }
 
 pub fn res_fn_body(body: Value, globals: &Value, locals: &Value)
                    -> Result<(Value, Value, Value), String> {
     // ([x y] _ _ _)
+    group!("Resolving fn body");
     let (exprs, args) = body.pop();
     for i in 0..(args.count()) {
         let x = args.nth(i);
@@ -351,12 +379,16 @@ pub fn res_fn_body(body: Value, globals: &Value, locals: &Value)
                 locals_used = merge_counts(locals_used, used);
                 if !nt.is_nil() { notes = right_into(notes, nt); }
             },
-            Err(s) => { return Err(s) },
+            Err(s) => {
+                group_end!();
+                return Err(s)
+            },
         }
     }
 
     let mut args_use = vector();
-    for i in 0..(args.count()) {
+    let args_ct = args.count();
+    for i in 0..args_ct {
         let arg = args.nth(i).split_out();
         let arg_use = {
             let arg_use = locals_used.get(&arg).split_out();
@@ -367,11 +399,12 @@ pub fn res_fn_body(body: Value, globals: &Value, locals: &Value)
         };
         args_use = args_use.conj(arg).conj(arg_use);
     }
-    let mut locals_set = set_of_keys(locals_used.split_out());
+    let locals_set = set_of_keys(locals_used.split_out());
     let resolved_body = exprs2.conj(args);
     let last_note = notes.assoc(resolved_body.split_out(),
                                 vector().conj(args_use).conj(locals_used));
     // TODO move recur to notes
+    group_end!();
     Ok((resolved_body, locals_set, last_note))
 }
 
@@ -429,19 +462,24 @@ pub fn res_let(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                -> Result<(Value, Value, Value), String> {
     // (let [a 1 b 2]
     //   (+ a b))
+    group!("Resolving let");
     assert!(a.count() > 1);
     let b = a.nth(1);
     assert!(b.is_vector() && (b.count() & 0x1 == 0));
     let (resolved, used, bindings_used, notes) = {
         let r = let_rec(a, 0, globals, locals, tail_of);
         match r {
-            Err(s) => { return Err(s) },
+            Err(s) => {
+                group_end!();
+                return Err(s)
+            },
             Ok(x) => x,
         }
     };
     let locals_set = set_of_keys(used.split_out());
     let n = vector().conj(right_into(vector(), bindings_used)).conj(used);
     let last_note = notes.assoc(resolved.split_out(), n);
+    group_end!();
     Ok((resolved, locals_set, last_note))
 }
 
@@ -451,6 +489,7 @@ pub fn let_rec(a: Value, binding: u32, globals: &Value, locals: &Value, tail_of:
     let binding_count = b.count() >> 1;
     assert!(binding <= binding_count);
     if binding == binding_count { // body
+        group!("Resolving let body");
         let mut aa = a.split_out();
         let mut locals_used = hash_map();
         let mut notes = hash_map();
@@ -466,22 +505,32 @@ pub fn let_rec(a: Value, binding: u32, globals: &Value, locals: &Value, tail_of:
                     locals_used = merge_counts(locals_used, used);
                     if !nt.is_nil() { notes = right_into(notes, nt); }
                 },
-                Err(s) => { return Err(s) },
+                Err(s) => {
+                    group_end!();
+                    return Err(s)
+                },
             }
         }
-        Ok((aa, locals_used, list(), notes))
+        let res = Ok((aa, locals_used, list(), notes));
+        group_end!();
+        res
     } else { // binding
         let name_idx = binding << 1;
         let name = b.nth(name_idx).split_out();
         assert!(name.is_symbol() && !name.has_namespace());
         let exp = b.nth(name_idx + 1);
+        group!("Resolving local binding expression");
         let (resolved_exp, used_exp, nt_exp) = {
             let r = res(exp.split_out(), globals, locals, nil());
             match r {
-                Err(s) => { return Err(s) },
+                Err(s) => {
+                    group_end!();
+                    return Err(s)
+                },
                 Ok(x) => { x },
             }
         };
+        group_end!();
         let locals_with_name = locals.split_out().conj(name.split_out());
         let (resolved_let, used, used_bindings, nt) = {
             let r = let_rec(a, binding + 1, globals, &locals_with_name, tail_of);
@@ -511,6 +560,7 @@ pub fn let_rec(a: Value, binding: u32, globals: &Value, locals: &Value, tail_of:
 pub fn res_loop(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                 -> Result<(Value, Value, Value), String> {
     // (loop [a 1, b 2] _ _)
+    group!("Resolving a loop");
     assert!(a.count() > 1);
     let b = a.nth(1);
     assert!(b.is_vector() && (b.count() & 0x1 == 0));
@@ -523,18 +573,21 @@ pub fn res_loop(a: Value, globals: &Value, locals: &Value, tail_of: Value)
         bindings
     };
     let r = res_let(a, globals, locals, bindings);
-    match r {
+    let ret = match r {
         Ok((resolved, used, nt)) => {
             // TODO move recur to notes
             Ok((resolved, used, nt))
         },
-        Err(s) => { return Err(s) },
-    }
+        Err(s) => { Err(s) },
+    };
+    group_end!();
+    ret
 }
 
 pub fn res_recur(a: Value, globals: &Value, locals: &Value, tail_of: Value)
                  -> Result<(Value, Value, Value), String> {
     // (recur 1 2)
+    group!("Resolving recur");
     let ct = a.count();
     if !tail_of.is_vector() {
         // return Err
@@ -546,12 +599,14 @@ pub fn res_recur(a: Value, globals: &Value, locals: &Value, tail_of: Value)
     }
     let recur_sym = a.nth(0).split_out();
     let r = res_do(a, globals, locals, nil());
-    match r {
+    let ret = match r {
         Ok((resolved, used, nt)) => {
             Ok((resolved, used.conj(recur_sym), nt))
         },
-        Err(s) => { return Err(s) },
-    }
+        Err(s) => { Err(s) },
+    };
+    group_end!();
+    ret
 }
 
 pub fn res_quote(a: Value, globals: &Value, locals: &Value, tail_of: Value)
@@ -567,12 +622,11 @@ pub fn set_of_keys(m: Value) -> Value {
     return m.reduce(&mut stack)
 }
 
-pub fn just_keys() -> Box<Process> {
-    use handle::Handle;
-    use transduce::{inges, Transducers, Transducer};
+pub fn just_keys() -> Box<dyn Process> {
+    use transduce::inges;
     struct Keys {}
     impl Process for Keys {
-        fn inges_kv (&mut self, stack: &mut [Box<Process>], k: &Value, v: &Value) -> Option<Value> {
+        fn inges_kv (&mut self, stack: &mut [Box<dyn Process>], k: &Value, v: &Value) -> Option<Value> {
             let (_, rest) = stack.split_last_mut().unwrap();
             inges(rest, k)
         }
@@ -580,24 +634,24 @@ pub fn just_keys() -> Box<Process> {
     Box::new(Keys { })
 }
 
-pub fn collect_into(col: Value) -> Box<Process> {
+pub fn collect_into(col: Value) -> Box<dyn Process> {
     use handle::Handle;
     struct Collect {
         c: Handle,
     }
     impl Process for Collect {
-        fn ingest   (&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
+        fn ingest   (&mut self, stack: &mut [Box<dyn Process>], v: Value) -> Option<Value> {
             self.c = self.c.conj(Handle::from(v));
             None
         }
-        fn ingest_kv(&mut self, stack: &mut [Box<Process>], k: Value, v: Value)
+        fn ingest_kv(&mut self, stack: &mut [Box<dyn Process>], k: Value, v: Value)
                      -> Option<Value> {
             let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
             displaced.retire();
             self.c = c;
             None
         }
-        fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { self.c.value() }
+        fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value { self.c.value() }
     }
     Box::new(Collect { c: Handle::from(col) })
 }
@@ -611,13 +665,13 @@ pub fn merge_counts(locals_used: Value, used: Value) -> Value {
             r: Handle,
         }
         impl Process for Reduce {
-            fn ingest   (&mut self, stack: &mut [Box<Process>], v: Value) -> Option<Value> {
+            fn ingest   (&mut self, _stack: &mut [Box<dyn Process>], v: Value) -> Option<Value> {
                 self.r = Handle::from(merge_one(self.r.value(), v));
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value { self.r.value() }
+            fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value { self.r.value() }
         }
-        let mut stack: Box<Process> = Box::new(Reduce { r: Handle::from(locals_used) });
+        let mut stack: Box<dyn Process> = Box::new(Reduce { r: Handle::from(locals_used) });
         use std::slice::from_mut;
         return used.reduce(from_mut(&mut stack))
     }

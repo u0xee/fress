@@ -23,14 +23,13 @@ def find_files(d, find_args=None):
 
 
 asciidoc_base = ['asciidoctor',
-                 '-a', 'stylesheet=style.css',
-                 '-a', 'stylesdir=anc',
-                 '-a', 'imagesdir=images',
-                 '-a', 'docinfo=shared',
-                 '-a', 'sectanchors',
-                 '-a', 'docinfodir=images/favicon',
-                 '-a', 'icons=font',
                  '-a', 'doctype=article',
+                 '-a', 'sectanchors',
+                 '-a', 'imagesdir=images',
+                 '-a', 'stylesdir=anc',
+                 '-a', 'stylesheet=style.css',
+                 '-a', 'docinfo=shared',
+                 '-a', 'docinfodir=images/favicon',
                  '-a', 'idprefix=+',
                  '-a', 'idseparator=-']
 
@@ -101,10 +100,11 @@ def http_server(args):
                               '.js': 'application/x-javascript',
                               '.wasm': 'application/wasm',
                               '': 'application/octet-stream'}
-    port = 8889
+    port = 8888
     httpd = socketserver.TCPServer(("", port), handler)
     print("Serving directory {} at port {}".format(target_dir, port))
     httpd.serve_forever()
+
 
 # Main parser
 parser = argparse.ArgumentParser(description='Builds AsciiDoc and rustdoc web pages.')

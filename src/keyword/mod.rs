@@ -5,34 +5,30 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+use std::str::from_utf8;
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use value::Value;
-use handle::Handle;
 use symbol::guide::Guide;
 use symbol::units_for;
 
 pub static KEYWORD_SENTINEL: u8 = 0;
 
-pub struct Keyword {
-    prism: Unit,
-}
+pub struct Keyword { }
 
 impl Keyword {
     pub fn new(name: &[u8], solidus_position: u32) -> Unit {
+        log!("new keyword {}", from_utf8(name).unwrap());
         // TODO intern based on compile flag
         Keyword::new_(name, solidus_position)
     }
 
     pub fn new_prefix_name(prefix: &[u8], name: &[u8]) -> Unit {
-        use std::str::from_utf8;
         let b = format!(":{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
         Keyword::new(b.as_bytes(), prefix.len() as u32 + 1)
     }
 
     pub fn new_from_name(name: &[u8]) -> Unit {
-        use std::str::from_utf8;
         let b = format!(":{}", from_utf8(name).unwrap());
         Keyword::new(b.as_bytes(), 0)
     }
@@ -54,19 +50,15 @@ impl Keyword {
 impl Dispatch for Keyword {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
+        log!("keyword tear down {}", prism.segment().unit().handle());
         let guide = Guide::hydrate(prism);
         Segment::free(guide.segment())
     }
 }
 
 impl Identification for Keyword {
-    fn type_name(&self) -> &'static str {
-        "Keyword"
-    }
-
-    fn type_sentinel(&self) -> *const u8 {
-        (& KEYWORD_SENTINEL) as *const u8
-    }
+    fn type_name(&self) -> &'static str { "Keyword" }
+    fn type_sentinel(&self) -> *const u8 { (& KEYWORD_SENTINEL) as *const u8 }
 }
 
 use std::cmp::Ordering;
@@ -77,19 +69,21 @@ impl Distinguish for Keyword {
 
         let h = {
             use random::PI;
-            use hash::{mix, mix_range, end};
+            use hash::{mix_range, end};
             let iv: (u64, u64, u64, u64) = (PI[14], PI[15], PI[16], PI[17]);
             let unit_count = units_for(guide.count);
             let a = mix_range(guide.root.span(unit_count), iv);
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
+        log!("hash keyword {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if o.is_ref() && o.type_sentinel() == (& KEYWORD_SENTINEL) as *const u8 {
+            log!("keyword eq");
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o.prism());
             return g.byte_slice() == h.byte_slice()

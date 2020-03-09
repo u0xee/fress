@@ -69,7 +69,6 @@ pub fn child_dissoc(guide: Guide, root_child_pop: AnchoredLine, k: Unit, hash: u
     let g = chaining_dissoc(guide, child_pop, k, has_vals);
     let remaining = child_pop[0].u32();
     if remaining == 1 {
-        let chunk = chunk_at(hash, MAX_LEVELS - 1);
         let mut child_idx = MAX_LEVELS - 1;
         while child_idx > 0 {
             let pop = {
@@ -88,7 +87,7 @@ pub fn child_dissoc(guide: Guide, root_child_pop: AnchoredLine, k: Unit, hash: u
     g
 }
 
-pub fn chaining_dissoc(guide: Guide, mut child_pop: AnchoredLine, k: Unit, has_vals: u32) -> Guide {
+pub fn chaining_dissoc(guide: Guide, child_pop: AnchoredLine, k: Unit, has_vals: u32) -> Guide {
     let key_count = child_pop[0].u32();
     let c = {
         let c = child_pop[1].segment();

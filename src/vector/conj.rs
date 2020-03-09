@@ -143,7 +143,6 @@ pub fn conj_tailed_complete(guide: Guide, x: Unit) -> Unit {
     let tailoff = guide.count - TAIL_CAP;
     let last_index = tailoff - 1;
     let path_diff = tailoff ^ last_index;
-    use std::cmp::Ordering;
     match digit_count(last_index).cmp(&digit_count(path_diff)) {
         Ordering::Less    => { growing_height(guide, x, tailoff) },
         Ordering::Equal   => { growing_root(guide, x, tailoff) },

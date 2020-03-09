@@ -13,7 +13,6 @@ use fress::eval;
 use fress::edn::reader::EdnRdr;
 
 fn n() {
-    use std::io::{self, Write};
     let mut reader = EdnRdr::with_buffer_capacity(1 << 10);
     println!("Ready!");
     loop {
@@ -30,7 +29,7 @@ fn read_one_stdin(reader: &mut EdnRdr) -> Value {
         match reader.read_again().unwrap() {
             Some(v) => { return v },
             None => {
-                use std::io::{self, Read, Write};
+                use std::io::{self, Read};
                 let n = io::stdin().read(reader.buffer_wilderness()).unwrap();
                 if n == 0 { panic!("End of file reached."); }
                 reader.buffer_consume(n);
@@ -45,7 +44,6 @@ fn read_one_stdin(reader: &mut EdnRdr) -> Value {
 
 fn main() {
     let (new_a, free_a) = segment::new_free_counts();
-
     use std::panic;
     let _r = panic::catch_unwind(|| {
         n();

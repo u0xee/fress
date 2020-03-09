@@ -68,7 +68,7 @@ pub fn child_assoc(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u3
     return chaining_assoc(child_pop, k, has_vals);
 }
 
-pub fn chaining_assoc(mut child_pop: AnchoredLine, k: Unit, has_vals: u32)
+pub fn chaining_assoc(child_pop: AnchoredLine, k: Unit, has_vals: u32)
                       -> Result<AnchoredLine, AnchoredLine> {
     let key_count = child_pop[0].u32();
     let c = {
@@ -209,7 +209,6 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
                     Segment::free(guide.segment());
                     g.reroot()
                 };
-                let r = g.root.index();
                 g.root.offset(root_idx as i32).span(key_count - idx).shift_up(1);
                 g
             };

@@ -17,9 +17,11 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 [dependencies]
 
 [features]
-default = ["anchor_non_atomic", "segment"]
+default = ["anchor_non_atomic", "segment", "eval", "trace"]
 
 anchor_non_atomic = []
+eval = []
+trace = []
 
 segment_clear = []
 segment_erase = []
@@ -28,8 +30,8 @@ segment_mut = []
 segment_free = []
 segment_magic = []
 segment_null = []
-segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut", "segment_free", "segment_magic", "segment_null"]
-
+segment_unaligned = []
+segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut", "segment_free", "segment_magic", "segment_null", "segment_unaligned"]
 
 fuzz_segment_extra_cap = []
 fuzz_segment_random_content = []

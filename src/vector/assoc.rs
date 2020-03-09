@@ -9,7 +9,6 @@ use super::*;
 
 pub fn assoc(prism: AnchoredLine, idx: u32, x: Unit) -> (Unit, Unit) {
     let guide = unaliased_root(Guide::hydrate(prism));
-    use std::cmp::Ordering;
     match idx.cmp(&guide.count) {
         Ordering::Less => {
             if guide.count <= TAIL_CAP {

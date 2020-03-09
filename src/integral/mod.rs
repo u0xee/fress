@@ -28,12 +28,11 @@ use self::guide::Guide;
 
 pub static INTEGRAL_SENTINEL: u8 = 0;
 
-pub struct Integral {
-    prism: Unit,
-}
+pub struct Integral { }
 
 impl Integral {
     pub fn new(x: i64) -> Unit {
+        log!("integral new, {}", x);
         let guide = Integral::blank();
         store(guide.root, x);
         guide.store().segment().unit()
@@ -48,9 +47,7 @@ impl Integral {
         guide
     }
 
-    pub fn new_value(x: i64) -> Value {
-        Integral::new(x).handle().value()
-    }
+    pub fn new_value(x: i64) -> Value { Integral::new(x).handle().value() }
 
     pub fn is_instance(h: Handle) -> bool {
         h.is_ref() && h.type_sentinel() == (& INTEGRAL_SENTINEL) as *const u8
@@ -86,7 +83,7 @@ impl Integral {
             let d = if *b <= b'9' { *b - b'0' }
                 else if *b <= b'F' { *b - b'A' + 10 }
                     else { *b - b'a' + 10 };
-            assert!(0 <= d && d < 16);
+            assert!(d < 16);
             x = (x << 4) + d as i64;
         }
         if negate { x = -x; }
@@ -144,6 +141,7 @@ pub fn hydrate(line: AnchoredLine) -> i64 {
 impl Dispatch for Integral {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
+        log!("integral tear down {}", prism.segment().unit().handle());
         Segment::free(prism.segment())
     }
 }
@@ -164,6 +162,7 @@ impl Distinguish for Integral {
             let x = hydrate(guide.root) as u64;
             hash_64(x, 8)
         };
+        log!("hash integral {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
 
@@ -182,6 +181,7 @@ impl Distinguish for Integral {
             let guide2 = Guide::hydrate(o.prism());
             let x = hydrate(guide.root);
             let y = hydrate(guide2.root);
+            log!("integral cmp, {} {}", x, y);
             return Some(x.cmp(&y))
         }
         let ret = ((& INTEGRAL_SENTINEL) as *const u8).cmp(&o.type_sentinel());
@@ -207,6 +207,7 @@ impl Numeral for Integral {
     fn inc(&self, prism: AnchoredLine) -> Unit {
         let guide = Guide::hydrate(prism);
         let x = hydrate(guide.root);
+        log!("integral inc, {}", x);
         let s = guide.segment();
         if s.is_aliased() {
             if s.unalias() == 0 {
@@ -249,9 +250,7 @@ impl Callable for Integral {}
 // big int as string
 use string;
 pub static BIGINT_SENTINEL: u8 = 0;
-pub struct BigInt {
-    prism: Unit,
-}
+pub struct BigInt { }
 impl Dispatch for BigInt {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases

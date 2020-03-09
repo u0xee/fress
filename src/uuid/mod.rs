@@ -6,11 +6,8 @@
 // You must not remove this notice, or any other, from this software.
 
 use std::fmt;
-use std::io;
 use memory::*;
 use dispatch::*;
-use transduce::{Process};
-use value::Value;
 use handle::Handle;
 
 pub mod guide;
@@ -18,9 +15,7 @@ use self::guide::Guide;
 
 pub static UUID_SENTINEL: u8 = 0;
 
-pub struct Uuid {
-    prism: Unit,
-}
+pub struct Uuid { }
 
 pub const HEX: (u64, u64) = (0x_03FF_0000_0000_0000, 0x_0000_007E_0000_007E); // 0123456789 afAF
 
@@ -59,7 +54,7 @@ pub fn gather(hex_digits: &[u8]) -> Option<u64> {
         assert!(ascii(c));
         if !is_hex(c) { return None }
         let d = as_hex(c);
-        assert!(0 <= d && d < 16);
+        assert!(d < 16);
         x = (x << 4) + d as u64;
     }
     Some(x)
@@ -128,7 +123,7 @@ impl Dispatch for Uuid {
         Segment::free(prism.segment())
     }
 
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
+    fn unaliased(&self, _prism: AnchoredLine) -> Unit {
         unimplemented!()
     }
 }

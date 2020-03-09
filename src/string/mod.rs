@@ -7,10 +7,8 @@
 
 use std::str::from_utf8;
 use std::fmt;
-use std::io;
 use memory::*;
 use dispatch::*;
-use transduce::{Process};
 use value::Value;
 use handle::Handle;
 
@@ -23,9 +21,7 @@ pub static STR_SENTINEL: u8 = 0;
 // byte buffer (utf8 characters), fast append (tail like vector)
 // rope like tree, maybe rrb tree. buffer tree nodes labeled with character count, byte count.
 
-pub struct Str {
-    prism: Unit,
-}
+pub struct Str { }
 
 impl Str {
     pub fn blank(units: u32) -> Guide {
@@ -125,11 +121,9 @@ pub fn byte_slice(prism: &AnchoredLine) -> &[u8] {
 impl Dispatch for Str {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
-        Segment::free(prism.segment())
-    }
-
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
+        group!("Tearing down Str");
+        Segment::free(prism.segment());
+        group_end!();
     }
 }
 
@@ -146,7 +140,7 @@ impl Distinguish for Str {
 
         let h = {
             use random::PI;
-            use hash::{mix, mix_range, end};
+            use hash::{mix_range, end};
             let iv: (u64, u64, u64, u64) = (PI[22], PI[23], PI[24], PI[25]);
             let unit_count = units_for(guide.count);
             let a = mix_range(guide.root.span(unit_count), iv);
@@ -181,27 +175,11 @@ impl Distinguish for Str {
     }
 }
 
-impl Aggregate for Str {
-    fn count(&self, prism: AnchoredLine) -> u32 {
-        unimplemented!()
-    }
-    fn empty(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-    fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        unimplemented!()
-    }
-    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
-        unimplemented!()
-    }
-    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
-        unimplemented!()
-    }
-}
+impl Aggregate for Str { }
 impl Sequential for Str { }
 impl Associative for Str { }
-impl Reversible for Str {}
-impl Sorted for Str {}
+impl Reversible for Str { }
+impl Sorted for Str { }
 
 impl Notation for Str {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {

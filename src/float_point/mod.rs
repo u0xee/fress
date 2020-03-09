@@ -9,7 +9,6 @@ use std::fmt;
 use memory::*;
 use dispatch::*;
 use handle::Handle;
-use Value;
 
 use integral::guide::Guide;
 
@@ -27,9 +26,7 @@ use integral::guide::Guide;
 
 pub static FLOATPOINT_SENTINEL: u8 = 0;
 
-pub struct FloatPoint {
-    prism: Unit,
-}
+pub struct FloatPoint { }
 
 impl FloatPoint {
     pub fn new(x: f64) -> Unit {
@@ -187,7 +184,7 @@ impl Notation for FloatPoint {
             }
         } else if x.is_nan() {
             write!(f, "##NaN")
-        } else if x.is_positive() {
+        } else if x.is_sign_positive() {
             write!(f, "##Inf")
         } else {
             write!(f, "##-Inf")

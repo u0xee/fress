@@ -6,11 +6,10 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
-use super::assoc::address;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
-use transduce::{ingest, inges, ingest_kv, inges_kv, last_call, Process, Transducer, Transducers};
+use transduce::{inges, inges_kv, last_call, Process};
 
-pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut [Box<Process>],
+pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut [Box<dyn Process>],
                    has_vals: u32) -> Option<Value> {
     for i in 0..key_count {
         let key = first_key.offset((i << has_vals) as i32);
@@ -27,7 +26,7 @@ pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut 
     None
 }
 
-pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>], has_vals: u32) -> Value {
+pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<dyn Process>], has_vals: u32) -> Value {
     let guide = Guide::hydrate(prism);
     let (child_count, key_count) = {
         let p = Pop::from(guide.root[-1]);
@@ -54,7 +53,7 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<Process>], has_vals:
     last_call(process_stack)
 }
 
-pub fn step(stack: &mut NodeRecordStack, process_stack: &mut [Box<Process>],
+pub fn step(stack: &mut NodeRecordStack, process_stack: &mut [Box<dyn Process>],
             has_vals: u32) -> Option<Value> {
     let top = stack.top();
     if top.height == MAX_LEVELS - 1 {
@@ -96,7 +95,7 @@ pub fn step(stack: &mut NodeRecordStack, process_stack: &mut [Box<Process>],
     None
 }
 
-pub fn collision_children(node: &NodeRecord, process_stack: &mut [Box<Process>],
+pub fn collision_children(node: &NodeRecord, process_stack: &mut [Box<dyn Process>],
                           has_vals: u32) -> Option<Value> {
     for i in 0..node.child_count {
         let idx = (i << 1) as i32;

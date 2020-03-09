@@ -51,6 +51,7 @@ pub fn parse_sign(c: u8) -> (bool, bool) {
 }
 
 pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
+    log!("parsing a number");
     let (explicit_sign, negate) = parse_sign(s[0]);
     let (promote, int_or_float) = match s[s.len() - 1] {
         b'N' => (true, true),

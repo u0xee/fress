@@ -7,7 +7,7 @@
 
 pub mod keccak;
 use random::PI;
-use memory::{AnchoredLine, AnchoredRange};
+use memory::AnchoredRange;
 
 pub fn hash_64(x: u64, byte_count: u32) -> u32 {
     let y = x << 8 | (byte_count as u64);
@@ -77,7 +77,7 @@ pub fn end(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
 }
 
 pub fn mix_range(units: AnchoredRange, state: (u64, u64, u64, u64)) -> (u64, u64, u64, u64) {
-    let mut u = units.anchored_line();
+    let u = units.anchored_line();
     let unit_count = units.span() as i32;
     let mut remain = unit_count;
     let mut a: (u64, u64, u64, u64) = state;

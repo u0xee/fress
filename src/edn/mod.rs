@@ -11,7 +11,7 @@ use handle::Handle;
 pub mod number;
 pub mod name;
 pub mod reader;
-use self::reader::{EdnReader, ReadResult, Pending, Counter};
+use self::reader::{EdnReader, ReadResult, Pending};
 
 
 pub fn err(reader: &mut EdnReader, msg: String) -> ReadResult {
@@ -28,6 +28,7 @@ pub fn more(reader: &mut EdnReader, bytes: &[u8], bytes_not_used: usize) -> Read
 // profile guided optimization; slow path error branches.
 // maybe split out error branches into #[cold] function calls
 pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
+    log!("edn read call");
     let mut i = 0usize;
     let mut ready = Handle::NIL;
     let mut string_ready = false;
@@ -41,6 +42,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
         }
         let c = bytes[i];
         if hit(c, NUM_NAME) || !ascii(c) { // alphanum .*+!-_?$%&=<>|:/
+            log!("reading a symbolic");
             let sym = match isolate_symbolic(&bytes[i..]) {
                 Some(s) => s,
                 None => { return more(reader, bytes, bytes.len() - i) },
@@ -380,6 +382,7 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             return err(reader, format!("Invalid utf-8 in tag symbol."))
         }
     };
+    use symbol::Symbol;
     if let Some(solidus) = slash_index(tag_sym) {
         if solidus == tag_sym.len() - 1 {
             return err(reader, format!("Bad tag symbol ({}). \
@@ -389,7 +392,6 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             return err(reader, format!("Bad tag symbol ({}). \
                                     Name component (after /) is invalid for symbols.", str_tag))
         }
-        use symbol::Symbol;
         let h = Symbol::new(tag_sym, solidus as u32);
         reader.pending.push(Pending::Tagged, h);
         reader.counter = reader.counter.add_ascii(1).count(str_tag);
@@ -403,7 +405,6 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
                     Tag must be a valid symbol (not true/false/nil)."))
         }
     }
-    use symbol::Symbol;
     let h = Symbol::new(tag_sym, 0);
     reader.pending.push(Pending::Tagged, h);
     reader.counter = reader.counter.add_ascii(1).count(str_tag);
@@ -641,16 +642,15 @@ pub fn parse_character(s: &[u8]) -> Result<Handle, String> {
         let u = from_utf8(s).unwrap().chars().next().unwrap();
         return Ok(Character::new(u))
     }
-    let mut b = b'_';
-    loop {
-        if s == b"newline" { b = b'\n'; break; }
-        if s == b"return"  { b = b'\r'; break; }
-        if s == b"space"   { b = b' ' ; break; }
-        if s == b"tab"     { b = b'\t'; break; }
-        return Err(format!("Unrecognized character name (\\{}). You can use \\newline \\space or \\tab. \
+    return {
+        if s == b"newline"     { Ok(Character::from_byte(b'\n')) }
+        else if s == b"return" { Ok(Character::from_byte(b'\r')) }
+        else if s == b"space"  { Ok(Character::from_byte(b' ')) }
+        else if s == b"tab"    { Ok(Character::from_byte(b'\t')) }
+        else { Err(format!("Unrecognized character name (\\{}). You can use \\newline \\space or \\tab. \
                             Or give a unicode literal in hex like \\u03BB.", from_utf8(s).unwrap()))
+        }
     }
-    return Ok(Character::from_byte(b))
 }
 
 pub fn valid_name_start(s: &[u8]) -> bool {

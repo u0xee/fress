@@ -5,23 +5,21 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+use std::str::from_utf8;
 use std::fmt;
 use memory::*;
 use dispatch::*;
-use value::Value;
-use handle::Handle;
 
 pub mod guide;
 use self::guide::Guide;
 
 pub static SYMBOL_SENTINEL: u8 = 0;
 
-pub struct Symbol {
-    prism: Unit,
-}
+pub struct Symbol { }
 
 impl Symbol {
     pub fn new(name: &[u8], solidus_position: u32) -> Unit {
+        log!("new symbol {}", from_utf8(name).unwrap());
         let byte_count = name.len() as u32;
         let content_count = units_for(byte_count);
         let needed = 1 /*prism*/ + Guide::units() + content_count;
@@ -35,7 +33,7 @@ impl Symbol {
     }
 
     pub fn new_prefix_name(prefix: &[u8], name: &[u8]) -> Unit {
-        use std::str::from_utf8;
+
         let b = format!("{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
         Symbol::new(b.as_bytes(), prefix.len() as u32)
     }
@@ -54,6 +52,7 @@ pub fn units_for(byte_count: u32) -> u32 {
 impl Dispatch for Symbol {
     fn tear_down(&self, prism: AnchoredLine) {
         // segment has 0 aliases
+        log!("symbol tear down {}", prism.segment().unit().handle());
         let guide = Guide::hydrate(prism);
         guide.retire_meta();
         Segment::free(guide.segment())
@@ -73,19 +72,21 @@ impl Distinguish for Symbol {
 
         let h = {
             use random::PI;
-            use hash::{mix, mix_range, end};
+            use hash::{mix_range, end};
             let iv: (u64, u64, u64, u64) = (PI[14], PI[15], PI[16], PI[17]);
             let unit_count = units_for(guide.count);
             let a = mix_range(guide.root.span(unit_count), iv);
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
+        log!("hash symbol {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
 
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if o.is_ref() && o.type_sentinel() == (& SYMBOL_SENTINEL) as *const u8 {
+            log!("symbol eq");
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o.prism());
             return g.byte_slice() == h.byte_slice()
@@ -118,7 +119,7 @@ impl Aggregate for Symbol {
             (& STATIC_NIL) as *const Unit
         }
     }
-    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
+    fn with_meta(&self, _prism: AnchoredLine, _m: Unit) -> Unit {
         unimplemented!()
     }
 }

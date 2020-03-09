@@ -8,14 +8,11 @@
 use memory::*;
 use dispatch::*;
 use handle::Handle;
-use value::Value;
 use std::fmt;
 
 pub static CHARACTER_SENTINEL: u8 = 0;
 
-pub struct Character {
-    prism: Unit,
-}
+pub struct Character { }
 
 impl Character {
     pub fn new(c: char) -> Handle {

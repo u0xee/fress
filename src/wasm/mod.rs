@@ -5,15 +5,8 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use std::fmt;
-use memory::*;
-use dispatch::*;
-use value::Value;
-use handle::Handle;
 
-// #![cfg(target_arch = "wasm32")]
-// int128enc
-// binary wasm
+// #[cfg(target_arch = "wasm32")]
 
 pub fn uleb128(buf: &mut Vec<u8>, x: u64) {
     let mut x = x;

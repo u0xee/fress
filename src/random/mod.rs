@@ -55,7 +55,7 @@ pub fn cycle_abc(abc: usize, mut y: u64) -> u64 {
     y
 }
 
-pub fn cycle(mut y: u64) -> u64 {
+pub fn cycle(y: u64) -> u64 {
     cycle_abc(155, y)
 }
 

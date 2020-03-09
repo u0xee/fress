@@ -5,24 +5,22 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-use memory::*;
 use super::*;
 use std::mem::transmute;
-use std::fmt;
 
 pub fn prism<T: Dispatch>() -> Unit {
     unsafe {
         let as_ref = &*(0 as *const T);
-        let as_ob = as_ref as &Dispatch;
-        let null_and_table = transmute::<&Dispatch, [Unit; 2]>(as_ob);
+        let as_ob = as_ref as &dyn Dispatch;
+        let null_and_table = transmute::<&dyn Dispatch, [Unit; 2]>(as_ob);
         assert_eq!(Unit::from(0), null_and_table[0]);
         null_and_table[1]
     }
 }
 
-pub fn as_dispatch<'a>(prism: &'a Unit) -> &'a Dispatch {
+pub fn as_dispatch<'a>(prism: &'a Unit) -> &'a dyn Dispatch {
     let ptr_and_table: [Unit; 2] = [Unit::from(0), *prism];
     unsafe {
-        transmute::<[Unit; 2], &Dispatch>(ptr_and_table)
+        transmute::<[Unit; 2], &dyn Dispatch>(ptr_and_table)
     }
 }

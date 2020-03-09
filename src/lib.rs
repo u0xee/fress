@@ -9,8 +9,10 @@
 //! A cohesive fressian library for rust
 #![doc(html_logo_url = "/images/logo/shield.svg")]
 #![doc(html_favicon_url = "/favicon.ico")]
+#![allow(unused_variables)]
 
-extern crate core;
+#[macro_use]
+pub mod trace;
 
 pub mod array;
 pub mod atom;
@@ -19,6 +21,7 @@ pub mod character;
 pub mod compress;
 pub mod dispatch;
 pub mod edn;
+#[cfg(feature = "eval")]
 pub mod eval;
 pub mod float_point;
 pub mod fressian;
@@ -154,7 +157,7 @@ pub fn is_inst(v: &Value) -> bool { unimplemented!() }
 pub fn is_uuid(v: &Value) -> bool { unimplemented!() }
 
 pub fn atom(v: Value) -> u64 { unimplemented!() }
-pub fn swap(a: u64, f: &Fn(Value) -> Value) -> Value { unimplemented!() }
+pub fn swap(a: u64, f: &dyn Fn(Value) -> Value) -> Value { unimplemented!() }
 pub fn reset(a: u64, v: Value) -> Value { unimplemented!() }
 
 pub fn str_new(source: &str) -> Value { source.into() }

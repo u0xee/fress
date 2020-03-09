@@ -9,13 +9,10 @@ use std::fmt;
 use memory::*;
 use dispatch::*;
 use handle::Handle;
-use Value;
 
 pub static RATIONAL_SENTINEL: u8 = 0;
 
-pub struct Rational {
-    prism: Unit,
-}
+pub struct Rational { }
 
 impl Rational {
     pub fn new(top: i64, bot: i64) -> Unit {
@@ -84,7 +81,7 @@ impl Identification for Rational {
     fn type_sentinel(&self) -> *const u8 { (& RATIONAL_SENTINEL) as *const u8 }
 }
 
-use std::cmp::Ordering;
+//use std::cmp::Ordering;
 impl Distinguish for Rational {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let x = hydrate(prism) as u64;

@@ -14,20 +14,20 @@ use transduce::Process;
 
 use vector;
 use vector::{BITS, TAIL_CAP, MASK};
-use vector::util::{tailoff, root_content_count, digit_count};
+use vector::util::{tailoff, root_content_count, digit_count, size};
 use vector::guide::Guide;
 pub mod reduce;
 
 pub static LIST_SENTINEL: u8 = 0;
 
-pub struct List {
-    prism: Unit,
-}
+pub struct List { }
 
 impl List {
     pub fn new() -> Unit {
+        log!("list new");
         let guide = {
-            let s = Segment::new(6);
+            let cap = 1 /*prism*/ + Guide::units() + size(1);
+            let s = Segment::new(cap);
             let prism = s.line_at(0);
             prism.set(0, mechanism::prism::<List>());
             let mut g = Guide::hydrate_top_bot(prism, 0, 0);
@@ -37,14 +37,14 @@ impl List {
         guide.store().segment().unit()
     }
 
-    pub fn new_value() -> Value {
-        List::new().handle().value()
-    }
+    pub fn new_value() -> Value { List::new().handle().value() }
 }
 
 impl Dispatch for List {
     fn tear_down(&self, prism: AnchoredLine) {
+        group!("list tear down");
         vector::tear_down::tear_down(prism);
+        group_end!();
     }
 
     fn unaliased(&self, prism: AnchoredLine) -> Unit {
@@ -63,27 +63,30 @@ impl Distinguish for List {
         if guide.has_hash() {
             return guide.hash;
         }
+        group!("list hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
         }
         impl Process for Pointer {
-            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+            fn inges(&mut self, stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
                 let h = v.hash() as u64;
                 unsafe {
                     *self.ptr = cycle_abc(34, *self.ptr + h);
                 }
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
         let mut y = cycle_abc(7, PI[321] + guide.count as u64);
-        let mut procs: [Box<Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
+        let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
         let h = cycle_abc(210, y) as u32;
+        log!("hash of list {:#08X}", h);
+        group_end!();
         guide.set_hash(h).store_hash().hash
     }
 
@@ -92,7 +95,10 @@ impl Distinguish for List {
         if o.is_ref() {
             let o_prism = o.logical_value();
             if prism[0] == o_prism[0] {
-                vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism))
+                group!("list eq");
+                let res = vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism));
+                group_end!();
+                res
             } else {
                 use vector::VECTOR_SENTINEL;
                 let p = o_prism[0];
@@ -118,7 +124,10 @@ impl Aggregate for List {
         List::new()
     }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        vector::conj::conj(prism, x)
+        group!("list conj");
+        let res = vector::conj::conj(prism, x);
+        group_end!();
+        res
     }
     fn meta(&self, prism: AnchoredLine) -> *const Unit {
         vector::meta::meta(prism)
@@ -132,7 +141,7 @@ impl Aggregate for List {
     fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
         vector::pop::pop(prism)
     }
-    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<Process>]) -> Value {
+    fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value {
         reduce::reduce(prism, process)
     }
 }
@@ -177,21 +186,21 @@ impl Notation for List {
         }
 
         impl Process for Printer {
-            fn inges(&mut self, stack: &mut [Box<Process>], v: &Value) -> Option<Value> {
+            fn inges(&mut self, stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
                 use std::mem::transmute;
                 write!(unsafe { transmute::<usize, &mut fmt::Formatter>(self.f) },
                        "{}{}",
                        if self.is_first { self.is_first = false; "" } else { " " },
-                       v);
+                       v).unwrap();
                 None
             }
-            fn last_call(&mut self, stack: &mut [Box<Process>]) -> Value {
+            fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value {
                 Handle::nil().value()
             }
         }
 
-        write!(f, "(");
-        let mut procs: [Box<Process>; 1] = [Box::new(Printer::new(f))];
+        write!(f, "(")?;
+        let mut procs: [Box<dyn Process>; 1] = [Box::new(Printer::new(f))];
         let _ = reduce::reduce(prism, &mut procs);
         write!(f, ")")
     }

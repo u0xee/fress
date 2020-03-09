@@ -8,7 +8,6 @@
 use std::ops::Range;
 use std::fmt;
 use memory::*;
-use value::*;
 
 #[derive(Copy, Clone, Debug)]
 pub struct AnchoredRange {
@@ -93,7 +92,7 @@ impl AnchoredRange {
         } else {
             let mut short = *self;
             short.end -= 1;
-            short.each_unit(|u| { write!(f, "{:?} ", u.handle()); });
+            short.each_unit(|u| { write!(f, "{:?} ", u.handle()).unwrap(); });
             write!(f, "{:?}", self.seg[self.end - 1].handle())
         }
     }

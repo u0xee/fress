@@ -7,7 +7,6 @@
 
 use std::str::from_utf8;
 use memory::Unit;
-use value::Value;
 use handle::Handle;
 
 #[derive(Debug)]
@@ -91,7 +90,6 @@ impl PendingStack {
         self.boxes[self.count - 1] = u;
     }
     pub fn resolve(&mut self, bytes: &[u8]) {
-        use std::str::from_utf8;
         use string::Str;
         for i in 0..self.count {
             let lab = self.labels[i];

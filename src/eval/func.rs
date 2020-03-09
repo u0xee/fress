@@ -5,7 +5,7 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-//! Indexed array mapped trie, supporting vectors and lists.
+//! Base for closures
 
 use std::fmt;
 use std::cmp::Ordering;
@@ -15,35 +15,32 @@ use value::*;
 use handle::Handle;
 use transduce::Process;
 
-pub mod guide;
-use self::guide::Guide;
-pub mod conj;
-use self::conj::unaliased_root;
-pub mod pop;
-pub mod nth;
-pub mod meta;
-pub mod assoc;
-pub mod eq;
-pub mod tear_down;
-pub mod reduce;
-pub mod iter;
-pub mod util;
-use self::util::*;
+pub static FUNC_SENTINEL: u8 = 0;
 
-/// Defines branching factor.
-///
-/// Can be 4, 5 or 6, making for sixteen, thirty-two or sixty-four way branching.
-pub const BITS: u32 = 4; // one of 4, 5, 6
-pub const ARITY: u32 = 1 << BITS;
-pub const TAIL_CAP: u32 = ARITY;
-pub const MASK: u32 = ARITY - 1;
+/// Func dispatch.
+pub struct Func { }
 
-pub static VECTOR_SENTINEL: u8 = 0;
+// Func lifecycle
+// Seg alloc, set prism
+// Set meta-data, which arities
+// Set closed values
+// ...
+// invoke!
+// choose arity, calculate f-table index, invoke extern
+// [method written by my compiler] receives aline and args
+//
 
-/// Vector dispatch.
-pub struct Vector { }
+// Func prism, guide, IFn table base, closed-over values
 
-impl Vector {
+#[link(wasm_import_module = "ifn")]
+extern {
+    fn func_invoke0(segment: u32, index: u32, table_idx: u32);
+    fn func_invoke1(segment: u32, index: u32, arg0: u32, table_idx: u32);
+    fn func_invoke2(segment: u32, index: u32, arg0: u32, arg1: u32, table_idx: u32);
+}
+
+/*
+impl Func {
     pub fn new() -> Unit {
         log!("vector new");
         let guide = {
@@ -228,3 +225,6 @@ mod tests {
     use super::*;
 
 }
+
+*/
+

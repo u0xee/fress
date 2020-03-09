@@ -299,6 +299,8 @@ image::tree-split3.svg[tree split,width=100%]
 
 Justice delayed is Justice denied.
 
+video::D1fHYHkxLPk[youtube,width=95%,align="center"]
+
 include::history.adoc[]
 
 [bibliography]

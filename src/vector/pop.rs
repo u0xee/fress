@@ -73,7 +73,6 @@ pub fn pop_tailed_drained(guide: Guide) -> (Unit, Unit) {
     } else {
         let last_index = tail_path - 1;
         let path_diff = tail_path ^ last_index;
-        use std::cmp::Ordering;
         let ret = match digit_count(last_index).cmp(&digit_count(path_diff)) {
             Ordering::Less    => { shrink_height(guide, tailoff) },
             Ordering::Equal   => { shrink_root(guide, tailoff) },
@@ -162,7 +161,7 @@ pub fn shrink_root(guide: Guide, tailoff: u32) -> Unit {
     guide.dec_count().store().segment().unit()
 }
 
-pub fn unalias_edge_path_pop(guide: Guide, mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine {
+pub fn unalias_edge_path_pop(mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine {
     let count = d.count as u32;
     for _i in 0..count {
         let s = curr[0].segment();
@@ -194,7 +193,7 @@ pub fn shrink_child(guide: Guide, tailoff: u32) -> Unit {
     let digit_count = digit_count(last_index);
     let c = {
         let mut d = Digits::new(last_index, digit_count, digit_count - zero_count - 1);
-        unalias_edge_path_pop(guide, guide.root.offset(d.pop() as i32), &mut d)
+        unalias_edge_path_pop(guide.root.offset(d.pop() as i32), &mut d)
     };
     let tail = unlink_tail(c[0].segment(), zero_count);
     guide.root.set(-1, tail.unit());

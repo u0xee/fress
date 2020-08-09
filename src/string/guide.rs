@@ -9,8 +9,6 @@ use memory::*;
 
 /// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
 /// The top 32 bits contain the hash, the bottom 32 bits contain the byte count.
-/// The two highest order bits of the bottom 32 bits represent two booleans:
-/// is there a hash, and is there meta data.
 
 /// `Top 32 bits  [ Hash  (32) ]`
 /// `Bottom bits  [ Count (16) ]`
@@ -27,21 +25,16 @@ pub struct Guide {
 
 impl Guide {
     pub fn units() -> u32 { if cfg!(target_pointer_width = "32") { 2 } else { 1 } }
-
     pub fn segment(&self) -> Segment { self.prism.segment() }
-
     pub fn set_hash(mut self, hash: u32) -> Guide {
         self.hash = hash;
         self
     }
-
     pub fn clear_hash(mut self) -> Guide {
         self.hash = 0;
         self
     }
-
     pub fn has_hash(&self) -> bool { self.hash != 0 }
-
     pub fn reroot(mut self) -> Guide {
         let root_offset = 1 /*prism*/ + Guide::units();
         self.root = self.prism.offset(root_offset as i32);
@@ -56,7 +49,6 @@ impl Guide {
             Guide::hydrate_top_bot(prism, (g >> 32) as u32, g as u32)
         }
     }
-
     pub fn hydrate_top_bot(prism: AnchoredLine, top: u32, bot: u32) -> Guide {
         let hash = top;
         let count = bot & 0xFFFF;

@@ -10,18 +10,15 @@ use memory::*;
 /// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
 /// The top 32 bits contain the hash, the bottom 32 bits contain the length in bytes and
 /// the position of the prefix separating solidus. A position of 0 means no prefix.
-/// The two highest order bits of the bottom 32 bits represent two booleans:
-/// is there a hash, and is there meta data.
 
-/// `Top 32 bits  [                      Hash  (32) ]`
-/// `Bottom bits  [ Meta? | Solidus (8) | Count (8) ]`
+/// `Top 32 bits  [              Hash  (32) ]`
+/// `Bottom bits  [ Solidus (8) | Count (8) ]`
 ///
 
 #[derive(Copy, Clone, Debug)]
 pub struct Guide {
     pub hash: u32,
 
-    pub has_meta_bit: u32,
     pub solidus: u32,
     pub count: u32,
 
@@ -31,55 +28,21 @@ pub struct Guide {
 
 impl Guide {
     pub fn units() -> u32 { if cfg!(target_pointer_width = "32") { 2 } else { 1 } }
-
     pub fn segment(&self) -> Segment { self.prism.segment() }
-
     pub fn set_hash(mut self, hash: u32) -> Guide {
         self.hash = hash;
         self
     }
-
     pub fn clear_hash(mut self) -> Guide {
         self.hash = 0;
         self
     }
-
     pub fn has_hash(&self) -> bool { self.hash != 0 }
-
-    pub fn set_meta(mut self) -> Guide {
-        self.has_meta_bit = 1;
-        self
-    }
-
-    pub fn clear_meta(mut self) -> Guide {
-        self.has_meta_bit = 0;
-        self
-    }
-
-    pub fn has_meta(&self) -> bool { self.has_meta_bit == 1 }
-
-    pub fn meta_line(&self) -> AnchoredLine {
-        self.prism.offset(1 + Guide::units() as i32)
-    }
-
-    pub fn split_meta(&self) {
-        if self.has_meta() {
-            self.meta_line()[0].handle().split();
-        }
-    }
-
-    pub fn retire_meta(&self) {
-        if self.has_meta() {
-            self.meta_line()[0].handle().retire();
-        }
-    }
-
     pub fn reroot(mut self) -> Guide {
-        let root_offset = 1 /*prism*/ + Guide::units() + self.has_meta_bit;
+        let root_offset = 1 /*prism*/ + Guide::units();
         self.root = self.prism.offset(root_offset as i32);
         self
     }
-
     pub fn hydrate(prism: AnchoredLine) -> Guide {
         if cfg!(target_pointer_width = "32") {
             Guide::hydrate_top_bot(prism, prism[1].into(), prism[2].into())
@@ -88,29 +51,26 @@ impl Guide {
             Guide::hydrate_top_bot(prism, (g >> 32) as u32, g as u32)
         }
     }
-
     pub fn hydrate_top_bot(prism: AnchoredLine, top: u32, bot: u32) -> Guide {
         let hash = top;
-        let has_meta_bit = (bot >> 31) & 0x1;
         let solidus = (bot >> 8) & 0xFF;
         let count = bot & 0xFF;
 
-        let root_offset = 1 /*prism*/ + Guide::units() + has_meta_bit;
+        let root_offset = 1 /*prism*/ + Guide::units();
         let root = prism.offset(root_offset as i32);
 
-        Guide { hash, has_meta_bit, solidus, count, prism, root }
+        Guide { hash, solidus, count, prism, root }
     }
 
     pub fn new(prism: AnchoredLine, solidus_position: u32, byte_count: u32) -> Guide {
-        let has_meta_bit = 0u32;
-        let root_offset = 1 /*prism*/ + Guide::units() + has_meta_bit;
-        Guide { hash: 0, has_meta_bit, solidus: solidus_position,
+        let root_offset = 1 /*prism*/ + Guide::units();
+        Guide { hash: 0, solidus: solidus_position,
             count: byte_count, prism, root: prism.offset(root_offset as i32) }
     }
 
     pub fn store_at(&self, mut prism: AnchoredLine) {
         let top: u32 = self.hash;
-        let bot: u32 = (self.has_meta_bit << 31) | (self.solidus << 8) | self.count;
+        let bot: u32 = (self.solidus << 8) | self.count;
         if cfg!(target_pointer_width = "32") {
             prism[1] = top.into();
             prism[2] = bot.into();
@@ -119,16 +79,14 @@ impl Guide {
             prism[1] = g.into();
         }
     }
-
     pub fn store(self) -> Guide {
         self.store_at(self.prism);
         self
     }
-
     pub fn store_hash(self) -> Guide {
         let prism = self.prism;
         let top: u32 = self.hash;
-        let bot: u32 = (self.has_meta_bit << 31) | (self.solidus << 8) | self.count;
+        let bot: u32 = (self.solidus << 8) | self.count;
         if cfg!(target_pointer_width = "32") {
             prism.store_hash(1, top.into());
             prism.store_hash(2, bot.into());
@@ -146,7 +104,6 @@ impl Guide {
             from_raw_parts_mut(p, self.count as usize)
         }
     }
-
     pub fn str(&self) -> &mut str {
         use std::str::from_utf8_mut;
         from_utf8_mut(self.byte_slice()).unwrap()

@@ -16,39 +16,71 @@ pub mod var;
 pub mod func;
 use handle::Handle;
 
-// eval global context map! Containing
-// * repl context, current *ns*
-// * active aliases
-// * Base functions
-//  * fress/conj [v v] -> v
-//  * fress/retire [v] -> nil
-//  * fress/split_out [i] -> v
-
-// structure used for static init, global environment:
-// map of all vars, (:kw?)
-
-pub fn eval(v: Value) -> Value {
-    let globals = read("{+ fress/+, conj fress/conj, *ns* user}").unwrap();
-    let (structured, notes) = structure::structure(v, &globals).expect("Error during structure");
-    let ctx = compile::compile_top_level(&structured, &notes);
-    let module = assemble::wasm_module(&ctx);
-    println!("Module: {} bytes {:02X?}", module.len(), &module);
-    use std::fs::File;
-    use std::io::Write;
-    warn!("Writing to file..");
-    let mut file = File::create("foo.txt").unwrap();
-    file.write_all(&module).expect("Failed to write bytes to file.");
-    vector().conj(structured).conj(notes)
-}
-
 #[link(wasm_import_module = "env")]
 extern {
+    // TODO more of a return, module - mem and table needs - notes
+    //  notes including info to format the code sample
     fn wasm_compile_init(byte_address: u32, byte_count: u32, mem_base: u32, tab_base: u32);
+    fn post_output(byte_address: u32, byte_count: u32);
+    fn post_error(byte_address: u32, byte_count: u32);
 }
 
+
+pub struct Statics {
+    pub sym_do: Value,
+    pub sym_if: Value,
+    pub sym_fn: Value,
+    pub sym_def: Value,
+    pub sym_let: Value,
+    pub sym_loop: Value,
+    pub sym_recur: Value,
+
+    pub local_use: Value,
+    pub forms_using: Value,
+    pub refers_to: Value,
+    pub resolved_from: Value,
+
+    pub sym_value: Value,
+    pub sym_value_ref: Value,
+    pub key_name: Value,
+    pub key_args: Value,
+    pub key_ret: Value,
+    pub key_mapped: Value,
+    pub key_alias: Value,
+    pub sym_fress: Value,
+}
 use std::cell::Cell;
 thread_local! {
-    pub static GLOBAL_RESOLVE: Cell<u32> = Cell::new(0);
+    pub static STATICS: Cell<usize> = Cell::new(0);
+}
+pub fn load_statics() {
+    let x = Box::new(Statics {
+        sym_do: read("do").unwrap(),
+        sym_if: read("if").unwrap(),
+        sym_fn: read("fn").unwrap(),
+        sym_def: read("def").unwrap(),
+        sym_let: read("let").unwrap(),
+        sym_loop: read("loop").unwrap(),
+        sym_recur: read("recur").unwrap(),
+        local_use: read(":local-use").unwrap(),
+        forms_using: read(":forms-using").unwrap(),
+        refers_to: read(":refers-to").unwrap(),
+        resolved_from: read(":resolved-from").unwrap(),
+        sym_value: read("value").unwrap(),
+        sym_value_ref: read("&value").unwrap(),
+        key_name: read(":name").unwrap(),
+        key_args: read(":args").unwrap(),
+        key_ret: read(":ret").unwrap(),
+        key_mapped: read(":mapped").unwrap(),
+        key_alias: read(":alias").unwrap(),
+        sym_fress: read("fress").unwrap(),
+    });
+    let y = Box::into_raw(x) as usize;
+    STATICS.with(|c| c.set(y));
+}
+pub fn get_statics() -> &'static Statics {
+    let u = STATICS.with(|c| c.get());
+    unsafe { &*(u as *const Statics) }
 }
 
 #[no_mangle]
@@ -58,11 +90,14 @@ pub extern fn initialize_global_state() {
         let s = format!("{}", msg);
         ::trace::panic_error(&s);
     }));
-    group!("Global state initialization");
-    // Global state - resolution map, vars map, static memory pool, table pool
-    let globals = read("{+ fress/+, conj fress/conj, *ns* user}").unwrap();
-    let g = Handle::from(globals).unit.u32();
-    GLOBAL_RESOLVE.with(|c| c.set(g));
+    init();
+}
+
+pub fn init() {
+    group!("Init global state");
+    load_statics();
+    compile::init_primitives();
+    var::init();
     group_end!();
 }
 
@@ -70,7 +105,6 @@ pub extern fn initialize_global_state() {
 pub extern fn read_eval_print(byte_address: u32, byte_count: u32) {
     group!("Read-eval-print routine");
     let m = _read_structure_compile_assemble(byte_address, byte_count);
-    // TODO allocate static memory and table space
     unsafe {
         wasm_compile_init(m.as_ptr() as usize as u32, m.len() as u32,
                           0, 0)
@@ -91,6 +125,9 @@ pub fn _read_structure_compile_assemble(byte_address: u32, byte_count: u32) -> V
         match res {
             Ok(v) => v,
             Err(msg) => {
+                unsafe {
+                    post_error(msg.as_ptr() as u32, msg.len() as u32)
+                }
                 error!("{}", msg);
                 unimplemented!();
             }
@@ -98,72 +135,44 @@ pub fn _read_structure_compile_assemble(byte_address: u32, byte_count: u32) -> V
     };
     group_end!();
     group!("Structuring");
-    let (structured, notes) = {
-        let g: u32 = GLOBAL_RESOLVE.with(|c| c.get());
-        let globals = Unit::from(g).handle().value();
-        let res = structure::structure(v, &globals);
-        Handle::from(globals);
+    let structured = {
+        let res = structure::structure(&v);
         match res {
             Ok(r) => r,
             Err(msg) => {
+                unsafe {
+                    post_error(msg.as_ptr() as u32, msg.len() as u32)
+                }
                 error!("{}", msg);
                 unimplemented!();
             }
         }
     };
+    unsafe {
+        use meta;
+        meta::do_print_meta();
+        let print = structured.to_string();
+        meta::end_print_meta();
+        post_output(print.as_ptr() as u32, print.len() as u32)
+    }
     group_end!();
     group!("Compiling");
-    let ctx = compile::compile_top_level(&structured, &notes);
+    let ctx = compile::compile_top_level(&structured);
     group_end!();
+    compile::show_context(&ctx);
     group!("Assembling");
     let module = assemble::wasm_module(&ctx);
     group_end!();
     module
 }
 
-// What's next?
-// group edn read events, eg reading-uuid, symbolic, number, vector etc
-// structure, compile, assemble traces
-// see the flow of compiler logic
-// big arc, locals, fns, vars, recur, literals, :kw
-
 // The list:
-// fressian, duh
-// let loop fn def literals
-// great observability
-// introductory material
+// * fressian, duh
+// * let loop fn def literals
+// * great observability
+// * coloring atomic types, uuid timestamp fields etc.
+// * introductory material
 
-// TODO
-// Compiled code call tracing routines
-// Locate trace messages with urls to rust doc
-//
 
-// TODO move these, library interface fns
-#[no_mangle]
-pub extern fn new_vector() -> u32 {
-    let x = vector();
-    Handle::from(x).unit().u32()
-}
 
-// TODO instead, value into js string
-#[no_mangle]
-pub extern fn console_log(v: u32) {
-    let val = Unit::from(v).handle().value();
-    log!("{}", val);
-    Handle::from(val); // forget
-}
-
-#[no_mangle]
-pub extern fn conj(c: u32, v: u32) -> u32 {
-    let coll = Unit::from(c).handle().value();
-    let val = Unit::from(v).handle().value();
-    let res = coll.conj(val);
-    Handle::from(res).unit().u32()
-}
-
-#[no_mangle]
-pub extern fn from_signed_i64(x: u64) -> u32 {
-    let v = Value::from(x as i64);
-    Handle::from(v).unit().u32()
-}
 

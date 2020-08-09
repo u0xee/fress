@@ -3,7 +3,6 @@
 :rfc: https://tools.ietf.org/html/rfc
 
 // TODO add infoq, podcasts, conf presentations, languages
-// advisers, Alexander Hulpke
 // « » … † ¶ ↑ → ∞
 
 [.big]
@@ -270,7 +269,7 @@
 
 * [[[Brodal]]] Gerth Stølting *Brodal* et al. (2012) _Fully persistent B-trees._
   [.provenance]##Proc. of [.ordn]#23rd# annual [.acro .semi]*ACM-SIAM* Symposium on Discrete Algorithms.
-  Society for Industrial and Applied Mathematics.##
+  Society for Industrial and Applied Mathematics##
   {scholar}brodal&title=fully+persistent+b+trees[¤^]
 
 * [[[Brooks-Music]]] Frederick *Brooks* et al. (1957) _An experiment in musical composition._
@@ -423,7 +422,7 @@
   [.provenance]#ACM Computing Surveys 2.3#
   {scholar}denning&title=virtual+memory[¤^]
 
-* [[[Dennis]]] Jack *Dennis* (1974) _First version of a data flow procedure language._
+* [[[Dennis]]] Jack *Dennis* <<VAL,†>> (1974) _First version of a data flow procedure language._
   [.provenance]#Programming Symposium. Springer, Berlin, Heidelberg#
   {scholar}denning&title=first+version+of+a+data+flow+procedure+language[¤^]
 
@@ -477,6 +476,10 @@
 * [[[SHA]]] D. *Eastlake* [.ordn]#3rd# and T. *Hansen* (2011) _US Secure Hash Algorithms._
   [.provenance]##RFC 6234, [.acro]#DOI 10.17487/RFC6234# ## {rfc}6234[→^]
 
+* [[[SHA-3]]] FIPS-202 (2015) _SHA-3 standard: Permutation-based hash and extendable-output functions._
+  [.provenance]#[.semi]*NIST* Publication, US Dept. of Commerce#
+  <<Keccak>> https://www.nist.gov/itl/current-fips[→^]
+
 * [[[Easton]]] Malcolm *Easton* (1986) _Key-sequence data sets on indelible storage._
   [.provenance]##[.semi]*IBM* Journal of R&D 30.3 ##
   {scholar}easton&title=key+sequence+data+sets+on+indelible+storage[¤^]
@@ -499,10 +502,6 @@
 * [[[Feynman]]] Richard *Feynman* (1986) _Quantum mechanical computers._
   [.provenance]#Foundations of Physics 16.6#
   {scholar}feynman&title=quantum+mechanical+computers[¤^]
-
-* [[[SHA-3]]] FIPS-202 (2015) _SHA-3 standard: Permutation-based hash and extendable-output functions._
-  [.provenance]#[.semi]*NIST* Publication, US Dept. of Commerce#
-  https://www.nist.gov/itl/current-fips[→^]
 
 * [[[Fitzgerald-Oldehoeft]]] Steven *Fitzgerald* and Rodney *Oldehoeft* <<Cann-Oldehoeft,†>> (1996)
   _Update-in-place analysis for true multidimensional arrays._
@@ -574,6 +573,11 @@
   [.provenance]#ACM [.acro .semi]*SIGPLAN* Notices 24.7#
   {scholar}goldberg&title=generational+reference+counting[¤^]
 
+* [[[Goldberg-Float]]] David *Goldberg* (1991)
+  _What every computer scientist should know about floating-point arithmetic._
+  [.provenance]#ACM Computing Surveys 23.1#
+  {scholar}goldberg&title=what+every+computer+scientist+should+know+about+floating+point+arithmetic[¤^]
+
 * [[[ENIAC]]] Herman *Goldstine* and Adele *Goldstine* (1946)
   _The electronic numerical integrator and computer [.acro]#ENIAC#._
   [.provenance]#Mathematics of Computation 2.15#
@@ -596,7 +600,8 @@
   [.provenance]#Journées Francophones des Langages Applicatifs#
   {scholar}goubault&title=implementing+functional+languages+with+fast+equality[¤^]
 
-* [[[Red-Black-Tree]]] Leo *Guibas* and Robert *Sedgewick* (1978) _A dichromatic framework for balanced trees._
+* [[[Red-Black-Tree]]] Leo *Guibas* and Robert *Sedgewick* <<Flajolet-Sedgewick,†>> (1978)
+  _A dichromatic framework for balanced trees._
   [.provenance]##[.ordn]#19th# Annual Symposium on Foundations of Computer Science, IEEE##
   {scholar}guibas&title=a+dichromatic+framework+for+balanced+trees[¤^]
 
@@ -610,6 +615,11 @@
   {scholar}guzman&title=on+expressing+the+mutation+of+state+in+a+functional+programming+language[¤^]
 
 [[bib-h]]
+* [[[Haas]]] Andreas *Haas* et al. (2017)
+  _Bringing the web up to speed with WebAssembly._
+  [.provenance]#ACM [.acro .semi]*SIGPLAN* Programming Language Design and Implementation#
+  {scholar}haas&title=bringing+the+web+up+to+speed+with+webassembly[¤^]
+
 * [[[Haller]]] Philipp *Haller* and Martin *Odersky* <<Odersky-Destructive,†>> (2010)
   _Capabilities for Uniqueness and Borrowing._
   [.provenance]#European Conf on Object Oriented Programming. Springer, Berlin, Heidelberg#
@@ -635,6 +645,11 @@
 
 * [[[edn]]] Rich *Hickey* (2012) _The [.caps]#edn# extensible data notation._
   http://edn-format.org[edn-format.org^]
+
+* [[[Hickey-History]]] Rich *Hickey* (2020) _A History of [.caps]#Clojure#._
+  [.provenance]#Proc. of ACM on Programming Languages 4, HOPL 71#
+  {scholar}hickey&title=a+history+of+clojure[¤^] •
+  https://clojure.org/about/history[→^]
 
 * [[[SQLite]]] D. Richard *Hipp* (2000) _[.caps]#SQLite# C library._
   Database engine as an in-process library.
@@ -729,6 +744,11 @@
 * [[[Kaplan-Survey]]] Haim *Kaplan* (2001) _Persistent data structures._
   [.provenance]#Handbook on Data Structures and Applications, Editors Sartaj Sahni and Dinesh Mehta, CRC Press#
   https://www.google.com/books/edition/Handbook_of_Data_Structures_and_Applicat/fQVZy1zcpJkC[¤^]
+
+* [[[Kariniemi]]] Nicholas *Kariniemi* (2015)
+  _Clojure on Android: Challenges and Solutions._
+  [.provenance]#Master thesis, Aalto University#
+  {scholar}kariniemi&title=clojure+on+android+challenges+and+solutions[¤^]
 
 * [[[Personal-Computer]]] Alan *Kay* (1972) _A personal computer for children of all ages._
   [.provenance]#Proc. of ACM Annual Conf Vol. 1#
@@ -1114,6 +1134,11 @@
 * [[[Steindorfer-Thesis]]] Michael J. *Steindorfer* (2017) _Efficient immutable collections._
   [.provenance]#Doctoral Thesis, [.semi]*University of Amsterdam*, Netherlands#
   {scholar}steindorfer&title=efficient+immutable+collections[¤^]
+
+* [[[Stonebraker]]] Michael *Stonebraker* and Ariel *Weisberg* (2013)
+  _The VoltDB Main Memory DBMS._
+  [.provenance]#IEEE Data Engineering 36.2#
+  {scholar}stonebraker&title=the+voltdb+main+memory+dbms[¤^]
 
 * [[[Stucki]]] Nicolas *Stucki* et al. (2015) _RRB vector: a practical general purpose immutable sequence._
   [.provenance]#ACM [.acro .semi]*SIGPLAN* Notices 50.9#

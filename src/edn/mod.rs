@@ -7,6 +7,11 @@
 
 use std::str::from_utf8;
 use handle::Handle;
+use Value;
+use vector;
+use keyword;
+use map;
+use meta;
 
 pub mod number;
 pub mod name;
@@ -16,7 +21,7 @@ use self::reader::{EdnReader, ReadResult, Pending};
 
 pub fn err(reader: &mut EdnReader, msg: String) -> ReadResult {
     let res = ReadResult::Error { location: reader.counter, message: msg };
-    reader.pending.tear_down();
+    reader.pending.tear_down(); // TODO leave around for context
     res
 }
 
@@ -62,7 +67,15 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             };
             match res {
                 Ok(h) => {
-                    ready = h.unit();
+                    // TODO
+                    use keyword;
+                    use Value;
+                    //let row = keyword::new_from_name("row".as_bytes());
+                    //let row_num: Value = reader.counter.row.into();
+                    //let row_num = Value::tru();
+                    //let g = h.assoc_meta(row.handle(), row_num._consume());
+                    let g = h;
+                    ready = g.unit();
                     reader.counter = reader.counter.count(str_sym);
                     i += sym.len();
                     break 'ready;
@@ -79,8 +92,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 }
                 let d = bytes[i + 1];
                 if d == b'{' {
-                    use set::Set;
-                    let h = Set::new();
+                    use set;
+                    let h = set::new();
                     reader.pending.push(Pending::Set, h);
                     reader.counter = reader.counter.add_ascii(2);
                     i += 2;
@@ -141,8 +154,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                         return err(reader, format!("Invalid utf-8 in string contents."))
                     },
                 };
-                use string::Str;
-                match Str::new_escaping(contents) {
+                use string;
+                match string::new_escaping(contents) {
                     Ok(h) => {
                         reader.counter = reader.counter.add_ascii(1)
                             .count(str_contents).add_ascii(1);
@@ -174,6 +187,30 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 reader.counter = reader.counter.add_ascii(lf as u32).newline();
                 continue 'top;
             }
+            if c == b'^' {
+                // if reader.meta
+                // push on stack, meta in progress (like kv pair)
+                // read one. map? ok
+                // :keyword -> {:keyword true}
+                // symbol -> {:tag symbol}
+                return err(reader, format!("Can't parse ^"))
+            }
+            if c == b'\'' {
+                // if reader.quotes
+                // push on reader stack, quote form in progress
+                // read one. on ready, create list (quote x) and reready
+                return err(reader, format!("Can't parse ' (single quote)"))
+            }
+            if c == b'`' {
+                // if reader.quotes
+                // supports unquote, auto gensym: foo# -> foo__5__auto__
+                return err(reader, format!("Can't parse ` (backtick)"))
+            }
+            if c == b'~' {
+                // ~  unquote
+                // ~@ unquote splicing
+                return err(reader, format!("Can't parse ~ (tilde)"))
+            }
             // '`^@~
             return err(reader, format!("Can't parse a token starting with ({})", char::from(c)))
         }
@@ -188,8 +225,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
         }
         if c >= b'{' {
             if c == b'{' {
-                use map::Map;
-                let h = Map::new();
+                use map;
+                let h = map::new();
                 reader.pending.push(Pending::Map, h);
                 reader.counter = reader.counter.add_ascii(1);
                 i += 1;
@@ -216,9 +253,20 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
         }
         if c >= b'[' {
             if c == b'[' {
-                use vector::Vector;
-                let h = Vector::new();
-                reader.pending.push(Pending::Vector, h);
+                let h = {
+                    let row = keyword::new_from_name("row".as_bytes());
+                    let col = keyword::new_from_name("col".as_bytes());
+                    let byte = keyword::new_from_name("byte".as_bytes());
+                    let row_num: Value = reader.counter.row.into();
+                    let col_num: Value = reader.counter.col.into();
+                    let byte_num: Value = reader.counter.byte.into();
+                    let m = map::new().handle()
+                        .assoc(row.handle(), row_num._consume())
+                        .assoc(col.handle(), col_num._consume())
+                        .assoc(byte.handle(), byte_num._consume());
+                    meta::shim_with_meta(vector::new().handle(), m)
+                };
+                reader.pending.push(Pending::Vector, h.unit());
                 reader.counter = reader.counter.add_ascii(1);
                 i += 1;
                 continue 'top;
@@ -229,19 +277,21 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             }
             let (p, u) = reader.pending.top();
             if let Pending::Vector = p {
+                // TODO attach counter end info
+                // u.handle().assoc_meta()
                 ready = u;
                 reader.pending.pop();
                 reader.counter = reader.counter.add_ascii(1);
                 i += 1;
                 break 'ready;
             } else {
-                return err(reader, format!("Unexpected closing bracket ] \
-                    inside a {}.", p.name()))
+                return err(reader,
+                           format!("Unexpected closing bracket ] inside a {}.", p.name()))
             }
         } else {
-            use list::List;
+            use list;
             if c == b'(' {
-                let h = List::new();
+                let h = list::new();
                 reader.pending.push(Pending::List, h);
                 reader.counter = reader.counter.add_ascii(1);
                 i += 1;
@@ -254,10 +304,9 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             let (p, u) = reader.pending.top();
             if let Pending::List = p {
                 ready = {
-                    use transduce::Transducers;
-                    let rev = u.handle().pour(Transducers::new(), List::new().handle());
-                    u.handle().retire();
-                    rev.unit()
+                    use ::right_into;
+                    let rev = right_into(list::new_value(), u.handle().value());
+                    rev._consume().unit()
                 };
                 reader.pending.pop();
                 reader.counter = reader.counter.add_ascii(1);
@@ -275,8 +324,8 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
             } else {
                 match reader.pending.top_case() {
                     Pending::Tagged  => {
-                        use tagged::Tagged;
-                        let tag = Tagged::new(reader.pending.top_unit().handle(), ready.handle());
+                        use tagged;
+                        let tag = tagged::new(reader.pending.top_unit().handle(), ready.handle());
                         reader.pending.pop();
                         ready = tag;
                         continue 'reready;
@@ -290,7 +339,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                         let (k, v) = (reader.pending.top_unit().handle(), ready.handle());
                         reader.pending.pop();
                         let n = reader.pending.top_unit().handle();
-                        let (m, displaced) = n.assoc(k, v);
+                        let (m, displaced) = n.assoc_out(k, v);
                         reader.pending.set_top(m.unit());
                         if !displaced.is_nil() {
                             let s = format!("Duplicate mapping to both {} and {}.", displaced, v);
@@ -363,8 +412,8 @@ pub fn prefix_map(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult 
     }
     use edn::reader::immediate_both;
     reader.pending.push(Pending::Namespace, immediate_both(i + 2 /*#:*/, prefix.len()));
-    use map::Map;
-    reader.pending.push(Pending::Map, Map::new());
+    use map;
+    reader.pending.push(Pending::Map, map::new());
     let bytes_used = (2 /*#:*/ + prefix.len() + ws.len() + 1 /*{*/) as u32;
     let ctr = reader.counter.add_ascii(2).count(str_prefix).count_ascii(ws).add_ascii(1);
     reader.counter = ctr;
@@ -382,7 +431,7 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             return err(reader, format!("Invalid utf-8 in tag symbol."))
         }
     };
-    use symbol::Symbol;
+    use symbol;
     if let Some(solidus) = slash_index(tag_sym) {
         if solidus == tag_sym.len() - 1 {
             return err(reader, format!("Bad tag symbol ({}). \
@@ -392,7 +441,7 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
             return err(reader, format!("Bad tag symbol ({}). \
                                     Name component (after /) is invalid for symbols.", str_tag))
         }
-        let h = Symbol::new(tag_sym, solidus as u32);
+        let h = symbol::new(tag_sym, solidus as u32);
         reader.pending.push(Pending::Tagged, h);
         reader.counter = reader.counter.add_ascii(1).count(str_tag);
         return ReadResult::Ok { bytes_used: tag_sym.len() as u32 + 1, value: Handle::NIL }
@@ -405,7 +454,7 @@ pub fn tagged(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
                     Tag must be a valid symbol (not true/false/nil)."))
         }
     }
-    let h = Symbol::new(tag_sym, 0);
+    let h = symbol::new(tag_sym, 0);
     reader.pending.push(Pending::Tagged, h);
     reader.counter = reader.counter.add_ascii(1).count(str_tag);
     return ReadResult::Ok { bytes_used: tag_sym.len() as u32 + 1, value: Handle::NIL }
@@ -434,8 +483,8 @@ pub fn tagged_inst(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult
             return err(reader, format!("Invalid utf-8 in inst contents."))
         }
     };
-    use inst::Inst;
-    return match Inst::new_parsed(content) {
+    use inst;
+    return match inst::new_parsed(content) {
         Err(msg) => { err(reader, msg) },
         Ok(h) => {
             let ctr = reader.counter.add_ascii(5 /*#inst*/)
@@ -471,8 +520,8 @@ pub fn tagged_uuid(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult
             return err(reader, format!("Invalid utf-8 in uuid contents."))
         }
     };
-    use uuid::Uuid;
-    return match Uuid::new_parsed(content) {
+    use uuid;
+    return match uuid::new_parsed(content) {
         Err(msg) => { err(reader, msg) },
         Ok(h) => {
             let ctr = reader.counter.add_ascii(5 /*#uuid*/)
@@ -498,10 +547,10 @@ pub fn symbolic_numbers(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadR
         Some(n) => n,
         None => { return more(reader, bytes, bytes.len() - i) },
     };
-    use float_point::FloatPoint;
-    let h = if name == b"Inf" { FloatPoint::inf() }
-    else if name == b"-Inf" { FloatPoint::neg_inf() }
-    else if name == b"NaN" { FloatPoint::not_a_number() }
+    use float_point;
+    let h = if name == b"Inf" { float_point::inf() }
+    else if name == b"-Inf" { float_point::neg_inf() }
+    else if name == b"NaN" { float_point::not_a_number() }
     else {
         return err(reader, format!("Invalid symbolic name (##{}). \
                                     Symbolic numbers are ##Inf ##-Inf or ##NaN.", from_utf8(name).unwrap()))
@@ -521,10 +570,10 @@ pub fn character(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
         Some(n) => n,
         None => { return more(reader, bytes, bytes.len() - i) },
     };
-    use character::Character;
+    use character;
     if char_name.len() == 1 {
         reader.counter = reader.counter.add_ascii(2);
-        return ReadResult::Ok { bytes_used: 2, value: Character::from_byte(d).unit() }
+        return ReadResult::Ok { bytes_used: 2, value: character::from_byte(d).unit() }
     }
     let str_char_name = match from_utf8(char_name) {
         Ok(s) => s,
@@ -536,10 +585,10 @@ pub fn character(reader: &mut EdnReader, bytes: &[u8], i: usize) -> ReadResult {
         Ok(h) => {
             let bytes_used = char_name.len() as u32 + 1;
             reader.counter = reader.counter.add_ascii(1).count(str_char_name);
-            return ReadResult::Ok { bytes_used, value: h.unit() }
+            ReadResult::Ok { bytes_used, value: h.unit() }
         },
         Err(msg) => {
-            return err(reader, msg)
+            err(reader, msg)
         },
     }
 }
@@ -585,6 +634,7 @@ pub fn control_char(b: u8) -> bool {
 
 pub fn whitespace(b: u8) -> bool {
     // ascii(b) && hit(pattern) ?
+    // TODO nbsp 0xA0
     control_char(b) || b == b','
 }
 
@@ -602,7 +652,7 @@ pub fn hit(b: u8, pattern: (u64, u64)) -> bool {
 }
 
 pub fn parse_character(s: &[u8]) -> Result<Handle, String> {
-    use character::Character;
+    use character;
     let c = s[0];
     if c == b'u' {
         if s.len() != 5 {
@@ -613,7 +663,7 @@ pub fn parse_character(s: &[u8]) -> Result<Handle, String> {
             return Err(format!("Bad unicode literal (\\{}). A unicode literal should have \
                                 four hex digits (0-9 a-f A-F), like \\u03BB.", from_utf8(s).unwrap()))
         }
-        return Ok(Character::from_four_hex(&s[1..]))
+        return Ok(character::from_four_hex(&s[1..]))
     }
     if !ascii(c) {
         if unicode_cont(c) {
@@ -640,13 +690,13 @@ pub fn parse_character(s: &[u8]) -> Result<Handle, String> {
             return Err(format!("Bad character literal (\\{}) more than one character.", from_utf8(s).unwrap()))
         }
         let u = from_utf8(s).unwrap().chars().next().unwrap();
-        return Ok(Character::new(u))
+        return Ok(character::new(u))
     }
     return {
-        if s == b"newline"     { Ok(Character::from_byte(b'\n')) }
-        else if s == b"return" { Ok(Character::from_byte(b'\r')) }
-        else if s == b"space"  { Ok(Character::from_byte(b' ')) }
-        else if s == b"tab"    { Ok(Character::from_byte(b'\t')) }
+        if s == b"newline"     { Ok(character::from_byte(b'\n')) }
+        else if s == b"return" { Ok(character::from_byte(b'\r')) }
+        else if s == b"space"  { Ok(character::from_byte(b' ')) }
+        else if s == b"tab"    { Ok(character::from_byte(b'\t')) }
         else { Err(format!("Unrecognized character name (\\{}). You can use \\newline \\space or \\tab. \
                             Or give a unicode literal in hex like \\u03BB.", from_utf8(s).unwrap()))
         }

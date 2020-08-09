@@ -7,7 +7,6 @@ import subprocess
 src_dir = 'src'
 doc_dir = 'doc'
 target_dir = 'target/doc'
-wasm_triple = 'wasm32-unknown-unknown'
 
 subprocess.run(['mkdir', '--parents', target_dir])
 
@@ -15,9 +14,7 @@ subprocess.run(['mkdir', '--parents', target_dir])
 def find_files(d, find_args=None):
     if not find_args:
         find_args = []
-    command = ['find', '-L', d,
-               '-type', 'f']
-    command.extend(find_args)
+    command = ['find', '-L', d] + find_args + ['-type', 'f']
     ret = subprocess.run(command, stdout=subprocess.PIPE).stdout.splitlines()
     return [str(f, 'utf-8') for f in ret]
 
@@ -26,23 +23,23 @@ asciidoc_base = ['asciidoctor',
                  '-a', 'doctype=article',
                  '-a', 'sectanchors',
                  '-a', 'imagesdir=images',
-                 '-a', 'stylesdir=anc',
                  '-a', 'stylesheet=style.css',
                  '-a', 'docinfo=shared',
-                 '-a', 'docinfodir=images/favicon',
                  '-a', 'idprefix=+',
-                 '-a', 'idseparator=-']
+                 '-a', 'idseparator=-',
+                 '-a', 'toc=left']
 
 
 def generate_html_from_asciidoc(dir, out_dir):
-    thesis = find_files(dir, ['-name', 'thesis.adoc'])
-    home = find_files(dir, ['-name', 'home.adoc'])
-    # adocs = find_files(dir, ['-name', '*.adoc'])
     command = asciidoc_base + ['--destination-dir', out_dir]
-    print('Running: {}'.format(' '.join(command)))
-    subprocess.run(command + ['-a', 'toc=left'] + thesis)
+    adocs = find_files(dir, ['-maxdepth', '1', '-name', '*.adoc'])
+    full_command = command + adocs
+    print('Running: {}'.format(' '.join(full_command)))
+    subprocess.run(full_command)
     thesis_html = find_files(out_dir, ['-name', 'thesis.html'])
     subprocess.run(['sed', '-i', 's/100%px/100%/g'] + thesis_html)
+
+    home = find_files(dir, ['-name', 'home.adoc'])
     subprocess.run(command + home)
 
 
@@ -69,7 +66,10 @@ def build_project(args):
     build_adoc(args)
 
 
-def build_repl(args):
+wasm_triple = 'wasm32-unknown-unknown'
+
+
+def build_wasm_repl(args):
     command = ['cargo', 'build', '--target', wasm_triple]
     print('Running: {}'.format(' '.join(command)))
     e = os.environ.copy()
@@ -124,7 +124,7 @@ adoc_parser.set_defaults(func=build_adoc)
 # WASM REPL subparser
 wasm_parser = subparsers.add_parser('wasm', description='Build wasm repl',
                                     help='Build wasm library (-h for options)')
-wasm_parser.set_defaults(func=build_repl)
+wasm_parser.set_defaults(func=build_wasm_repl)
 
 # Local server
 server_parser = subparsers.add_parser('http', description='Start local file server.',

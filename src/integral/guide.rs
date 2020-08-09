@@ -28,35 +28,22 @@ pub struct Guide {
 }
 
 impl Guide {
-    pub fn units() -> u32 {
-        if cfg!(target_pointer_width = "32") { 2 } else { 1 }
-    }
-
-    pub fn segment(&self) -> Segment {
-        self.prism.segment()
-    }
-
+    pub fn units() -> u32 { if cfg!(target_pointer_width = "32") { 2 } else { 1 } }
+    pub fn segment(&self) -> Segment { self.prism.segment() }
     pub fn set_hash(mut self, hash: u32) -> Guide {
         self.hash = hash;
         self
     }
-
     pub fn clear_hash(mut self) -> Guide {
         self.hash = 0;
         self
     }
-
     pub fn has_hash(&self) -> bool { self.hash != 0 }
-
     pub fn set_big(mut self) -> Guide {
         self.is_big_bit = 1;
         self
     }
-
-    pub fn is_big(&self) -> bool {
-        self.is_big_bit == 1
-    }
-
+    pub fn is_big(&self) -> bool { self.is_big_bit == 1 }
     pub fn set_count(mut self, count: u32) -> Guide {
         self.unit_count = count;
         self.clear_hash()

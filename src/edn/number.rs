@@ -97,15 +97,15 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
                                            from_utf8(s).unwrap()))
                     }
                     let part = &after_point[..e];
-                    use float_point::FloatPoint;
-                    return Ok(FloatPoint::parse_exp(negate, whole, part, exp_negate, exp, promote))
+                    use float_point;
+                    return Ok(float_point::parse_exp(negate, whole, part, exp_negate, exp, promote))
                 }
                 return Err(format!("Bad fractional part in floating point number ({}).",
                                    from_utf8(s).unwrap()))
             } else {
                 // only digits left
-                use float_point::FloatPoint;
-                return Ok(FloatPoint::parse(negate, whole, after_point, promote))
+                use float_point;
+                return Ok(float_point::parse(negate, whole, after_point, promote))
             }
         }
         if db == b'e' {
@@ -133,8 +133,8 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
             }
             let whole = &body[..d];
             let part = &b""[..];
-            use float_point::FloatPoint;
-            return Ok(FloatPoint::parse_exp(negate, whole, part, exp_negate, exp, promote))
+            use float_point;
+            return Ok(float_point::parse_exp(negate, whole, part, exp_negate, exp, promote))
         }
         if db == b'x' {
             if d != 1 || body[0] != b'0' {
@@ -156,8 +156,8 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
                                     Use N to indicate arbitrary precision for integrals.",
                                    from_utf8(s).unwrap()))
             }
-            use integral::Integral;
-            return Ok(Integral::parse_hex(negate, content, promote))
+            use integral;
+            return Ok(integral::parse_hex(negate, content, promote))
         }
         if db == b'r' {
             let radix = if d == 1 {
@@ -186,8 +186,8 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
                 return Err(format!("Bad radix number ({}), character {} at position {} makes no sense.",
                                    from_utf8(s).unwrap(), char::from(content[p]), d + 1 + p + if explicit_sign { 1 } else { 0 }))
             }
-            use integral::Integral;
-            if let Some(h) = Integral::parse_radix(negate, radix as u32, content) {
+            use integral;
+            if let Some(h) = integral::parse_radix(negate, radix as u32, content) {
                 return Ok(h)
             } else {
                 return Err(format!("Bad number ({}), digits should be valid for radix {}.",
@@ -209,23 +209,23 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
                 return Err(format!("Rational numbers can't contain an N or M ({}).",
                                    from_utf8(s).unwrap()))
             }
-            use rational::Rational;
-            return Ok(Rational::parse(negate, numer, denom))
+            use rational;
+            return Ok(rational::parse(negate, numer, denom))
         }
         return Err(format!("Bad number ({}), character {} at position {} makes no sense.",
                            from_utf8(s).unwrap(), char::from(db), d + if explicit_sign { 1 } else { 0 }))
     } else { // plain base 10 number
-        use integral::Integral;
+        use integral;
         if promote {
             if int_or_float {
-                return Ok(Integral::parse(negate, body, true))
+                return Ok(integral::parse(negate, body, true))
             } else {
-                use float_point::FloatPoint;
+                use float_point;
                 let part = &b""[..];
-                return Ok(FloatPoint::parse(negate, body, part, true))
+                return Ok(float_point::parse(negate, body, part, true))
             }
         } else {
-            return Ok(Integral::parse(negate, body, false))
+            return Ok(integral::parse(negate, body, false))
         }
     }
 }

@@ -20,25 +20,12 @@ impl AnchoredRange {
     pub fn new(seg: Segment, range: Range<u32>) -> AnchoredRange {
         AnchoredRange { seg, start: range.start, end: range.end }
     }
-
-    pub fn segment(&self) -> Segment {
-        self.seg
-    }
-
-    pub fn anchored_line(&self) -> AnchoredLine {
-        AnchoredLine::new(self.seg, self.start)
-    }
-
-    pub fn span(&self) -> u32 {
-        self.end - self.start
-    }
-
-    pub fn to(&self, target: Segment) {
-        self.to_offset(target, self.start)
-    }
-
+    pub fn segment(&self) -> Segment { self.seg }
+    pub fn anchored_line(&self) -> AnchoredLine { AnchoredLine::new(self.seg, self.start) }
+    pub fn span(&self) -> u32 { self.end - self.start }
+    pub fn to(&self, target: Segment) { self.to_offset(target, self.start) }
     pub fn to_offset(&self, target: Segment, offset: u32) {
-        // TODO make efficient aggregate operation, will bounds and mut check in loop
+        // TODO make efficient aggregate operation; will bounds and mut check in loop.
         let mut t = target;
         let length = self.end - self.start;
         for i in 0..length {
@@ -52,7 +39,6 @@ impl AnchoredRange {
             t[i + shift] = t[i];
         }
     }
-
     pub fn shift_down(&self, shift: u32) {
         let mut t = self.seg;
         for i in self.start..self.end {
@@ -65,11 +51,7 @@ impl AnchoredRange {
             f(self.seg[i])
         }
     }
-
-    pub fn alias(&self) {
-        self.each_unit(|u| u.segment().alias());
-    }
-
+    pub fn alias(&self) { self.each_unit(|u| u.segment().alias()); }
     pub fn unalias(&self) {
         self.each_unit(|u| if u.segment().unalias() == 0 {
             panic!("Unalias of segment w/o a policy on how to free!")
@@ -78,14 +60,8 @@ impl AnchoredRange {
 }
 
 impl AnchoredRange {
-    pub fn split(&self) {
-        self.each_unit(|u| u.handle().split());
-    }
-
-    pub fn retire(&self) {
-        self.each_unit(|u| u.handle().retire());
-    }
-
+    pub fn split(&self) { self.each_unit(|u| { u.handle().split(); }) }
+    pub fn retire(&self) { self.each_unit(|u| u.handle().retire()) }
     pub fn debug(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.span() == 0 {
             write!(f, "")

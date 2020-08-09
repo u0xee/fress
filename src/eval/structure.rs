@@ -8,620 +8,414 @@
 use value::Value;
 use ::{read, hash_map, hash_set, list, vector, nil, right_into};
 use transduce::Process;
+use handle::Handle;
+use keyword;
+use symbol;
 
-pub fn structure(v: Value, globals: &Value) -> Result<(Value, Value), String> {
-    let locals = hash_set();
-    let r = res(v, globals, &locals, nil());
-    match r {
-        Err(s) => { return Err(s) },
-        Ok((resolved, locals_used, notes)) => {
-            if locals_used.is_set() && !locals_used.is_empty() {
-                panic!("Not in local context, locals_used: {}", locals_used);
-            }
-            /*if !notes.is_nil() {
-                let notes_keys = right_into(vector(), set_of_keys(notes.split_out()));
-                for i in 0..(notes_keys.count()) {
-                    let e = notes_keys.nth(i);
-                    println!("{} {}", e, notes.get(&e));
-                }
-            }*/
-            return Ok((resolved, notes))
-        },
-    }
+pub struct Sum {
+    pub defining: Handle,
 }
 
-// TODO propagate recur like a local use
-// TODO on loop-tail recur and non-recur branches, mark in notes as exiting loop path
-// TODO check arity collisions in multi-body fns
-// TODO normalize things like loop w/o recur -> let, recur targeting fn args, destructuring bindings
-
-pub fn resolve_symbol(s: &Value, globals: &Value, locals: &Value) -> Option<Value> {
-    if s.is_symbol() {
-        log!("Resolving symbol {}", s);
-        if s.has_namespace() {
-            // check exists in globals
-            Some(s.split_out())
-        } else {
-            if locals.contains(s) {
-                log!("Found in locals {}", s);
-                Some(s.split_out())
-            } else {
-                // like *ns* *macros*, *aliases*
-                let r = &globals[s];
-                if r.is_symbol() {
-                    log!("Found in globals {}", s);
-                    Some(r.split_out())
-                } else {
-                    None
-                }
-            }
-        }
-    } else {
-        None
-    }
+use super::get_statics;
+pub fn structure(v: &Value) -> Result<Value, String> {
+    let mut sum = Sum { defining: hash_map()._consume() };
+    let locals = hash_map();
+    let r = res(&mut sum, v, &locals, nil())?;
+    // TODO attach defining set, as meta, to top level form
+    Ok(r)
 }
-
-pub fn res(v: Value, globals: &Value, locals: &Value, tail_of: Value)
-           -> Result<(Value, Value, Value), String> {
+pub fn res(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
     if v.is_symbol() {
-        if let Some(resolved) = resolve_symbol(&v, globals, locals) {
-            if resolved.has_namespace() {
-                return Ok((resolved, nil(), nil()))
-            } else {
-                assert_eq!(v, resolved);
-                return Ok((resolved, v, nil()))
-            }
-        } else {
-            return Err(format!("Cannot resolve symbol {} !", v))
+        let loc = locals.get(v);
+        if !loc.is_nil() {
+            let ret = v.split_out().assoc_meta(get_statics().refers_to.split_out(), loc.split_out());
+            return Ok(ret)
+        }
+        let defined = unsafe { *sum.defining.get(v._handle()) };
+        if !defined.is_nil() {
+            unimplemented!()
+        }
+        use eval::var;
+        let r = var::resolve(v);
+        match r {
+            Err(s) => {
+                // if failed, scrape candidate locals and report to user
+                return Err(s.to_string())
+            },
+            Ok(var_name) => {
+                let ret = var_name.assoc_meta(get_statics().resolved_from.split_out(), v.split_out());
+                return Ok(ret)
+            },
         }
     }
     if v.is_aggregate() && !v.is_empty() {
         if v.is_list() {
             let first = v.peek();
             if first.is_symbol() {
+                // TODO compare with static syms
                 let s = format!("{}", first);
-                if &s == "def" { return res_def(v, globals, locals, tail_of) }
-                if &s == "fn" { return res_fn(v, globals, locals, tail_of) }
-                if &s == "if" { return res_if(v, globals, locals, tail_of) }
-                if &s == "do" { return res_do(v, globals, locals, tail_of) }
-                if &s == "let" { return res_let(v, globals, locals, tail_of) }
-                if &s == "loop" { return res_loop(v, globals, locals, tail_of) }
-                if &s == "recur" { return res_recur(v, globals, locals, tail_of) }
-                if &s == "quote" { return res_quote(v, globals, locals, tail_of) }
-
-                if let Some(rs) = resolve_symbol(first, globals, locals) {
-                    if rs.has_namespace() && is_macro(&rs, globals) {
-                        unimplemented!("macro invocation")
-                    } else {
-                        return res_call(v, globals, locals, tail_of)
-                    }
-                } else {
-                    return Err(format!("Cannot resolve symbol {} !", first))
-                }
+                if &s == "def" { return res_def(sum, v, locals, tail_of) }
+                if &s == "fn" { return res_fn(sum, v, locals, tail_of) }
+                if &s == "if" { return res_if(sum, v, locals, tail_of) }
+                if &s == "do" { return res_do(sum, v, locals, tail_of) }
+                if &s == "let" { return res_let(sum, v, locals, tail_of) }
+                if &s == "loop" { return res_loop(sum, v, locals, tail_of) }
+                if &s == "recur" { return res_recur(sum, v, locals, tail_of) }
+                if &s == "quote" { return res_quote(sum, v, locals, tail_of) }
+                if &s == "template" { return res_quote(sum, v, locals, tail_of) }
+                // TODO macro call
+                return res_call(sum, v, locals, tail_of)
             }
             // (:hat a)
-            return res_call(v, globals, locals, tail_of)
+            return res_call(sum, v, locals, tail_of)
         }
-        if v.is_vector() { return res_vector(v, globals, locals, tail_of) }
-        if v.is_set() { return res_set(v, globals, locals, tail_of) }
-        if v.is_map() { return res_map(v, globals, locals, tail_of) }
+        if v.is_vector() { return res_vector(sum, v, locals, tail_of) }
+        if v.is_set() { return res_set(sum, v, locals, tail_of) }
+        if v.is_map() { return res_map(sum, v, locals, tail_of) }
     }
-    return Ok((v, nil(), nil()))
+    return Ok(v.split_out())
 }
-
-pub fn is_macro(s: &Value, globals: &Value) -> bool {
-    group!("structure is_macro? on symbol {}", s);
-    let ret = {
-        let macros = read("*macros* ").unwrap();
-        let macro_set = globals.get(&macros);
-        if macro_set.is_nil() { false } else { macro_set.contains(s) }
-    };
-    group_end!();
-    ret
+pub fn res_call(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    let (resolved, locals_used) = res_body(sum, v, locals, nil())?;
+    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_used))
 }
-
-pub fn res_call(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                -> Result<(Value, Value, Value), String> {
-    // (def cat (fn [x] (fn [y] (+ x y))))
-    group!("Resolving a call");
-    let mut aa = a.split_out();
+pub fn res_vector(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    let (resolved, locals_used) = res_body(sum, v, locals, nil())?;
+    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_used))
+}
+pub fn res_set(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    let as_vec = right_into(vector(), v.split_out());
+    let (resolved_vec, locals_used) = res_body(sum, &as_vec, locals, nil())?;
+    let m = v.meta().split_out().assoc(get_statics().local_use.split_out(), locals_used);
+    Ok(right_into(hash_set(), resolved_vec).with_meta(m))
+}
+pub fn res_map(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    let mut a = hash_map().with_meta(v.meta().split_out());
     let mut locals_used = hash_map();
-    let mut notes = hash_map();
-
-    let ct = a.count();
-    for i in 0..ct {
-        let e = a.nth(i);
-        let r = res(e.split_out(), globals, locals, nil());
-        match r {
-            Ok((resolved, used, nt)) => {
-                aa = aa.assoc(i.into(), resolved);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() { notes = right_into(notes, nt); }
-            },
-            Err(s) => { return Err(s) },
-        }
-    }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let last_note = notes.assoc(aa.split_out(), locals_used);
-    group_end!();
-    Ok((aa, locals_set, last_note))
-}
-
-pub fn res_vector(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                  -> Result<(Value, Value, Value), String> {
-    group!("Resolving a vector");
-    let mut aa = a.split_out();
-    let mut locals_used = hash_map();
-    let mut notes = hash_map();
-
-    let ct = a.count();
-    for i in 0..ct {
-        let e = a.nth(i);
-        let r = res(e.split_out(), globals, locals, nil());
-        match r {
-            Ok((resolved, used, nt)) => {
-                aa = aa.assoc(i.into(), resolved);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() {
-                    notes = right_into(notes, nt);
-                }
-            },
-            Err(s) => {
-                group_end!();
-                return Err(s)
-            },
-        }
-    }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let last_note = notes.assoc(aa.split_out(), locals_used);
-    group_end!();
-    Ok((aa, locals_set, last_note))
-}
-
-pub fn res_set(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                  -> Result<(Value, Value, Value), String> {
-    let mut aa = a.empty();
-    let mut locals_used = hash_map();
-    let mut notes = hash_map();
-
-    let av = right_into(vector(), a);
-    let ct = av.count();
-    for i in 0..ct {
-        let e = av.nth(i);
-        let r = res(e.split_out(), globals, locals, nil());
-        match r {
-            Ok((resolved, used, nt)) => {
-                aa = aa.conj(resolved);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() {
-                    notes = right_into(notes, nt);
-                }
-            },
-            Err(s) => { return Err(s) },
-        }
-    }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let last_note = notes.assoc(aa.split_out(), locals_used);
-    Ok((aa, locals_set, last_note))
-}
-
-pub fn res_map(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                  -> Result<(Value, Value, Value), String> {
-    let mut aa = a.empty();
-    let mut locals_used = hash_map();
-    let mut notes = hash_map();
-
-    let kv = right_into(vector(), set_of_keys(a.split_out()));
+    let kv = right_into(vector(), set_of_keys(v.split_out()));
     let ct = kv.count();
     for i in 0..ct {
         let k = kv.nth(i);
-        let v = a.get(k);
-        let rk = res(k.split_out(), globals, locals, nil());
-        let resolved_key = match rk {
-            Ok((resolved, used, nt)) => {
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() {
-                    notes = right_into(notes, nt);
-                }
-                resolved
-            },
-            Err(s) => { return Err(s) },
-        };
-        let rv = res(v.split_out(), globals, locals, nil());
-        match rv {
-            Ok((resolved_val, used, nt)) => {
-                aa = aa.assoc(resolved_key, resolved_val);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() {
-                    notes = right_into(notes, nt);
-                }
-            },
-            Err(s) => { return Err(s) },
-        }
+        let resolved_k = res(sum, k, locals, nil())?;
+        locals_used = count_form(sum, locals_used, &resolved_k);
+        let resolved_v = res(sum, v.get(k), locals, nil())?;
+        locals_used = count_form(sum, locals_used, &resolved_v);
+        a = a.assoc(resolved_k.split_out(), resolved_v.split_out());
     }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let last_note = notes.assoc(aa.split_out(), locals_used);
-    Ok((aa, locals_set, last_note))
+    let local_use_key = get_statics().local_use.split_out();
+    Ok(a.assoc_meta(local_use_key, locals_used))
 }
-
-pub fn res_def(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-               -> Result<(Value, Value, Value), String> {
+pub fn res_def(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
     // (def a _)
-    group!("Resolving a def");
+    let mut a = v.split_out();
     let ct = a.count();
     assert!(ct == 2 || ct == 3);
     let name = a.nth(1);
-    assert!(name.is_symbol() && !name.has_namespace());
-    let ret = if ct == 3 {
-        // add name to globals map
-        let r = res(a.nth(2).split_out(), globals, locals, nil());
-        match r {
-            Ok((resolved, locals_used, notes)) => {
-                Ok((a.assoc(2.into(), resolved), locals_used, notes))
-            },
-            Err(s) => { Err(s) },
-        }
+    assert!(valid_name(name));
+    sum.defining = sum.defining.assoc(name.split_out()._consume(), name.split_out()._consume());
+    if ct == 3 {
+        let resolved = res(sum, a.nth(2), locals, nil())?;
+        let locals_used = count_form(sum, hash_map(), &resolved);
+        a = a.assoc(2.into(), resolved);
+        Ok(a.assoc_meta(get_statics().local_use.split_out(), locals_used))
     } else {
-        Ok((a, nil(), nil()))
-    };
-    group_end!();
-    ret
-}
-
-pub fn res_do(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-              -> Result<(Value, Value, Value), String> {
-    // (do _ _)
-    group!("Resolving do");
-    let mut aa = a.split_out();
-    let mut locals_used = hash_map();
-    let mut notes = hash_map();
-
-    let ct = a.count();
-    for i in 1..ct {
-        let e = a.nth(i);
-        let t = if i == (ct - 1) { tail_of.split_out() } else { nil() };
-        let r = res(e.split_out(), globals, locals, t);
-        match r {
-            Ok((resolved, used, nt)) => {
-                aa = aa.assoc(i.into(), resolved);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() { notes = right_into(notes, nt); }
-            },
-            Err(s) => {
-                group_end!();
-                return Err(s)
-            },
-        }
+        Ok(a)
     }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let last_note = notes.assoc(aa.split_out(), locals_used);
-    group_end!();
-    Ok((aa, locals_set, last_note))
 }
-
-pub fn res_fn(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-              -> Result<(Value, Value, Value), String> {
+pub fn res_do(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    let (body, do_sym) = v.split_out().pop();
+    let (rbody, locals_used) = res_body(sum, &body, locals, tail_of)?;
+    Ok(rbody.conj(do_sym).assoc_meta(get_statics().local_use.split_out(), locals_used))
+}
+pub fn res_body(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<(Value, Value), String> {
+    let mut a = v.split_out();
+    let mut locals_used = hash_map(); // {a 3, b 1, d 1}
+    let ct = a.count();
+    for i in 0..ct {
+        let t = if i == (ct - 1) { tail_of.split_out() } else { nil() };
+        let resolved = res(sum, a.nth(i), locals, t)?;
+        locals_used = count_form(sum, locals_used, &resolved);
+        a = a.assoc(i.into(), resolved);
+    }
+    Ok((a, locals_used))
+}
+pub fn res_fn(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
     // (fn name? [x y] _ _ _)
     // (fn name? ([x y] _ _ _)
     //           ([x y z] _ _ _))
-    group!("Resolving fn");
-    let (body, fn_sym, name, locals_with_name) = {
-        let (a2, fn_sym) = a.pop();
-        if a2.peek().is_symbol() {
-            let (b, name) = a2.pop();
-            (b, fn_sym, name.split_out(), locals.split_out().conj(name))
-        } else {
-            (a2, fn_sym, nil(), locals.split_out())
-        }
+    assert!(v.count() > 1);
+    let (fn_sym, name, mut bodies) = {
+        let (a, fn_sym) = v.split_out().pop();
+        let (b, name) = if a.peek().is_symbol() { a.pop() } else { (a, nil()) };
+        let bodies = if b.peek().is_vector() { vector().conj(b) } else { b };
+        (fn_sym, name, bodies)
     };
-    assert!(name.is_nil() || (name.is_symbol() && !name.has_namespace()));
-    let bodies = if body.peek().is_vector() { list().conj(body) } else { body };
-
-    let mut locals_set = hash_set();
-    let mut notes = hash_map();
-    let mut bodies2 = bodies.split_out();
-
+    let locals_plus = if name.is_nil() { locals.split_out() } else {
+        assert!(valid_name(&name));
+        locals.split_out().assoc(name.split_out(), name.split_out())
+    };
+    let mut locals_used = hash_map();
     let ct = bodies.count();
     for i in 0..ct {
-        let b = bodies.nth(i);
-        let r = res_fn_body(b.split_out(), globals, &locals_with_name);
-        match r {
-            Err(s) => {
-                group_end!();
-                return Err(s)
-            },
-            Ok((resolved, used, nt)) => {
-                bodies2 = bodies2.assoc(i.into(), resolved);
-                locals_set = right_into(locals_set, used);
-                if !nt.is_nil() { notes = right_into(notes, nt); }
-            }
-        }
+        let body = bodies.nth(i);
+        assert!(body.is_list() && body.peek().is_vector());
+        let (bod, used) = res_fn_body(sum, body, &locals_plus)?;
+        locals_used = merge_counts(locals_used, used);
+        bodies = bodies.assoc(i.into(), bod);
     }
-    let resolved_body = if bodies2.count() == 1 {
-        let (_empty_list, b) = bodies2.pop();
-        b
-    } else {
-        bodies2
-    };
-    let resolved = if name.is_nil() { resolved_body.conj(fn_sym) } else {
-        resolved_body.conj(name.split_out()).conj(fn_sym)
-    };
-    if !name.is_nil() {
-        locals_set = locals_set.dissoc(&name);
-    }
-    let last_note = notes.assoc(resolved.split_out(), locals_set.split_out());
-    group_end!();
-    Ok((resolved, locals_set, last_note))
+    let locals_sans = locals_used.dissoc(&name);
+    // Data structure for mapping out which bodies are which arity?
+    // Check arity collisions (aware that second-to-last & doesn't count)
+    // Check max one vararg arity, the largest arity
+    let b = if bodies.is_list() { bodies } else { bodies.pop().1 };
+    let a = if name.is_nil() { b } else { b.conj(name) };
+    let resolved = a.conj(fn_sym);
+    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_sans))
 }
-
-pub fn res_fn_body(body: Value, globals: &Value, locals: &Value)
-                   -> Result<(Value, Value, Value), String> {
+pub fn args_arity(args_form: &Value) -> (u32, bool) {
+    unimplemented!()
+}
+pub fn res_fn_body(sum: &mut Sum, fn_body: &Value, locals: &Value)
+                   -> Result<(Value, Value), String> {
     // ([x y] _ _ _)
-    group!("Resolving fn body");
-    let (exprs, args) = body.pop();
-    for i in 0..(args.count()) {
-        let x = args.nth(i);
-        assert!(x.is_symbol() && !x.has_namespace())
-    }
-    let locals_with_args = right_into(locals.split_out(), args.split_out());
-    let mut locals_used = hash_map();
-    let mut notes = hash_map();
-    let mut exprs2 = exprs.split_out();
+    let (body, args) = fn_body.split_out().pop();
+    let args_locals = args_locals(&args)?;
+    let locals_plus = right_into(locals.split_out(), args_locals);
+    let recur_target = args.split_out(); // TODO excise &, or make recur & aware
+    let (bod, locals_used) = res_body(sum, &body, &locals_plus, recur_target)?;
+    let (locals_sans, args_meta) = count_args_bindings(sum, locals_used, args);
+    let resolved = bod.conj(args_meta);
 
-    let ct = exprs.count();
+    let recur_sym = get_statics().sym_recur.split_out();
+    if locals_sans.contains(&recur_sym) {
+        // TODO add recur to meta
+        //let locals_sans = locals_used.dissoc(&recur_sym);
+        unimplemented!()
+    }
+    Ok((resolved, locals_sans))
+}
+pub fn args_locals(args_form: &Value) -> Result<Value, String> {
+    let mut locals = hash_map();
+    let ct = args_form.count();
     for i in 0..ct {
-        let e = exprs.nth(i);
-        let t = if i == (ct - 1) { args.split_out() } else { nil() };
-        let r = res(e.split_out(), globals, &locals_with_args, t);
-        match r {
-            Ok((resolved, used, nt)) => {
-                exprs2 = exprs2.assoc(i.into(), resolved);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() { notes = right_into(notes, nt); }
-            },
-            Err(s) => {
-                group_end!();
-                return Err(s)
-            },
-        }
+        let loc = locals_from(args_form.nth(i))?;
+        locals = merge_disjoint_locals(locals, loc)?;
     }
-
-    let mut args_use = vector();
-    let args_ct = args.count();
-    for i in 0..args_ct {
-        let arg = args.nth(i).split_out();
-        let arg_use = {
-            let arg_use = locals_used.get(&arg).split_out();
-            if arg_use.is_nil() { Value::from(0) } else {
-                locals_used = locals_used.dissoc(&arg);
-                arg_use
-            }
-        };
-        args_use = args_use.conj(arg).conj(arg_use);
-    }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let resolved_body = exprs2.conj(args);
-    let last_note = notes.assoc(resolved_body.split_out(),
-                                vector().conj(args_use).conj(locals_used));
-    // TODO move recur to notes
-    group_end!();
-    Ok((resolved_body, locals_set, last_note))
+    Ok(locals)
 }
-
-pub fn res_if(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-              -> Result<(Value, Value, Value), String> {
+pub fn count_args_bindings(sum: &mut Sum, locals_used: Value, args_form: Value) -> (Value, Value) {
+    let mut locals = locals_used;
+    let mut a = args_form;
+    let ct = a.count();
+    for i in 0..ct {
+        let (loc, binding_form) = count_bindings(sum, locals, a.nth(i));
+        locals = loc;
+        a = a.assoc(i.into(), binding_form);
+    }
+    (locals, a)
+}
+pub fn res_if(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
     // (if test then _)
+    let mut a = v.split_out();
     let ct = a.count();
-    assert!(ct == 3 || ct == 4); // return Err
-
-    let mut aa = a.split_out();
+    assert!(ct == 3 || ct == 4); // TODO return Err with advice
     let mut locals_used = hash_map();
-    let mut notes = hash_map();
 
-    let te = a.nth(1);
-    let r = res(te.split_out(), globals, locals, nil());
-    match r {
-        Ok((resolved, used, nt)) => {
-            aa = aa.assoc(1.into(), resolved);
-            locals_used = merge_counts(locals_used, used);
-            if !nt.is_nil() { notes = right_into(notes, nt); }
-        },
-        Err(s) => { return Err(s) },
-    }
-
-    let th = a.nth(2);
-    let r = res(th.split_out(), globals, locals, tail_of.split_out());
-    match r {
-        Ok((resolved, used, nt)) => {
-            aa = aa.assoc(2.into(), resolved);
-            locals_used = merge_counts(locals_used, used);
-            if !nt.is_nil() { notes = right_into(notes, nt); }
-        },
-        Err(s) => { return Err(s) },
-    }
-
-    // if in loop tail, and exactly one branch returns "recur", flag in notes as loop exit branch
+    let resolved_test = res(sum, a.nth(1), locals, nil())?;
+    locals_used = count_form(sum, locals_used, &resolved_test);
+    let resolved_then = res(sum, a.nth(2), locals, tail_of.split_out())?;
+    locals_used = count_form(sum, locals_used, &resolved_then);
     if ct == 4 {
-        let el = a.nth(3);
-        let r = res(el.split_out(), globals, locals, tail_of);
-        match r {
-            Ok((resolved, used, nt)) => {
-                aa = aa.assoc(3.into(), resolved);
-                locals_used = merge_counts(locals_used, used);
-                if !nt.is_nil() { notes = right_into(notes, nt); }
-            },
-            Err(s) => { return Err(s) },
-        }
+        let resolved_else = res(sum, a.nth(3), locals, tail_of)?;
+        // TODO if in loop tail, and exactly one branch returns "recur", flag in notes as loop exit branch
+        //  xor resolved_then meta recur with resolved_else
+        locals_used = count_form(sum, locals_used, &resolved_else);
+        a = a.assoc(1.into(), resolved_test);
+        a = a.assoc(2.into(), resolved_then);
+        a = a.assoc(3.into(), resolved_else);
+    } else {
+        a = a.assoc(1.into(), resolved_test);
+        a = a.assoc(2.into(), resolved_then);
     }
-    let locals_set = set_of_keys(locals_used.split_out());
-    let last_note = notes.assoc(aa.split_out(), locals_used);
-    Ok((aa, locals_set, last_note))
+    Ok(a.assoc_meta(get_statics().local_use.split_out(), locals_used))
 }
-
-pub fn res_let(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-               -> Result<(Value, Value, Value), String> {
-    // (let [a 1 b 2]
-    //   (+ a b))
-    group!("Resolving let");
-    assert!(a.count() > 1);
-    let b = a.nth(1);
-    assert!(b.is_vector() && (b.count() & 0x1 == 0));
-    let (resolved, used, bindings_used, notes) = {
-        let r = let_rec(a, 0, globals, locals, tail_of);
-        match r {
-            Err(s) => {
-                group_end!();
-                return Err(s)
-            },
-            Ok(x) => x,
-        }
-    };
-    let locals_set = set_of_keys(used.split_out());
-    let n = vector().conj(right_into(vector(), bindings_used)).conj(used);
-    let last_note = notes.assoc(resolved.split_out(), n);
-    group_end!();
-    Ok((resolved, locals_set, last_note))
+pub fn pop2(v: Value) -> (Value, Value, Value) {
+    let (rest, first) = v.pop();
+    let (rest, second) = rest.pop();
+    (first, second, rest)
 }
-
-pub fn let_rec(a: Value, binding: u32, globals: &Value, locals: &Value, tail_of: Value)
-               -> Result<(Value, Value, Value, Value), String> {
-    let b = a.nth(1);
-    let binding_count = b.count() >> 1;
-    assert!(binding <= binding_count);
-    if binding == binding_count { // body
-        group!("Resolving let body");
-        let mut aa = a.split_out();
-        let mut locals_used = hash_map();
-        let mut notes = hash_map();
-
-        let ct = a.count();
-        for i in 2..ct {
-            let e = a.nth(i);
-            let t = if i == (ct - 1) { tail_of.split_out() } else { nil() };
-            let r = res(e.split_out(), globals, locals, t);
-            match r {
-                Ok((resolved, used, nt)) => {
-                    aa = aa.assoc(i.into(), resolved);
-                    locals_used = merge_counts(locals_used, used);
-                    if !nt.is_nil() { notes = right_into(notes, nt); }
-                },
-                Err(s) => {
-                    group_end!();
-                    return Err(s)
-                },
-            }
-        }
-        let res = Ok((aa, locals_used, list(), notes));
-        group_end!();
-        res
+pub fn res_let(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    assert!(v.count() > 1);
+    let b = v.nth(1);
+    assert!(b.is_vector() && (b.count() & 0x1 == 0)); // TODO return Err("example let")
+    let (let_sym, bindings, body) = pop2(v.split_out());
+    let (bind, bod, locals_used) = let_rec(sum, &bindings, &body, 0, locals, tail_of)?;
+    let resolved = bod.conj(bind).conj(let_sym);
+    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_used))
+}
+pub fn let_rec(sum: &mut Sum, bindings: &Value, body: &Value, bind_idx: u32,
+               locals: &Value, tail_of: Value) -> Result<(Value, Value, Value), String> {
+    let bind_ct = bindings.count() >> 1;
+    assert!(bind_idx <= bind_ct);
+    if bind_idx == bind_ct { // body
+        let (rbody, locals_used) = res_body(sum, body, locals, tail_of)?;
+        Ok((bindings.split_out(), rbody, locals_used))
     } else { // binding
-        let name_idx = binding << 1;
-        let name = b.nth(name_idx).split_out();
-        assert!(name.is_symbol() && !name.has_namespace());
-        let exp = b.nth(name_idx + 1);
-        group!("Resolving local binding expression");
-        let (resolved_exp, used_exp, nt_exp) = {
-            let r = res(exp.split_out(), globals, locals, nil());
-            match r {
-                Err(s) => {
-                    group_end!();
-                    return Err(s)
-                },
-                Ok(x) => { x },
-            }
-        };
-        group_end!();
-        let locals_with_name = locals.split_out().conj(name.split_out());
-        let (resolved_let, used, used_bindings, nt) = {
-            let r = let_rec(a, binding + 1, globals, &locals_with_name, tail_of);
-            match r {
-                Err(s) => { return Err(s) },
-                Ok(x) => { x },
-            }
-        };
-        let (let_form, bindings) = resolved_let.assoc_out(1.into(), nil());
-        let resolved_bindings = bindings.assoc((name_idx + 1).into(), resolved_exp);
-        let resolved = let_form.assoc(1.into(), resolved_bindings);
-
-        let (name_ct, used_less_name) = {
-            let ct = used.get(&name).split_out();
-            if ct.is_nil() { (0.into(), used) } else { (ct, used.dissoc(&name)) }
-        };
-        let used_bindings_with_name = used_bindings.conj(name_ct).conj(name);
-        let notes = {
-            let notes = if nt.is_nil() { hash_map() } else { nt };
-            if nt_exp.is_nil() { notes } else { right_into(notes, nt_exp) }
-        };
-        let u = merge_counts(used_less_name, used_exp);
-        Ok((resolved, u, used_bindings_with_name, notes))
+        let idx = bind_idx << 1;
+        let resolved_exp = res(sum, bindings.nth(idx + 1), locals, nil())?;
+        let binding_form = bindings.nth(idx);
+        let locals_with_bindings = with_bindings(locals, binding_form)?;
+        let (bind, bod, locals_used) =
+            let_rec(sum, bindings, body, bind_idx + 1, &locals_with_bindings, tail_of)?;
+        let (locals_sans, binding_form_meta) =
+            count_bindings(sum, locals_used, binding_form);
+        let locals_exp = count_form(sum, locals_sans, &resolved_exp);
+        let b = bind.assoc(idx.into(), binding_form_meta)
+            .assoc((idx + 1).into(), resolved_exp);
+        Ok((b, bod, locals_exp))
     }
 }
+pub fn with_bindings(locals: &Value, binding_form: &Value) -> Result<Value, String> {
+    let loc = locals_from(binding_form)?;
+    Ok(right_into(locals.split_out(), loc))
+}
+pub fn locals_from(binding_form: &Value) -> Result<Value, String> {
+    // to "locals" map from all the symbols in the binding form
+    // (also names in def) validate names, no namespace, not one of the special form names
+    if binding_form.is_symbol() {
+        assert!(!binding_form.has_namespace()); // TODO Err(msg about proper binding forms)
+        return Ok(hash_map().assoc(binding_form.split_out(), binding_form.split_out()))
+    }
+    // [a b c]  [a b :as v]
+    // {a :a, b :bit-width, :as m}
+    // {:person/keys [name age], :or {age 50}}
+    unimplemented!()
+}
+pub fn valid_name(s: &Value) -> bool {
+    // TODO check not special form name
+    s.is_symbol() && !s.has_namespace()
+}
+pub fn count_bindings(sum: &mut Sum, locals_used: Value, binding_form: &Value) -> (Value, Value) {
+    if binding_form.is_symbol() {
+        let entry = locals_used.get(binding_form).split_out();
+        let ct = if entry.is_nil() { 0.into() } else { entry };
+        let b = binding_form.split_out().assoc_meta(get_statics().forms_using.split_out(), ct);
+        return (locals_used.dissoc(binding_form), b)
+    }
+    // used sans bindings, binding_form with meta attached to symbols
+    unimplemented!()
+}
 
-pub fn res_loop(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                -> Result<(Value, Value, Value), String> {
-    // (loop [a 1, b 2] _ _)
-    group!("Resolving a loop");
-    assert!(a.count() > 1);
-    let b = a.nth(1);
+pub fn res_loop(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    assert!(v.count() > 1);
+    let b = v.nth(1);
     assert!(b.is_vector() && (b.count() & 0x1 == 0));
+    let (loop_sym, bindings, body) = pop2(v.split_out());
+    let recur_target = gather_loop_bindings(&bindings);
+    let (bind, bod, locals_used) =
+        let_rec(sum, &bindings, &body, 0, locals, recur_target)?;
+    let recur_sym = get_statics().sym_recur.split_out();
+    assert!(locals_used.contains(&recur_sym));
+    let resolved = bod.conj(bind).conj(loop_sym);
+    let locals_sans = locals_used.dissoc(&recur_sym);
+    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_sans))
+}
+pub fn gather_loop_bindings(b: &Value) -> Value {
+    let mut bindings = vector();
     let binding_count = b.count() >> 1;
-    let bindings = {
-        let mut bindings = vector();
-        for i in 0..binding_count {
-            bindings = bindings.conj(b.nth(i << 1).split_out());
-        }
-        bindings
-    };
-    let r = res_let(a, globals, locals, bindings);
-    let ret = match r {
-        Ok((resolved, used, nt)) => {
-            // TODO move recur to notes
-            Ok((resolved, used, nt))
-        },
-        Err(s) => { Err(s) },
-    };
-    group_end!();
-    ret
+    for i in 0..binding_count {
+        bindings = bindings.conj(b.nth(i << 1).split_out());
+    }
+    bindings
 }
-
-pub fn res_recur(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                 -> Result<(Value, Value, Value), String> {
+pub fn res_recur(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
     // (recur 1 2)
-    group!("Resolving recur");
-    let ct = a.count();
-    if !tail_of.is_vector() {
-        // return Err
-        panic!("Recur not in tail position!");
+    if tail_of.is_nil() { return Err(format!("Recur not in tail position!")); }
+    if tail_of.count() != (v.count() - 1) {
+        return Err(format!("Recur does not match, in number of arguments."));
     }
-    if tail_of.count() != (ct - 1) {
-        // return Err
-        panic!("Recur does not match, in number of arguments.");
-    }
-    let recur_sym = a.nth(0).split_out();
-    let r = res_do(a, globals, locals, nil());
-    let ret = match r {
-        Ok((resolved, used, nt)) => {
-            Ok((resolved, used.conj(recur_sym), nt))
-        },
-        Err(s) => { Err(s) },
+    let (resolved, locals_used) = {
+        let (exps, recur_sym) = v.split_out().pop();
+        let (rexps, locals_used) = res_body(sum, &exps, locals, nil())?;
+        (rexps.conj(recur_sym.split_out()), locals_used.assoc(recur_sym, 1.into()))
     };
-    group_end!();
-    ret
+    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_used))
+}
+pub fn res_quote(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Result<Value, String> {
+    // (quote (a b c))
+    let ct = v.count();
+    assert_eq!(ct, 2); // TODO return Err(how to use)
+    Ok(v.split_out())
 }
 
-pub fn res_quote(a: Value, globals: &Value, locals: &Value, tail_of: Value)
-                 -> Result<(Value, Value, Value), String> {
-    // (quote (a b c))
-    let ct = a.count();
-    assert_eq!(ct, 2);
-    Ok((a, nil(), nil()))
+pub fn count_form(sum: &mut Sum, local_counts: Value, subform: &Value) -> Value {
+    if subform.is_symbol() && !subform.has_namespace() {
+        return merge_one(local_counts, subform.split_out())
+    }
+    let form_counts = subform.meta().get(&get_statics().local_use);
+    if form_counts.is_nil() {
+        local_counts
+    } else {
+        merge_counts(local_counts, form_counts.split_out())
+    }
+}
+pub fn merge_counts(locals_used: Value, used: Value) -> Value {
+    use handle::Handle;
+    struct Reduce {
+        r: Handle,
+    }
+    impl Process for Reduce {
+        fn inges_kv(&mut self, _stack: &mut [Box<dyn Process>], k: &Value, v: &Value) -> Option<Value> {
+            self.r = merge_one(self.r.value(), k.split_out())._consume();
+            None
+        }
+        fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value { self.r.value() }
+    }
+    let mut stack: Box<dyn Process> = Box::new(Reduce { r: locals_used._consume() });
+    use std::slice::from_mut;
+    used.reduce(from_mut(&mut stack))
+}
+
+pub fn merge_one(counts: Value, s: Value) -> Value {
+    let new_v = {
+        let v = counts.get(&s);
+        if v.is_nil() { Value::from(1) } else { v.split_out().inc() }
+    };
+    counts.assoc(s, new_v)
+}
+
+pub fn merge_disjoint_locals(a: Value, b: Value) -> Result<Value, String> {
+    struct Merge { c: Handle, }
+    impl Process for Merge {
+        fn ingest_kv(&mut self, stack: &mut [Box<dyn Process>], k: Value, v: Value)
+                     -> Option<Value> {
+            if self.c.contains(k._handle()) {
+                // if c.contains(k) && k is not _
+                let c = self.c.value();
+                let msg = vector().conj("Duplicate locals:".into())
+                    .conj(c.get(&k).split_out()).conj(v);
+                Some(msg)
+            } else {
+                self.c = self.c.assoc(k._consume(), v._consume());
+                None
+            }
+        }
+        fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value { self.c.value() }
+    }
+    let mut stack: Box<dyn Process> = Box::new(Merge { c: a._consume() });
+    use std::slice::from_mut;
+    let r = b.reduce(from_mut(&mut stack));
+    if r.is_vector() {
+        Err(format!("{:?}", r))
+    } else {
+        Ok(r)
+    }
 }
 
 pub fn set_of_keys(m: Value) -> Value {
     let mut stack = vec!(collect_into(hash_set()), just_keys());
     return m.reduce(&mut stack)
 }
-
 pub fn just_keys() -> Box<dyn Process> {
     use transduce::inges;
     struct Keys {}
@@ -633,12 +427,8 @@ pub fn just_keys() -> Box<dyn Process> {
     }
     Box::new(Keys { })
 }
-
 pub fn collect_into(col: Value) -> Box<dyn Process> {
-    use handle::Handle;
-    struct Collect {
-        c: Handle,
-    }
+    struct Collect { c: Handle }
     impl Process for Collect {
         fn ingest   (&mut self, stack: &mut [Box<dyn Process>], v: Value) -> Option<Value> {
             self.c = self.c.conj(Handle::from(v));
@@ -646,43 +436,11 @@ pub fn collect_into(col: Value) -> Box<dyn Process> {
         }
         fn ingest_kv(&mut self, stack: &mut [Box<dyn Process>], k: Value, v: Value)
                      -> Option<Value> {
-            let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
-            displaced.retire();
-            self.c = c;
+            self.c = self.c.assoc(Handle::from(k), Handle::from(v));
             None
         }
         fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value { self.c.value() }
     }
     Box::new(Collect { c: Handle::from(col) })
-}
-
-pub fn merge_counts(locals_used: Value, used: Value) -> Value {
-    if used.is_nil() { return locals_used }
-    if used.is_symbol() { return merge_one(locals_used, used) }
-    if used.is_set() {
-        use handle::Handle;
-        struct Reduce {
-            r: Handle,
-        }
-        impl Process for Reduce {
-            fn ingest   (&mut self, _stack: &mut [Box<dyn Process>], v: Value) -> Option<Value> {
-                self.r = Handle::from(merge_one(self.r.value(), v));
-                None
-            }
-            fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value { self.r.value() }
-        }
-        let mut stack: Box<dyn Process> = Box::new(Reduce { r: Handle::from(locals_used) });
-        use std::slice::from_mut;
-        return used.reduce(from_mut(&mut stack))
-    }
-    unimplemented!("merge_counts with argument: {}", used)
-}
-
-pub fn merge_one(counts: Value, s: Value) -> Value {
-    let new_v = {
-        let v = counts.get(&s);
-        if v.is_nil() { Value::from(1) } else { v.split_out().inc() }
-    };
-    counts.assoc(s, new_v)
 }
 

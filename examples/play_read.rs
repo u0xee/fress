@@ -8,13 +8,13 @@
 extern crate fress;
 use fress::value::Value;
 use fress::handle::Handle;
-use fress::vector::Vector;
+use fress::vector;
 use fress::memory::segment;
 use fress::transduce::Transducers;
 
 use fress::edn;
 use std::str;
-use fress::symbol::Symbol;
+use fress::symbol;
 
 /*
 fn m() {

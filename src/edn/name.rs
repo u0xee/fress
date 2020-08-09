@@ -74,16 +74,16 @@ pub fn parse_symbol_keyword(s: &[u8], default: Option<&[u8]>) -> Result<Handle, 
             return Err(format!("Keyword has invalid starting characters ({})",
                                from_utf8(s).unwrap()))
         }
-        use keyword::Keyword;
+        use keyword;
         if let Some(d) = default {
             if solidus == 0 {
-                return Ok(Keyword::new_prefix_name(d, &s[1..]).handle())
+                return Ok(keyword::new_prefix_name(d, &s[1..]).handle())
             }
             if solidus == 2 && s[1] == b'_' {
-                return Ok(Keyword::new_from_name(&s[3..]).handle())
+                return Ok(keyword::new_from_name(&s[3..]).handle())
             }
         }
-        return Ok(Keyword::new(s, solidus as u32).handle())
+        return Ok(keyword::new(s, solidus as u32).handle())
     } else {
         log!("parsing symbol {}", from_utf8(s).unwrap());
         if s.len() < 6 {
@@ -99,15 +99,15 @@ pub fn parse_symbol_keyword(s: &[u8], default: Option<&[u8]>) -> Result<Handle, 
                                    from_utf8(s).unwrap()))
             }
         }
-        use symbol::Symbol;
+        use symbol;
         if let Some(d) = default {
             if solidus == 0 {
-                return Ok(Symbol::new_prefix_name(d, s).handle())
+                return Ok(symbol::new_prefix_name(d, s).handle())
             }
             if solidus == 1 && s[0] == b'_' {
-                return Ok(Symbol::new(&s[2..], 0).handle())
+                return Ok(symbol::new(&s[2..], 0).handle())
             }
         }
-        return Ok(Symbol::new(s, solidus as u32).handle())
+        return Ok(symbol::new(s, solidus as u32).handle())
     }
 }

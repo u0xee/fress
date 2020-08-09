@@ -5,7 +5,7 @@ gre: 63b132 -> 67924e
 blu: 5881d8 -> 224693
 */
 
-@import url('https://fonts.googleapis.com/css?family=Averia+Serif+Libre|Source+Code+Pro:400,500&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Averia+Serif+Libre:300,300i,400,400i,700,700i&display=swap');
 article,aside,details,figcaption,figure,footer,header,hgroup,main,nav,section,summary{display:block}
 audio,canvas,video{display:inline-block}
 audio:not([controls]){display:none;height:0}
@@ -21,7 +21,7 @@ b,strong{font-weight:bold}
 dfn{font-style:italic}
 hr{-moz-box-sizing:content-box;box-sizing:content-box;height:0}
 mark{background:#ff0;color:#000}
-/*code,kbd,pre,samp{font-family:'Source Code Pro',monospace;font-size:1em}*/
+/*code,kbd,pre,samp{font-family: source-code-pro,monospace;font-size:1em}*/
 pre{white-space:pre-wrap}
 q{quotes:"\201C" "\201D" "\2018" "\2019"}
 small{font-size:80%}
@@ -47,12 +47,17 @@ table{border-collapse:collapse;border-spacing:0}
 *,*:before,*:after{-moz-box-sizing:border-box;-webkit-box-sizing:border-box;box-sizing:border-box}
 html{font-size: 100%; text-rendering: optimizeLegibility;}
 
+::selection {
+  background-color: #5881d8;
+  color: #fff;
+}
 body {
   padding: 0; margin: 0;
   position: relative;
   cursor: auto;
 
-  background: #fafafa;
+  /* TODO */
+  background: #fefdfc;
   color: #000;
   line-height: 1.7;
   font-size: 100%;
@@ -79,6 +84,10 @@ body {
 .ordn {
   font-feature-settings: 'ordn' 1;
 }
+.subtitle {
+  font-weight: 700;
+  opacity: 0.85;
+}
 .semi {
   font-weight: 600;
 }
@@ -91,6 +100,21 @@ body {
 }
 .red {
   color: #b11549;
+}
+
+.live-content {
+  font-family: source-code-pro, monospace;
+  white-space: pre;
+  font-weight: 400;
+  color: #111;
+}
+.run-button {
+  margin-bottom: 5px;
+}
+.live-output {
+  overflow-y: auto;
+  max-height: 14em;
+  border: 3px inset #dddddd;
 }
 
 a:hover{cursor:pointer}
@@ -114,15 +138,20 @@ select{width:100%}
 p.lead,.paragraph.lead>p,#preamble>.sectionbody>.paragraph:first-of-type p{font-size:1.1em;line-height:1.6}
 .subheader,.admonitionblock td.content>.title,.audioblock>.title,.exampleblock>.title,.imageblock>.title,.listingblock>.title,.literalblock>.title,.stemblock>.title,.openblock>.title,.paragraph>.title,.quoteblock>.title,table.tableblock>.title,.verseblock>.title,.videoblock>.title,.dlist>.title,.olist>.title,.ulist>.title,.qlist>.title,.hdlist>.title{line-height:1.45;color:#b11549;font-weight:400;margin-top:0;margin-bottom:.25em}
 div,dl,dt,dd,ul,ol,li,h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6,pre,form,p,blockquote,th,td{margin:0;padding:0;direction:ltr}
-a{color:#224693;text-decoration:underline;}
+/* TODO blue */
+a {
+  color: #224693;
+  /*text-decoration:underline;*/
+}
 a:hover,a:focus{opacity:0.6}
 a img{border:none}
 p{margin-bottom:1.25em;}
 p aside{font-size:.875em;line-height:1.35;font-style:italic}
 h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{
   font-family: 'Averia Serif Libre', serif;
-  font-weight: 300;
+  font-weight: 400;
   font-style: normal;
+  /* TODO red */
   color: #b11549;
   margin-top: 1em;
   margin-bottom: 0.5em;
@@ -133,7 +162,8 @@ em,i{font-style:italic;line-height:inherit}
 strong,b{font-weight:bold;line-height:inherit}
 small{font-size:60%;line-height:inherit}
 code {
-  font-family: 'Source Code Pro', monospace;
+  font-family: source-code-pro, monospace;
+  white-space: pre;
   font-weight: 400;
   color: #111;
 }
@@ -175,12 +205,12 @@ h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title str
 *:not(pre)>code{font-size:.9375em;font-style:normal!important;padding:.1em .5ex;background-color:#f3f3f3;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
 pre,pre>code{
   line-height:1.45;
-  font-family: 'Source Code Pro', monospace;
+  font-family: source-code-pro, monospace;
   font-weight:400;
 }
 .keyseq{color:rgba(51,51,51,.8)}
 kbd{
-  font-family: 'Source Code Pro', monospace;
+  font-family: source-code-pro, monospace;
   display:inline-block;
   color:rgba(0,0,0,.75);
   font-size:.65em;
@@ -210,7 +240,16 @@ p a>code:hover{color:rgba(0,0,0,.9)}
 #header:after,#content:after,#footnotes:after,#footer:after{clear:both}
 #content{margin-top:1.25em}
 #content:before{content:none}
-#header>h1:first-child{color:rgba(0,0,0,.85);margin-top:2.25rem;margin-bottom:0}
+/* TODO title */
+#header>h1:first-child{
+  font-family: gitan-latin, serif;
+  font-weight: 800;
+  font-style: normal;
+  color: #4a4a4a;
+
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
 #header>h1:first-child+#toc{margin-top:8px;border-top:1px solid #ddddd8}
 #header>h1:only-child,body.toc2 #header>h1:nth-last-child(2){border-bottom:1px solid #ddddd8;padding-bottom:8px}
 #header .details{border-bottom:1px solid #ddddd8;line-height:1.45;padding-top:.25em;padding-bottom:.25em;padding-left:.25em;color:rgba(0,0,0,.6);display:-ms-flexbox;display:-webkit-flex;display:flex;-ms-flex-flow:row wrap;-webkit-flex-flow:row wrap;flex-flow:row wrap}
@@ -227,10 +266,15 @@ p a>code:hover{color:rgba(0,0,0,.9)}
 #toc>ul{margin-left:.125em}
 #toc ul.sectlevel0>li>a{font-style:italic}
 #toc ul.sectlevel0 ul.sectlevel1{margin:.5em 0}
-#toc ul.sectlevel2>li>a{color: #67924e}
+/* TODO green */
+#toc ul.sectlevel2>li>a {
+  color: #67924e;
+}
 #toc ul{
   list-style-type: none;
   font-family: 'Averia Serif Libre', serif;
+  font-weight: 400;
+  font-style: normal;
 }
 #toc li{line-height:1.3334;margin-top:.3334em}
 #toc a{text-decoration:none}
@@ -307,28 +351,33 @@ table.pyhltable .linenodiv{background:none!important;padding-right:0!important}
 .quoteblock>.title{margin-left:-1.5em;margin-bottom:.75em}
 .quoteblock blockquote,.quoteblock blockquote p{color:rgba(0,0,0,.85);font-size:1.15rem;line-height:1.75;font-style:italic;text-align:justify}
 .quoteblock blockquote{margin:0;padding:0;border:0}
+/*
 .quoteblock blockquote:before{
   content:"\201c";
   float:left;
   font-family: 'Averia Serif Libre', serif;
+  font-weight: 700;
   font-size:2.2em;
   line-height:.6em;
   margin-left:-.6em;
   color:#b11549;
   text-shadow:0 1px 2px rgba(0,0,0,.3)
 }
+*/
 .quoteblock blockquote>.paragraph:last-child p{margin-bottom:0}
 .quoteblock .attribution{margin-top:.5em;margin-right:.5ex;text-align:right}
 .quoteblock .quoteblock{margin-left:0;margin-right:0;padding:.5em 0;border-left:3px solid rgba(0,0,0,.6)}
 .quoteblock .quoteblock blockquote{padding:0 0 0 .75em}
 .quoteblock .quoteblock blockquote:before{display:none}
 .verseblock{margin:0 1em 1.25em 1em}
+/*
 .verseblock pre{
   font-family: 'Averia Serif Libre', serif;
-  font-size: 1.15rem;
-  color: rgba(0,0,0,.85);
   font-weight: 300;
+  font-size: 1.15rem;
+  color: rgba(0,0,0,.50);
 }
+*/
 .verseblock pre strong{font-weight:400}
 .verseblock .attribution{margin-top:1.25rem;margin-left:.5ex}
 .quoteblock .attribution,.verseblock .attribution{font-size:.9375em;line-height:1.45;font-style:italic}
@@ -454,6 +503,7 @@ div.unbreakable{page-break-inside:avoid}
 .admonitionblock.warning   td.icon{content: url(/images/sign/warning.svg); width: 80px;}
 .admonitionblock.important td.icon{content: url(/images/sign/important.svg); width: 80px;}
 .admonitionblock.caution   td.icon{content: url(/images/sign/caution.svg); width: 80px;}
+/*
 .conum[data-value]{
   display:inline-block;
   color:#fff!important;
@@ -466,8 +516,8 @@ div.unbreakable{page-break-inside:avoid}
   height:1.67em;
   line-height:1.67em;
   font-family: 'Averia Serif Libre', serif;
-  font-style:normal;
-  font-weight:bold
+  font-weight: 300;
+  font-style: italic;
 }
 .conum[data-value] *{color:#fff!important}
 .conum[data-value]+b{display:none}
@@ -475,6 +525,7 @@ div.unbreakable{page-break-inside:avoid}
 pre .conum[data-value]{position:relative;top:-.125em}
 b.conum *{color:inherit!important}
 .conum:not([data-value]):empty{display:none}
+*/
 /*p,blockquote,dt,td.content,span.alt{font-size:1.3rem}*/
 p {
   margin-bottom: 1.25rem;
@@ -518,6 +569,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 #preamble>.sectionbody>.paragraph.pitch p {
   font-size: 16pt;
   font-family: 'Averia Serif Libre', sans-serif;
+  font-weight: 700;
+  font-style: italic;
   line-height: 270%;
   color: #404040;
   padding-left: 6px;

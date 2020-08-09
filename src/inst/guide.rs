@@ -7,17 +7,15 @@
 
 use memory::*;
 
-/// The Guide structure is hydrated from its in-memory representation, 64 bits in length.
-/// The top 32 bits contain the hash, the bottom 32 bits contain the byte count.
-/// The two highest order bits of the bottom 32 bits represent two booleans:
-/// is there a hash, and is there meta data.
+/// The Guide structure is hydrated from its in-memory representation, 128 bits in length.
+/// The top 32 bits contain the hash, the next 32 bits are nanoseconds.
+/// Then date information, then time information;
 
 /// `Top 32 bits  [ Hash  (32) ]`
 /// `Bottom bits  [ Fraction (32) ]`
 /// `             [ Year-Month-Day (23) ]`
 /// `             [ Hour-Min-Sec Offset-Hour-Min (29) ]`
 ///
-
 
 #[derive(Copy, Clone, Debug)]
 pub struct Point {
@@ -42,37 +40,32 @@ pub struct Guide {
     pub prism: AnchoredLine,
 }
 
-pub fn field(width: u32) -> u32 {
-    (1 << width) - 1
-}
+pub fn field(width: u32) -> u32 { (1 << width) - 1 }
 
 impl Guide {
     pub fn units() -> u32 { if cfg!(target_pointer_width = "32") { 4 } else { 2 } }
-
     pub fn segment(&self) -> Segment { self.prism.segment() }
-
     pub fn set_hash(mut self, hash: u32) -> Guide {
         self.hash = hash;
         self
     }
-
     pub fn clear_hash(mut self) -> Guide {
         self.hash = 0;
         self
     }
-
     pub fn has_hash(&self) -> bool { self.hash != 0 }
 
     pub fn hydrate(prism: AnchoredLine) -> Guide {
         if cfg!(target_pointer_width = "32") {
-            Guide::hydrate_chunks(prism, prism[1].into(), prism[2].into(), prism[3].into(), prism[4].into())
+            Guide::hydrate_chunks(prism, prism[1].into(), prism[2].into(),
+                                  prism[3].into(), prism[4].into())
         } else {
             let g: u64 = prism[1].into();
             let h: u64 = prism[2].into();
-            Guide::hydrate_chunks(prism, (g >> 32) as u32, g as u32, (h >> 32) as u32, h as u32)
+            Guide::hydrate_chunks(prism, (g >> 32) as u32, g as u32,
+                                  (h >> 32) as u32, h as u32)
         }
     }
-
     pub fn hydrate_chunks(prism: AnchoredLine, hash: u32, nano: u32, date: u32, time: u32) -> Guide {
         let year    =  (date >>  9) & field(14);
         let month    = ((date >>  5) & field(4)) as u8;
@@ -86,7 +79,6 @@ impl Guide {
 
         Guide { hash, prism, point: Point {nano, year, month, day, hour, min, sec, off_neg, off_hour, off_min} }
     }
-
 
     pub fn store_at(&self, mut prism: AnchoredLine) {
         let p = &self.point;
@@ -105,7 +97,6 @@ impl Guide {
             prism[2] = h.into();
         }
     }
-
     pub fn store(self) -> Guide {
         self.store_at(self.prism);
         self

@@ -19,7 +19,6 @@ use vector::guide::Guide;
 pub mod pop;
 use self::pop::Pop;
 pub mod assoc;
-use self::assoc::unaliased_root;
 pub mod eq;
 pub mod get;
 pub mod reduce;
@@ -36,52 +35,75 @@ pub const ARITY: u32 = 1 << BITS;
 pub const MASK: u32 = ARITY - 1;
 pub const MAX_LEVELS: u32 = (32 + BITS - 1) / BITS;
 
-pub static MAP_SENTINEL: u8 = 0;
-
 /// Map dispatch.
-pub struct Map { }
+pub struct Map_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Map_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_map(h: Handle) -> bool { find_prism(h).is_some() }
 
-impl Map {
-    pub fn new() -> Unit {
-        log!("map new");
-        let guide = {
-            let cap = 1 /*prism*/ + Guide::units() + 1 /*pop*/ + size(1);
-            let s = Segment::new(cap);
-            let prism = s.line_at(0);
-            prism.set(0, mechanism::prism::<Map>());
-            let g = Guide::hydrate_top_bot(prism, 0, 0);
-            g
-        };
-        guide.root.set(-1, Pop::new().unit());
-        guide.store().segment().unit()
+pub fn new() -> Unit {
+    log!("map new");
+    let guide = {
+        let cap = 1 /*prism*/ + Guide::units() + 1 /*pop*/ + size(1);
+        let s = Segment::new(cap);
+        let prism = s.line_at(0);
+        prism.set(0, prism_unit());
+        let g = Guide::hydrate_top_bot(prism, 0, 0);
+        g
+    };
+    guide.root.set(-1, Pop::new().unit());
+    guide.store().segment().unit()
+}
+pub fn new_value() -> Value { new().handle().value() }
+
+pub fn alias_components(prism: AnchoredLine, has_vals: u32) {
+    let guide = Guide::hydrate(prism);
+    let (child_count, key_count) = {
+        let p = Pop::from(guide.root[-1]);
+        (p.child_count() as i32, p.key_count())
+    };
+    for i in 0..child_count {
+        guide.root[1 + (i << 1)].segment().alias();
     }
-
-    pub fn new_value() -> Value { Map::new().handle().value() }
+    let kvs = guide.root.offset(child_count << 1).span(key_count << has_vals);
+    kvs.split();
+}
+pub fn unaliased(prism: AnchoredLine, has_vals: u32) -> AnchoredLine {
+    let seg = prism.segment();
+    if seg.is_aliased() {
+        if prism.index() == 0 {
+            alias_components(prism, has_vals);
+        } else {
+            seg.unit().handle()._alias_components();
+        }
+        let s = seg.carbon_copy();
+        let p = prism.with_seg(s);
+        seg.unit().handle().retire();
+        p
+    } else {
+        prism
+    }
 }
 
-impl Dispatch for Map {
+impl Dispatch for Map_ {
     fn tear_down(&self, prism: AnchoredLine) {
-        group!("map tear down");
+        group!("Map tear down");
         tear_down::tear_down(prism, 1);
         group_end!();
     }
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        unaliased_root(Guide::hydrate(prism), 1).segment().unit()
-    }
+    fn alias_components(&self, prism: AnchoredLine) { alias_components(prism, 1); }
 }
-
-impl Identification for Map {
+impl Identification for Map_ {
     fn type_name(&self) -> &'static str { "Map" }
-    fn type_sentinel(&self) -> *const u8 { (& MAP_SENTINEL) as *const u8 }
 }
-
-impl Distinguish for Map {
+impl Distinguish for Map_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() {
             return guide.hash;
         }
-        group!("map hash");
+        group!("Map hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
@@ -103,40 +125,30 @@ impl Distinguish for Map {
         let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs, 1);
         let h = cycle_abc(179, y) as u32;
-        log!("hash of map {:#08X}", h);
+        log!("Hash of map {:#08X}", h);
         group_end!();
         guide.set_hash(h).store_hash().hash
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.is_ref() {
-            let o_prism = o.logical_value();
-            if prism[0] == o_prism[0] {
-                group!("map eq");
-                let res = eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 1);
-                group_end!();
-                res
-            } else {
-                false
-            }
-        } else {
-            false
+        if let Some(m_prism) = find_prism(o) {
+            group!("Map eq");
+            let res = eq::eq(Guide::hydrate(prism), Guide::hydrate(m_prism), 1);
+            group_end!();
+            return res
         }
+        // sorted_map
+        // else, compare keys pairwise
+        false
     }
 }
-
-impl Aggregate for Map {
-    fn is_aggregate(&self) -> bool { true }
+impl Aggregate for Map_ {
+    fn is_aggregate(&self, prism: AnchoredLine) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
     }
-
-    fn empty(&self, prism: AnchoredLine) -> Unit {
-        Map::new()
-    }
-
+    fn empty(&self, prism: AnchoredLine) -> Unit { new() }
     fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit {
         let h = k.handle().hash();
         if let Some(key_line) = get::get(prism, k, h, 1) {
@@ -145,20 +157,18 @@ impl Aggregate for Map {
             (& handle::STATIC_NIL) as *const Unit
         }
     }
-
     fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value {
         reduce::reduce(prism, process, 1)
     }
 }
-impl Sequential for Map {}
-impl Associative for Map {
-    fn is_map(&self) -> bool { true }
-
+impl Sequential for Map_ { }
+impl Associative for Map_ {
+    fn is_map(&self, prism: AnchoredLine) -> bool { true }
     fn contains(&self, prism: AnchoredLine, k: Unit) -> bool {
         let h = k.handle().hash();
         get::get(prism, k, h, 1).is_some()
     }
-
+    // TODO assoc-in (recursive assoc)
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let h = k.handle().hash();
         group!("map assoc");
@@ -178,31 +188,27 @@ impl Associative for Map {
             },
         }
     }
-
     fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
         let h = k.handle().hash();
         let g = dissoc::dissoc(prism, k, h, 1);
         g.segment().unit()
     }
 }
-impl Reversible for Map {}
-impl Sorted for Map {}
-
-impl Notation for Map {
+impl Reversible for Map_ {}
+impl Sorted for Map_ {}
+impl Notation for Map_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO print in prefix map form
         struct Printer {
             pub is_first: bool,
             pub f: usize,
         }
-
         impl Printer {
             pub fn new(f: &mut fmt::Formatter) -> Printer {
                 use std::mem::transmute;
                 unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
             }
         }
-
         impl Process for Printer {
             fn inges_kv(&mut self, stack: &mut [Box<dyn Process>], k: &Value, v: &Value) -> Option<Value> {
                 use std::mem::transmute;
@@ -223,18 +229,15 @@ impl Notation for Map {
         write!(f, "}}")
     }
 }
-
-impl Numeral for Map {}
-impl Callable for Map {}
+impl Numeral for Map_ {}
+impl Callable for Map_ {}
 
 pub fn next_power(x: u32) -> u32 { (x + 1).next_power_of_two() }
 pub fn cap_at_arity_width(power: u32) -> u32 { power >> (power >> (BITS + 2)) }
 /// Sizes a unit count to a power of two.
 ///
 /// With BITS as 5, it returns 8, 16, 32, 64.
-pub fn size(unit_count: u32) -> u32 {
-    cap_at_arity_width(next_power(unit_count | 0x4))
-}
+pub fn size(unit_count: u32) -> u32 { cap_at_arity_width(next_power(unit_count | 0x4)) }
 
 pub fn common_chunks(h1: u32, h2: u32) -> u32 {
     let top_chunks = (h1 ^ h2) >> BITS;
@@ -246,7 +249,6 @@ pub fn divide_by_five(x: u32) -> u32 {
     let p = x as u64 * 0x33333334u64;
     (p >> 32) as u32
 }
-
 pub fn divide_by_bits(x: u32) -> u32 {
     if BITS == 4 {
         x >> 2
@@ -254,8 +256,6 @@ pub fn divide_by_bits(x: u32) -> u32 {
         divide_by_five(x)
     }
 }
-
-// TODO assoc-in (recursive assoc)
 
 #[cfg(test)]
 mod tests {

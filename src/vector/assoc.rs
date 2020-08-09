@@ -8,7 +8,7 @@
 use super::*;
 
 pub fn assoc(prism: AnchoredLine, idx: u32, x: Unit) -> (Unit, Unit) {
-    let guide = unaliased_root(Guide::hydrate(prism));
+    let guide = Guide::hydrate(unaliased(prism));
     match idx.cmp(&guide.count) {
         Ordering::Less => {
             if guide.count <= TAIL_CAP {

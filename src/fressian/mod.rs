@@ -5,12 +5,10 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
+/*
 pub mod reader;
-
-pub fn something() {
-
-}
-
+pub fn read_something(rdr: reader::FressianReader, src: &[u8]) { }
+*/
 
 pub struct Code {}
 impl Code {
@@ -26,57 +24,57 @@ impl Code {
     pub const CACHED_IMM: (u8, u8) = (0x80, 0xA0); // 32
     pub const STRUCT_IMM: (u8, u8) = (0xA0, 0xB0); // 16
 
-    pub const LONGS: u8 = 0xB0;
+    pub const LONGS:   u8 = 0xB0;
     pub const DOUBLES: u8 = 0xB1;
-    pub const BOOLS: u8 = 0xB2;
-    pub const INTS: u8 = 0xB3;
-    pub const FLOATS: u8 = 0xB4;
+    pub const BOOLS:   u8 = 0xB2;
+    pub const INTS:    u8 = 0xB3;
+    pub const FLOATS:  u8 = 0xB4;
     pub const OBJECTS: u8 = 0xB5;
 
-    pub const MAP: u8 = 0xC0;
-    pub const SET: u8 = 0xC1;
-    pub const UUID: u8 = 0xC3;
-    pub const REGEX: u8 = 0xC4;
-    pub const URI: u8 = 0xC5;
-    pub const BIGINT: u8 = 0xC6;
-    pub const BIGDEC: u8 = 0xC7;
-    pub const INST: u8 = 0xC8;
-    pub const SYMBOL: u8 = 0xC9;
+    pub const MAP:     u8 = 0xC0;
+    pub const SET:     u8 = 0xC1;
+    pub const UUID:    u8 = 0xC3;
+    pub const REGEX:   u8 = 0xC4;
+    pub const URI:     u8 = 0xC5;
+    pub const BIGINT:  u8 = 0xC6;
+    pub const BIGDEC:  u8 = 0xC7;
+    pub const INST:    u8 = 0xC8;
+    pub const SYMBOL:  u8 = 0xC9;
     pub const KEYWORD: u8 = 0xCA;
 
     pub const CACHED: u8 = 0xCC;
-    pub const CACHE: u8 = 0xCD;
+    pub const CACHE:  u8 = 0xCD;
     pub const CACHE_FOR_LATER: u8 = 0xCE;
     pub const FOOTER: u8 = 0xCF;
 
-    pub const SMALL_BYTES: (u8, u8) = (0xD0, 0xD8); // 8
-    pub const BYTES_CHUNK: u8 = 0xD8;
-    pub const BYTES: u8 = 0xD9;
+    pub const SMALL_BYTES:  (u8, u8) = (0xD0, 0xD8); // 8
+    pub const BYTES_CHUNK:  u8 = 0xD8;
+    pub const BYTES:        u8 = 0xD9;
     pub const SMALL_STRING: (u8, u8) = (0xDA, 0xE2); // 8
     pub const STRING_CHUNK: u8 = 0xE2;
-    pub const STRING: u8 = 0xE3;
+    pub const STRING:       u8 = 0xE3;
 
     pub const SMALL_VEC: (u8, u8) = (0xE4, 0xEC); // 8
-    pub const VEC: u8 = 0xEC;
+    pub const VEC:  u8 = 0xEC;
     pub const LIST: u8 = 0xED;
     pub const UNBOUNDED_LIST: u8 = 0xEE;
 
     pub const EST_STRUCT: u8 = 0xEF;
-    pub const STRUCT: u8 = 0xF0;
-    pub const META: u8 = 0xF1;
+    pub const STRUCT:     u8 = 0xF0;
+    pub const META:       u8 = 0xF1;
 
-    pub const ANY: u8 = 0xF4;
-    pub const TRUE: u8 = 0xF5;
+    pub const ANY:   u8 = 0xF4;
+    pub const TRUE:  u8 = 0xF5;
     pub const FALSE: u8 = 0xF6;
-    pub const NIL: u8 = 0xF7;
+    pub const NIL:   u8 = 0xF7;
 
     pub const I64: u8 = 0xF8;
     pub const F32: u8 = 0xF9;
     pub const F64: u8 = 0xFA;
     pub const F64_ZERO: u8 = 0xFB;
-    pub const F64_ONE: u8 = 0xFC;
+    pub const F64_ONE:  u8 = 0xFC;
 
-    pub const CLOSE_LIST: u8 = 0xFD;
+    pub const CLOSE_LIST:   u8 = 0xFD;
     pub const RESET_CACHES: u8 = 0xFE;
 }
 
@@ -86,5 +84,29 @@ pub const BYTE_CHUNK_SIZE: u32 = 1 << 16;
 pub fn bit_width(x: i64) -> u32 {
     let y = if x.is_negative() { !x } else { x };
     (65 - y.leading_zeros()) // 1-64
+}
+
+pub fn uleb128(buf: &mut Vec<u8>, x: u64) {
+    let mut x = x;
+    loop {
+        if (x >> 7) == 0 {
+            buf.push(x as u8);
+            return;
+        }
+        buf.push(x as u8 | 0x80);
+        x = x >> 7;
+    }
+}
+pub fn sleb128(buf: &mut Vec<u8>, x: i64) {
+    let mut x = x;
+    loop {
+        let y = x >> 6;
+        if y == 0 || y == -1 {
+            buf.push(x as u8 & 0x7F); // clear top bit
+            return;
+        }
+        buf.push(x as u8 | 0x80); // set top bit
+        x = x >> 7;
+    }
 }
 

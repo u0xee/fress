@@ -13,15 +13,17 @@ var fress = null
 var _encoder = new TextEncoder();
 var _decoder = new TextDecoder();
 function into_utf8_bytes(s) { return _encoder.encode(s) }
-function from_utf8_bytes(b) { return _decoder.decode(b)}
-
+function from_utf8_bytes(b) { return _decoder.decode(b) }
 
 // color bold size
 // performance.mark, measure, getEntriesByName
 // clearMarks, clearMeasures, duration
+// batch up console output events?
+// in-memory list instead? inspect on demand?
 function log(byte_address, byte_count) {
   var slice = fress.memory.buffer.slice(byte_address, byte_address + byte_count);
-  console.log(from_utf8_bytes(slice), 'font-size: 80%;')
+  var msg = from_utf8_bytes(slice);
+  console.log(msg, 'font-size: 80%;')
 }
 function warn(byte_address, byte_count) {
   var slice = fress.memory.buffer.slice(byte_address, byte_address + byte_count);
@@ -47,7 +49,8 @@ function group_(msg) {
 function group(byte_address, byte_count) {
   group_depth += 1;
   var slice = fress.memory.buffer.slice(byte_address, byte_address + byte_count);
-  console.groupCollapsed(from_utf8_bytes(slice), 'font-weight: normal; font-size: 80%;')
+  var msg = from_utf8_bytes(slice);
+  console.groupCollapsed(msg, 'font-weight: normal; font-size: 80%;')
 }
 function group_end() {
   if (group_depth == 0) {
@@ -73,7 +76,8 @@ function compile_init(byte_address, byte_count, mem_base, tab_base) {
   WebAssembly.instantiate(module, im).then(function (mod_inst) {
     history.push(mod_inst.module, mod_inst.instance);
     group_('Module static_init');
-    var x = mod_inst.instance.exports.static_init(); // passes 0 implicitly
+    var zero = mod_inst.instance.exports.static_init();
+    console.assert(zero == 0);
     group_end();
     group_('Module main');
     var res = mod_inst.instance.exports.main();
@@ -81,6 +85,50 @@ function compile_init(byte_address, byte_count, mem_base, tab_base) {
     fress.instance.exports.console_log(res)
   })
 }
+
+function post_output(byte_address, byte_count) {
+  var slice = fress.memory.buffer.slice(byte_address, byte_address + byte_count);
+  var msg = from_utf8_bytes(slice);
+  postMessage({'output': msg});
+}
+function post_error(byte_address, byte_count) {
+  var slice = fress.memory.buffer.slice(byte_address, byte_address + byte_count);
+  var msg = from_utf8_bytes(slice);
+  postMessage({'error': msg});
+}
+
+var console_imports =
+  {'_console_log': log,
+   '_console_warn': warn,
+   '_console_error': error,
+   '_console_panic_error': panic_error,
+   '_console_group': group,
+   '_console_group_end': group_end}
+var performance_imports =
+  {'_performance_mark': mark}
+var env_imports =
+  {'wasm_compile_init': compile_init,
+   'post_output': post_output,
+   'post_error': post_error}
+var wasm_imports =
+  {'env': env_imports,
+   'console': console_imports,
+   'performance': performance_imports}
+
+onmessage = function (first_msg) {
+  onmessage = null;
+  var module = first_msg.data;
+  WebAssembly.instantiate(module, wasm_imports).then(function (inst) {
+    var exp = inst.exports;
+    fress = {'module':   module,
+             'instance': inst,
+             'memory':   exp.memory,
+             'table':    exp.__indirect_function_table};
+    exp.initialize_global_state();
+    onmessage = handle_message;
+    console.log("WASM loaded.")
+  });
+};
 
 function write_str(s) {
   var s_arr = into_utf8_bytes(s)
@@ -99,31 +147,5 @@ function handle_message(msg) {
     last_error = err;
   }
 }
-function ev(msg) { handle_message(msg) }
 
-var console_imports =
-  {'_console_log': log,
-   '_console_warn': warn,
-   '_console_error': error,
-   '_console_panic_error': panic_error,
-   '_console_group': group,
-   '_console_group_end': group_end}
-var performance_imports =
-  {'_performance_mark': mark}
-var env_imports = {'wasm_compile_init': compile_init}
-var wasm_imports = {'env': env_imports,
-  'console': console_imports,
-  'performance': performance_imports}
-WebAssembly.instantiateStreaming(fetch("fress.wasm"), wasm_imports)
-.then(function (mod_inst) {
-  var exp = mod_inst.instance.exports;
-  fress = {'module': mod_inst.module,
-           'instance': mod_inst.instance,
-           'memory': exp.memory,
-           'table': exp.__indirect_function_table};
-  exp.initialize_global_state();
-  onmessage = handle_message;
-}).then(function() { console.log("WASM loaded.") });
-
-// var w = new Worker('repl_worker.js')
 

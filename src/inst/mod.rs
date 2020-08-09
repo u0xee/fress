@@ -7,6 +7,7 @@
 
 //use std::str::from_utf8;
 use std::fmt;
+use std::cmp::Ordering;
 use memory::*;
 use dispatch::*;
 use handle::Handle;
@@ -14,9 +15,11 @@ use handle::Handle;
 pub mod guide;
 use self::guide::{Guide, Point};
 
-pub static INST_SENTINEL: u8 = 0;
-
-pub struct Inst { }
+pub struct Inst_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Inst_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_inst(h: Handle) -> bool { find_prism(h).is_some() }
 
 pub fn sign(b: u8) -> bool { b == b'+' || b == b'-' }
 pub fn digit(b: u8) -> bool { b.wrapping_sub(b'0') < 10 }
@@ -51,12 +54,9 @@ pub fn timezone_length(s: &[u8]) -> usize {
     };
     if s.len() < 6 { return 0 }
     let tz = &s[(s.len() - 6)..];
-    if !sign(tz[0]) || !digit(tz[1]) || !digit(tz[2]) || tz[3] != b':' ||
-        !digit(tz[4]) || !digit(tz[5]) {
-        return 0
-    } else {
-        return 6
-    }
+    let res = !sign(tz[0]) || !digit(tz[1]) || !digit(tz[2]) || tz[3] != b':' ||
+        !digit(tz[4]) || !digit(tz[5]);
+    return if res { 0 } else { 6 }
 }
 
 // Instant in time
@@ -258,35 +258,22 @@ pub fn add_offset(p: &Point) -> Point {
     if p.off_neg == 0 { offset_forward(p) } else { offset_backward(p) }
 }
 
-impl Inst {
-    pub fn new_parsed(source: &[u8]) -> Result<Handle, String> {
-        let point = match parse(source) {
-            Err(msg) => { return Err(msg) },
-            Ok(g) => g,
-        };
-        let needed = 1 /*prism*/ + Guide::units();
-        let s = Segment::new(needed);
-        let prism = s.line_at(0);
-        prism.set(0, mechanism::prism::<Inst>());
-        let guide = Guide { hash: 0, point: subtract_offset(&point), prism};
-        Ok(guide.store().segment().unit().handle())
-    }
+pub fn new_parsed(source: &[u8]) -> Result<Handle, String> {
+    let point = match parse(source) {
+        Err(msg) => { return Err(msg) },
+        Ok(g) => g,
+    };
+    let needed = 1 /*prism*/ + Guide::units();
+    let s = Segment::new(needed);
+    let prism = s.line_at(0);
+    prism.set(0, prism_unit());
+    let guide = Guide { hash: 0, point: subtract_offset(&point), prism};
+    Ok(guide.store().segment().unit().handle())
 }
 
-impl Dispatch for Inst {
-    fn tear_down(&self, prism: AnchoredLine) {
-        // segment has 0 aliases
-        Segment::free(prism.segment())
-    }
-
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-}
-
-impl Identification for Inst {
+impl Dispatch for Inst_ { /*default tear_down, alias_components*/ }
+impl Identification for Inst_ {
     fn type_name(&self) -> &'static str { "Inst" }
-    fn type_sentinel(&self) -> *const u8 { (& INST_SENTINEL) as *const u8 }
 }
 
 fn as_u64s(p: &Point) -> (u64, u64) {
@@ -295,34 +282,38 @@ fn as_u64s(p: &Point) -> (u64, u64) {
     (d, t)
 }
 
-impl Distinguish for Inst {
+impl Distinguish for Inst_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() { return guide.hash; }
+
         let (d, t) = as_u64s(&guide.point);
         use hash::hash_128;
         let h = hash_128(d, t, 16);
         guide.set_hash(h).store_hash().hash
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.type_sentinel() == (& INST_SENTINEL) as *const u8 {
+        if let Some(o_inst) = find_prism(o) {
             let p = Guide::hydrate(prism).point;
-            let q = Guide::hydrate(o.prism()).point;
+            let q = Guide::hydrate(o_inst).point;
             let ps = as_u64s(&p);
             let qs = as_u64s(&q);
-            return ps.0 == qs.0 && ps.1 == qs.1
+            ps.0 == qs.0 && ps.1 == qs.1
+        } else {
+            false
         }
-        false
+    }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
+        unimplemented!()
     }
 }
 
-impl Aggregate for Inst { }
-impl Sequential for Inst { }
-impl Associative for Inst { }
-impl Reversible for Inst {}
-impl Sorted for Inst {}
+impl Aggregate for Inst_ { }
+impl Sequential for Inst_ { }
+impl Associative for Inst_ { }
+impl Reversible for Inst_ {}
+impl Sorted for Inst_ {}
 
 pub fn width_digits(nano: u32) -> (usize, u32) {
     let mut x = nano;
@@ -333,7 +324,7 @@ pub fn width_digits(nano: u32) -> (usize, u32) {
     (0, 0)
 }
 
-impl Notation for Inst {
+impl Notation for Inst_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         // 1969-04-27T00:31:49+08:40
         let guide = Guide::hydrate(prism);
@@ -348,9 +339,8 @@ impl Notation for Inst {
                if p.off_neg == 0 { '+' } else { '-' }, p.off_hour, p.off_min)
     }
 }
-
-impl Numeral for Inst {}
-impl Callable for Inst {}
+impl Numeral for Inst_ {}
+impl Callable for Inst_ {}
 
 #[cfg(test)]
 mod tests {

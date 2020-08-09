@@ -23,7 +23,6 @@
 use std::mem;
 use std::ops::{Index, IndexMut, Range};
 use memory::*;
-use trace;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Segment {
@@ -31,19 +30,14 @@ pub struct Segment {
 }
 
 impl Segment {
-    pub fn new(content_cap: u32) -> Segment {
+    pub fn new(cap: u32) -> Segment {
         inc_new_count();
-        log!("new segment, capacity {}", content_cap);
-        trace::mark("segment new");
-        let (mut unanchored, cap) = {
-            #[cfg(not(feature = "fuzz_segment_extra_cap"))]
-                let cap = content_cap;
-            #[cfg(feature = "fuzz_segment_extra_cap")]
-                let cap = content_cap + extra_cap();
-            (unanchored_new(cap), cap)
+        let anchored = {
+            let mut unanchored = unanchored_new(cap);
+            unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
+            unanchored
         };
-        unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
-        let anchored = unanchored;
+        log!("New segment, capacity {}, @ 0x{:016X}", cap, anchored.line().unit().u());
         #[cfg(any(test, feature = "segment_clear"))]
             {
                 let mut anchored = anchored;
@@ -51,18 +45,16 @@ impl Segment {
                     anchored.anchor_line[1 + i] = 0.into();
                 }
             }
-        #[cfg(feature = "fuzz_segment_random_content")]
-            random_content(anchored, cap);
         anchored
     }
 
     pub fn free(s: Segment) {
         inc_free_count();
-        log!("free segment, capacity {}", s.capacity());
-        trace::mark("segment free");
+        log!("Free segment, capacity {}, @ 0x{:016X}", s.capacity(), s.line().unit().u());
         let a = Anchor::from(s.anchor_line[0]);
         #[cfg(any(test, feature = "segment_free"))]
-            assert_eq!(a.aliases(), 0, "segment_free: freeing segment with aliases = {}", a.aliases());
+            assert_eq!(a.aliases(), 0,
+                       "segment_free: freeing segment with aliases = {}", a.aliases());
         if cfg!(any(test, feature = "segment_magic")) {
             dealloc(s.anchor_line.offset(-1 as isize), a.capacity() + 2);
         } else {
@@ -76,7 +68,7 @@ impl Segment {
         let real_ret = self.anchor_line[0].anchor().is_aliased();
         if cfg!(feature = "fuzz_segment_spurious_aliased") {
             use random::fuzz;
-            let (seed, log_tail) = fuzz::next_random();
+            let (seed, _log_tail) = fuzz::next_random();
             let spurious = ((seed ^ (seed >> 32)) & 0x7) == 0x7;
             real_ret || spurious
         } else {
@@ -85,7 +77,7 @@ impl Segment {
     }
 
     pub fn alias(&self) {
-        log!("segment alias");
+        log!("Segment alias");
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.aliased();
@@ -95,9 +87,8 @@ impl Segment {
             unimplemented!()
         }
     }
-
     pub fn unalias(&self) -> u32 {
-        log!("segment unalias");
+        log!("Segment unalias");
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.unaliased();
@@ -110,12 +101,10 @@ impl Segment {
     }
 
     pub fn get(&self, index: u32) -> Unit { self[index] }
-
     pub fn set(&self, index: u32, x: Unit) {
         let mut m = *self;
         m[index] = x;
     }
-
     pub fn has_index(&self, index: u32) -> bool { index < self.capacity() }
     pub fn anchor(&self) -> Anchor { self.anchor_line[0].anchor() }
     pub fn unit(&self) -> Unit { self.anchor_line.unit() }
@@ -125,27 +114,30 @@ impl Segment {
 
     pub fn store_hash(&self, index: u32, x: Unit) {
         #[cfg(any(test, feature = "segment_bounds"))]
-            {
-                if index >= self.capacity() {
-                    panic!("segment_bounds: writing index = {}, segment capacity = {}.",
-                           index, self.capacity());
-                }
-            }
-        // in the normal write path, we would check that the segment alias count is one
-        // here, the hash is computed on demand, so we may store to a shared segment,
+        assert!(index < self.capacity(),
+                "segment_bounds: accessing index = {}, segment capacity = {}.",
+                index, self.capacity());
+        // In the normal write path, we would check that the segment alias count is one.
+        // Here, the hash is computed on demand, so we may store to a shared segment,
         // in this case, on purpose.
         let mut m = *self;
         m.anchor_line[1 + index] = x;
     }
+    pub fn carbon_copy(&self) -> Segment {
+        let cap = self.capacity();
+        let s = Segment::new(cap);
+        self.at(0..cap).to(s);
+        s
+    }
 
     pub fn print_bits(&self) {
         let base = self.unit().u();
-        println!(" Segment {{ address: {:X}, aliases: {}, capacity: {},",
+        eprintln!(" Segment {{ address: {:X}, aliases: {}, capacity: {},",
                  base, self.anchor().aliases(), self.capacity());
         let cap = self.capacity();
         let rows_of_four = ((cap - 1) / 4) + 1;
         for row in 0..rows_of_four {
-            print!("  ");
+            eprint!("  ");
             for i in 0..4 {
                 let index = 4 * row + i;
                 if index < cap {
@@ -153,68 +145,41 @@ impl Segment {
                     let diff = base ^ x;
                     if diff.leading_zeros() > base.leading_zeros() {
                         let xx = (!0 >> diff.leading_zeros()) & x;
-                        print!("{:2}: {:.>12X}  ", index, xx);
+                        eprint!("{:2}: {:.>12X}  ", index, xx);
                     } else {
-                        print!("{:2}: {:_>12X}  ", index, x);
+                        eprint!("{:2}: {:_>12X}  ", index, x);
                     }
                 }
             }
-            println!();
+            eprintln!();
         }
-        println!(" }}");
-    }
-
-    pub fn interactive_print_bits(&self, context_description: &str) {
-        use std::io;
-        use std::io::Write;
-        let mut stack = vec![*self];
-        let mut command = String::new();
-        println!("\n==================== Interactive [{}]", context_description);
-        loop {
-            println!("== Stack height: {}, top:", stack.len());
-            stack.last().unwrap().print_bits();
-            print!("== [P]op off the stack, Push [num] on the stack, [Q]uit: ");
-            io::stdout().flush().ok().expect("Get a plunger");
-            command.clear();
-            io::stdin().read_line(&mut command).unwrap();
-            command.make_ascii_lowercase();
-            if command.contains("p") {
-                stack.pop();
-                continue;
-            }
-            if command.contains("q") {
-                return;
-            }
-            if let Ok(index) = command.trim().parse::<u32>() {
-                let curr = stack.last().unwrap().to_owned();
-                stack.push(curr.get(index).segment());
-            }
-        }
+        eprintln!(" }}");
     }
 }
 
 impl From<Unit> for Segment {
     fn from(unit: Unit) -> Self { Segment::from(unit.line()) }
 }
-
+fn is_aligned(line: Line) -> bool {
+    let mask = Unit::bytes() as usize - 1;
+    line.unit().u() & mask == 0
+}
+fn has_magic(line: Line) -> bool {
+    line.offset(-1)[0] == 0xCAFEBABEu32.into()
+}
 impl From<Line> for Segment {
     fn from(line: Line) -> Self {
-        if cfg!(any(test, feature = "segment_null")) {
-            if line.unit() == Unit::from(0usize) {
-                panic!("segment_null: null can't be used as a segment")
-            }
-        }
-        if cfg!(any(test, feature = "segment_unaligned")) {
-            let mask = Unit::bytes() as usize - 1;
-            if line.unit().u() & mask != 0 {
-                panic!("segment_unaligned: unaligned number can't be used as a segment")
-            }
-        }
-        if cfg!(any(test, feature = "segment_magic")) {
-            if line.offset(-1)[0] != 0xCAFEBABEu32.into() {
-                panic!("segment_magic: casting to Segment failed, magic not found")
-            }
-        }
+        #[cfg(any(test, feature = "segment_null"))]
+        assert_ne!(line.unit(), Unit::zero(),
+                   "segment_null: null can't be used as a segment");
+        #[cfg(any(test, feature = "segment_unaligned"))]
+        assert!(is_aligned(line),
+                "segment_unaligned: unaligned number can't be a segment, 0x{:016X}",
+                line.unit().u());
+        #[cfg(any(test, feature = "segment_magic"))]
+        assert!(has_magic(line),
+                "segment_magic: casting to Segment failed, magic not found @ 0x{:016X}",
+                line.unit().u());
         Segment { anchor_line: line }
     }
 }
@@ -237,79 +202,55 @@ pub fn alloc(raw_cap: u32) -> Line {
 }
 
 pub fn dealloc(line: Line, raw_cap: u32) {
-    #[cfg(any(test, feature = "segment_clear"))]
+    #[cfg(any(test, feature = "segment_erase"))]
         {
             let mut line = line;
             for i in 0..raw_cap {
                 line[i] = 0.into();
             }
         }
+    if cfg!(any(test, feature = "segment_fallow")) {
+        /*do nothing, segment will lie fallow*/
+    } else {
+        recycle(line, raw_cap)
+    }
+}
+pub fn recycle(line: Line, raw_cap: u32) {
     unsafe {
-        let v: Vec<Unit> = Vec::from_raw_parts(line.line as *mut Unit, 0, raw_cap as usize);
+        let v: Vec<Unit> = Vec::from_raw_parts(line.line as *mut Unit,
+                                               0, raw_cap as usize);
         mem::drop(v);
     }
 }
 
-#[cfg(any(test, feature = "fuzz_segment_extra_cap"))]
-pub fn extra_cap() -> u32 {
-    use random::fuzz;
-    use random::{uniform_f64, cycle, cycle_n, normal_f64};
-    let (seed, log_tail) = fuzz::next_random();
-    let p = uniform_f64(seed, cycle(seed));
-    // fuzz::log(format!("['namespace': {n}, 'event_name': {e}, 'segment': {s}, 'cap': {c}{tail}",
-    if p < 0.67 {
-        (normal_f64(cycle_n(seed, 2)).abs() * 4.0) as u32
-    } else {
-        let seed2 = cycle_n(seed, 2);
-        (uniform_f64(seed2, cycle(seed2)) * 30.0) as u32 + 10
-    }
-}
-
-#[cfg(any(test, feature = "fuzz_segment_random_content"))]
-pub fn random_content(mut s: Segment, cap: u32) {
-    use random::fuzz;
-    use random::{cycle};
-    let (mut seed, log_tail) = fuzz::next_random();
-    for i in 0..cap {
-        s.anchor_line[1 + i] = seed.into();
-        seed = cycle(seed);
-    }
-    // fuzz::log
-}
-
 impl Index<u32> for Segment {
     type Output = Unit;
-
     fn index(&self, index: u32) -> &Self::Output {
         #[cfg(any(test, feature = "segment_bounds"))]
-            {
-                if index >= self.capacity() {
-                    panic!("segment_bounds: accessing index = {}, segment capacity = {}.", index, self.capacity());
-                }
-            }
+        assert!(index < self.capacity(),
+                "segment_bounds: accessing index = {}, segment capacity = {}.",
+                index, self.capacity());
         &self.anchor_line[1 + index]
     }
 }
-
 impl IndexMut<u32> for Segment {
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
         #[cfg(any(test, feature = "segment_bounds"))]
-            {
-                if index >= self.capacity() {
-                    panic!("segment_bounds: writing index = {}, segment capacity = {}.", index, self.capacity());
-                }
-            }
+        assert!(index < self.capacity(),
+                "segment_bounds: accessing index = {}, segment capacity = {}.",
+                index, self.capacity());
         #[cfg(any(test, feature = "segment_mut"))]
-            {
-                if self.anchor().is_aliased() {
-                    panic!("segment_mut: writing index = {}, segment aliases = {}.", index, self.anchor().aliases());
-                }
-            }
+        assert_eq!(self.anchor().aliases(), 1,
+                "segment_mut: writing index = {}, segment aliases = {}.",
+                index, self.anchor().aliases());
         &mut self.anchor_line[1 + index]
     }
 }
 
-// TODO collect event counts and mem units total
+// TODO collect event counts and mem units totals
+//  Total allocated: segment count and units sum
+//  Total freed: segment count and units sum
+//  Map of segment sizes (in units) to segment count allocated and freed
 use std::cell::Cell;
 thread_local! {
     pub static NEW_COUNT: Cell<u64> = Cell::new(0);
@@ -324,21 +265,18 @@ pub fn new_free_counts() -> (u64, u64) {
 #[cfg(test)]
 mod test {
     use super::*;
-
     #[test]
     #[should_panic(expected = "segment_bounds")]
     fn bounds_read() {
         let s = Segment::new(5);
         s[5];
     }
-
     #[test]
     #[should_panic(expected = "segment_bounds")]
     fn bounds_write() {
         let mut s = Segment::new(5);
         s[5] = 0.into();
     }
-
     #[test]
     #[should_panic(expected = "segment_mut")]
     fn aliased_write() {
@@ -346,7 +284,6 @@ mod test {
         s.alias();
         s[4] = 0.into()
     }
-
     #[test]
     #[should_panic(expected = "segment_magic")]
     fn magic_missing() {
@@ -354,21 +291,18 @@ mod test {
         let off = s.line().offset(1);
         let r = off.segment();
     }
-
     #[test]
     #[should_panic(expected = "segment_null")]
     fn null_line() {
         let u = Unit::from(0usize);
         let r = u.segment();
     }
-
     #[test]
     #[should_panic(expected = "segment_unaligned")]
     fn unaligned_line() {
         let u = Unit::from(0xABCDEusize);
         let r = u.segment();
     }
-
     #[test]
     #[should_panic(expected = "segment_free")]
     fn aliased_free() {
@@ -376,3 +310,4 @@ mod test {
         Segment::free(s);
     }
 }
+

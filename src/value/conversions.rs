@@ -11,41 +11,39 @@ use edn::reader::{EdnReader, ReadResult};
 use edn;
 
 impl From<bool> for Value {
-    fn from(x: bool) -> Value {
-        if x { Handle::tru().value() } else { Handle::fals().value() }
-    }
+    fn from(x: bool) -> Value { if x { Handle::tru().value() } else { Handle::fals().value() } }
 }
-
 impl Into<bool> for Value {
-    fn into(self) -> bool {
-        (&self).into()
-    }
+    fn into(self) -> bool { (&self).into() }
 }
-
 impl Into<bool> for &Value {
-    fn into(self) -> bool {
-        self.handle().is_so()
-    }
+    fn into(self) -> bool { self.handle().is_so() }
 }
 
 impl From<char> for Value {
     fn from(x: char) -> Self {
-        use character::Character;
-        Character::new(x).value()
+        use character;
+        character::new(x).value()
     }
 }
-
 impl Into<char> for Value {
     fn into(self) -> char {
-        use character::{Character, as_char};
-        as_char(Character::prism(self.handle()).unwrap())
+        use character;
+        let h = self._consume();
+        if let Some(prism) = character::find_prism(h) {
+            let c = character::as_char(prism);
+            h.retire();
+            c
+        } else {
+            unimplemented!("Converting {} into a char.", h);
+        }
     }
 }
 
 impl From<i64> for Value {
     fn from(x: i64) -> Self {
-        use integral::Integral;
-        Integral::new_value(x)
+        use integral;
+        integral::new_value(x)
     }
 }
 
@@ -79,8 +77,8 @@ impl From<usize> for Value {
 
 impl From<f64> for Value {
     fn from(x: f64) -> Self {
-        use float_point::FloatPoint;
-        FloatPoint::new(x).handle().value()
+        use float_point;
+        float_point::new(x).handle().value()
     }
 }
 impl From<f32> for Value {
@@ -89,15 +87,15 @@ impl From<f32> for Value {
 
 impl From<&str> for Value {
     fn from(s: &str) -> Self {
-        use string::Str;
-        Str::new_value_from_str(s)
+        use string;
+        string::new_value_from_str(s)
     }
 }
 
 impl FromStr for Value {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        group!("read edn from {:?}", s);
+        group!("Read edn from {:?}", s);
         let b = s.as_bytes();
         let mut reader = EdnReader::new();
         let ret = match edn::read(&mut reader, b) {
@@ -145,8 +143,8 @@ impl<T: Into<Value>> From<Option<T>> for Value {
 // vector, array, slice
 impl<T: Into<Value>> From<Vec<T>> for Value {
     fn from(val: Vec<T>) -> Value {
-        use vector::Vector;
-        let mut v = Vector::new_value();
+        use vector;
+        let mut v = vector::new_value();
         for x in val.into_iter() {
             v = v.conj(x.into());
         }

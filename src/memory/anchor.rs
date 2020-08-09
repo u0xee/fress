@@ -25,44 +25,30 @@ impl Anchor {
         let bit_fields = (capacity << 16) | 1u32;
         Unit::from(bit_fields ).into()
     }
-
     pub fn capacity(&self) -> u32 {
         let c: u32 = self.unit.into();
         c >> 16
     }
-
     pub fn aliases(&self) -> u32 {
         let c: u16 = self.unit.into();
         c as u32
     }
-
-    pub fn is_aliased(&self) -> bool {
-        self.aliases() != 1
-    }
-
+    pub fn is_aliased(&self) -> bool { self.aliases() != 1 }
     pub fn aliased(&self) -> Anchor {
         let x: usize = self.unit.into();
         Anchor { unit: Unit::from(x + 1) }
     }
-
     pub fn unaliased(&self) -> Anchor {
         let x: usize = self.unit.into();
         Anchor { unit: Unit::from(x - 1) }
     }
-
-    pub fn unit(&self) -> Unit {
-        self.unit
-    }
+    pub fn unit(&self) -> Unit { self.unit }
 }
 
 impl From<Unit> for Anchor {
-    fn from(u: Unit) -> Self {
-        Anchor { unit: u }
-    }
+    fn from(u: Unit) -> Self { Anchor { unit: u } }
 }
 
 impl Into<Unit> for Anchor {
-    fn into(self) -> Unit {
-        self.unit
-    }
+    fn into(self) -> Unit { self.unit }
 }

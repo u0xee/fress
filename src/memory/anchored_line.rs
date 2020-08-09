@@ -26,38 +26,31 @@ impl AnchoredLine {
     pub fn offset(&self, offset: i32) -> AnchoredLine {
         AnchoredLine { seg: self.seg, index: ((self.index as i32) + offset) as u32 }
     }
-
     pub fn has_index(&self, index: i32) -> bool {
         let i = ((self.index as i32) + index) as u32;
         self.seg.has_index(i)
     }
-
     pub fn with_seg(&self, seg: Segment) -> AnchoredLine { AnchoredLine { seg, index: self.index } }
-
     pub fn line(&self) -> Line {
         if !self.has_index(0) {
             panic!("AnchoredLine out of bounds for segment: [{} {}]", self.index, self.seg.capacity());
         }
         self.seg.anchor_line.offset(self.index as isize + 1)
     }
-
     pub fn span(&self, width: u32) -> AnchoredRange {
         AnchoredRange::new(self.seg, self.index..(self.index + width))
     }
-
     pub fn store_hash(&self, index: u32, x: Unit) {
-        self.seg.store_hash(index, x)
+        self.seg.store_hash(self.index + index, x)
     }
 }
 
 impl Index<i32> for AnchoredLine {
     type Output = Unit;
-
     fn index(&self, index: i32) -> &Self::Output {
         Index::index(&self.seg, ((self.index as i32) + index) as u32)
     }
 }
-
 impl IndexMut<i32> for AnchoredLine {
     fn index_mut(&mut self, index: i32) -> &mut Self::Output {
         IndexMut::index_mut(&mut self.seg, ((self.index as i32) + index) as u32)

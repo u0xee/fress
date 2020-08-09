@@ -15,59 +15,42 @@ use handle::Handle;
 use transduce::{Process};
 use vector::guide::Guide;
 
-pub static SET_SENTINEL: u8 = 0;
-
-pub struct Set { }
-
 // Set library:
 // intersection, union, difference, symmetric difference
 // disjoint?, subset?
 
-impl Set {
-    pub fn new() -> Unit {
-        log!("set new");
-        let guide = {
-            let cap = 1 /*prism*/ + Guide::units() + 1 /*pop*/ + map::size(1);
-            let s = Segment::new(cap);
-            let prism = s.line_at(0);
-            prism.set(0, mechanism::prism::<Set>());
-            let g = Guide::hydrate_top_bot(prism, 0, 0);
-            g
-        };
-        guide.root.set(-1, map::pop::Pop::new().unit());
-        guide.store().segment().unit()
-    }
+pub struct Set_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Set_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_set(h: Handle) -> bool { find_prism(h).is_some() }
 
-    pub fn new_value() -> Value {
-        Set::new().handle().value()
-    }
+pub fn new() -> Unit {
+    log!("set new");
+    let s = map::new().segment();
+    s.set(0, prism_unit());
+    s.unit()
 }
+pub fn new_value() -> Value { new().handle().value() }
 
-impl Dispatch for Set {
+impl Dispatch for Set_ {
     fn tear_down(&self, prism: AnchoredLine) {
-        group!("set tear down");
+        group!("Set tear down");
         map::tear_down::tear_down(prism, 0);
         group_end!();
     }
-
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        map::assoc::unaliased_root(Guide::hydrate(prism), 0).segment().unit()
-    }
+    fn alias_components(&self, prism: AnchoredLine) { map::alias_components(prism, 0); }
 }
-
-impl Identification for Set {
+impl Identification for Set_ {
     fn type_name(&self) -> &'static str { "Set" }
-
-    fn type_sentinel(&self) -> *const u8 { (& SET_SENTINEL) as *const u8 }
 }
-
-impl Distinguish for Set {
+impl Distinguish for Set_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() {
             return guide.hash;
         }
-        group!("set hash");
+        group!("Set hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
@@ -90,39 +73,29 @@ impl Distinguish for Set {
         let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = map::reduce::reduce(prism, &mut procs, 0);
         let h = cycle_abc(27, y) as u32;
-        log!("hash of set {:#08X}", h);
+        log!("Hash of set {:#08X}", h);
         group_end!();
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.is_ref() {
-            let o_prism = o.logical_value();
-            if prism[0] == o_prism[0] {
-                group!("set eq");
-                let res = map::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism), 0);
-                group_end!();
-                res
-            } else {
-                false
-            }
-        } else {
-            false
+        if let Some(s_prism) = find_prism(o) {
+            group!("Set eq");
+            let res = map::eq::eq(Guide::hydrate(prism), Guide::hydrate(s_prism), 0);
+            group_end!();
+            return res
         }
+        false
     }
 }
-
-impl Aggregate for Set {
-    fn is_aggregate(&self) -> bool { true }
+impl Aggregate for Set_ {
+    fn is_aggregate(&self, prism: AnchoredLine) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
     }
-
-    fn empty(&self, prism: AnchoredLine) -> Unit {
-        Set::new()
-    }
-
+    // TODO preserve meta?
+    fn empty(&self, prism: AnchoredLine) -> Unit { new() }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
         let k = x;
         let h = k.handle().hash();
@@ -140,7 +113,6 @@ impl Aggregate for Set {
             },
         }
     }
-
     fn get(&self, prism: AnchoredLine, k: Unit) -> *const Unit {
         let h = k.handle().hash();
         if let Some(key_line) = map::get::get(prism, k, h, 0) {
@@ -149,44 +121,37 @@ impl Aggregate for Set {
             (& handle::STATIC_NIL) as *const Unit
         }
     }
-
     fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value {
         map::reduce::reduce(prism, process, 0)
     }
 }
-
-impl Sequential for Set {}
-
-impl Associative for Set {
-    fn is_set(&self) -> bool { true }
+impl Sequential for Set_ {}
+impl Associative for Set_ {
+    fn is_set(&self, prism: AnchoredLine) -> bool { true }
     fn contains(&self, prism: AnchoredLine, k: Unit) -> bool {
         let h = k.handle().hash();
         map::get::get(prism, k, h, 0).is_some()
     }
-
     fn dissoc(&self, prism: AnchoredLine, k: Unit) -> Unit {
         let h = k.handle().hash();
         let g = map::dissoc::dissoc(prism, k, h, 0);
         g.segment().unit()
     }
 }
-
-impl Reversible for Set {}
-impl Sorted for Set {}
-impl Notation for Set {
+impl Reversible for Set_ {}
+impl Sorted for Set_ {}
+impl Notation for Set_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,
             pub f: usize,
         }
-
         impl Printer {
             pub fn new(f: &mut fmt::Formatter) -> Printer {
                 use std::mem::transmute;
                 unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
             }
         }
-
         impl Process for Printer {
             fn inges(&mut self, stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
                 use std::mem::transmute;
@@ -207,10 +172,8 @@ impl Notation for Set {
         write!(f, "}}")
     }
 }
-
-impl Numeral for Set {}
-impl Callable for Set {}
-
+impl Numeral for Set_ { }
+impl Callable for Set_ { }
 
 #[cfg(test)]
 mod tests {

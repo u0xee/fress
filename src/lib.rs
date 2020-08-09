@@ -111,10 +111,10 @@ pub fn shr(x: Value, shift: u32) -> Value { x >> shift }
 
 pub fn read(source: &str) -> Result<Value, String> { source.parse() }
 
-pub fn vector()   -> Value { vector::Vector::new_value() }
-pub fn list()     -> Value { list::List::new_value() }
-pub fn hash_map() -> Value { map::Map::new_value() }
-pub fn hash_set() -> Value { set::Set::new_value() }
+pub fn vector()   -> Value { vector::new_value() }
+pub fn list()     -> Value { list::new_value() }
+pub fn hash_map() -> Value { map::new_value() }
+pub fn hash_set() -> Value { set::new_value() }
 pub fn sort_map() -> Value { unimplemented!() }
 pub fn sort_set() -> Value { unimplemented!() }
 

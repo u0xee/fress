@@ -58,7 +58,7 @@ impl Func {
     pub fn new_value() -> Value { Vector::new().handle().value() }
 }
 
-impl Dispatch for Vector {
+impl Dispatch for Func {
     fn tear_down(&self, prism: AnchoredLine) {
         group!("vector tear down");
         tear_down::tear_down(prism);

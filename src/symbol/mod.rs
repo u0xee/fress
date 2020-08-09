@@ -7,65 +7,74 @@
 
 use std::str::from_utf8;
 use std::fmt;
+use std::cmp::Ordering;
 use memory::*;
 use dispatch::*;
+use handle::Handle;
 
 pub mod guide;
 use self::guide::Guide;
 
-pub static SYMBOL_SENTINEL: u8 = 0;
+pub struct Symbol_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Symbol_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_symbol(h: Handle) -> bool { find_prism(h).is_some() }
 
-pub struct Symbol { }
-
-impl Symbol {
-    pub fn new(name: &[u8], solidus_position: u32) -> Unit {
-        log!("new symbol {}", from_utf8(name).unwrap());
+pub fn new(name: &[u8], solidus_position: u32) -> Unit {
+    log!("Symbol new {}", from_utf8(name).unwrap());
+    let guide = {
         let byte_count = name.len() as u32;
         let content_count = units_for(byte_count);
         let needed = 1 /*prism*/ + Guide::units() + content_count;
         let s = Segment::new(needed);
         let prism = s.line_at(0);
-        prism.set(0, mechanism::prism::<Symbol>());
-        let guide = Guide::new(prism, solidus_position, byte_count);
-        guide.root.set(content_count as i32 - 1, Unit::zero());
-        guide.byte_slice().copy_from_slice(name);
-        guide.store().segment().unit()
-    }
-
-    pub fn new_prefix_name(prefix: &[u8], name: &[u8]) -> Unit {
-
-        let b = format!("{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
-        Symbol::new(b.as_bytes(), prefix.len() as u32)
-    }
-
-    pub fn has_namespace(prism: AnchoredLine) -> bool {
-        let guide = Guide::hydrate(prism);
-        guide.solidus != 0
-    }
+        prism.set(0, prism_unit());
+        let g = Guide::new(prism, solidus_position, byte_count);
+        g.root.set(content_count as i32 - 1, Unit::zero());
+        g.byte_slice().copy_from_slice(name);
+        g
+    };
+    guide.store().segment().unit()
 }
+
+pub fn new_prefix_name(prefix: &[u8], name: &[u8]) -> Unit {
+    let b = format!("{}/{}", from_utf8(prefix).unwrap(), from_utf8(name).unwrap());
+    new(b.as_bytes(), prefix.len() as u32)
+}
+
+pub fn has_namespace(prism: AnchoredLine) -> bool {
+    assert!(is_prism(prism));
+    let guide = Guide::hydrate(prism);
+    guide.solidus != 0
+}
+
+// TODO what role would a Symbol struct play?
+//  Symbol -> Value, Value -> Option<Symbol>
+//  Symbol.has_namespace()
+//  Symbol.as_str()
+
+// TODO primitives for viewing segment memory as eg, &[u8] &str
+// as_str, just namespace, just name
+/*
+pub fn as_str(prism: &AnchoredLine) -> &str {
+    let prism = *prism;
+    assert!(is_prism(prism));
+    let guide = Guide::hydrate(prism);
+    let s = guide.str();
+}
+*/
 
 pub fn units_for(byte_count: u32) -> u32 {
     let (b, c) = if cfg!(target_pointer_width = "32") { (4, 2) } else { (8, 3) };
     (byte_count + b - 1) >> c
 }
 
-impl Dispatch for Symbol {
-    fn tear_down(&self, prism: AnchoredLine) {
-        // segment has 0 aliases
-        log!("symbol tear down {}", prism.segment().unit().handle());
-        let guide = Guide::hydrate(prism);
-        guide.retire_meta();
-        Segment::free(guide.segment())
-    }
-}
-
-impl Identification for Symbol {
+impl Dispatch for Symbol_ { /*default tear_down, alias_components*/ }
+impl Identification for Symbol_ {
     fn type_name(&self) -> &'static str { "Symbol" }
-    fn type_sentinel(&self) -> *const u8 { (& SYMBOL_SENTINEL) as *const u8 }
 }
-
-use std::cmp::Ordering;
-impl Distinguish for Symbol {
+impl Distinguish for Symbol_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() { return guide.hash; }
@@ -79,65 +88,51 @@ impl Distinguish for Symbol {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        log!("hash symbol {} {:#08X}", prism.segment().unit().handle(), h);
+        log!("Symbol hash: {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        assert_eq!(0, self as *const Symbol_ as usize);
         let o = other.handle();
-        if o.is_ref() && o.type_sentinel() == (& SYMBOL_SENTINEL) as *const u8 {
-            log!("symbol eq");
+        if let Some(o_sym) = find_prism(o) {
+            log!("Symbol eq: {} {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
-            let h = Guide::hydrate(o.prism());
+            let h = Guide::hydrate(o_sym);
             return g.byte_slice() == h.byte_slice()
+        } else {
+            false
         }
-        false
     }
-
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
-        if !o.is_ref() {
-            return Some(Ordering::Greater)
-        }
-        if o.type_sentinel() != (& SYMBOL_SENTINEL) as *const u8 {
-            let ret = ((& SYMBOL_SENTINEL) as *const u8).cmp(&o.type_sentinel());
-            return Some(ret)
-        }
-        let g = Guide::hydrate(prism);
-        let h = Guide::hydrate(o.prism());
-        Some(g.str().cmp(&h.str()))
-    }
-}
-
-impl Aggregate for Symbol {
-    fn meta(&self, prism: AnchoredLine) -> *const Unit {
-        let guide = Guide::hydrate(prism);
-        if guide.has_meta() {
-            guide.meta_line().line().star()
+        if let Some(o_sym) = find_prism(o) {
+            log!("Symbol cmp: {} {}", prism.segment().unit().handle(), o);
+            let g = Guide::hydrate(prism);
+            let h = Guide::hydrate(o_sym);
+            Some(g.str().cmp(&h.str()))
         } else {
-            use handle::STATIC_NIL;
-            (& STATIC_NIL) as *const Unit
+            if o.is_ref() {
+                let o_prism_unit = o.logical_value()[0];
+                Some(prism_unit().cmp(&o_prism_unit))
+            } else {
+                Some(Ordering::Greater)
+            }
         }
     }
-    fn with_meta(&self, _prism: AnchoredLine, _m: Unit) -> Unit {
-        unimplemented!()
-    }
 }
-
-impl Sequential for Symbol { }
-impl Associative for Symbol { }
-impl Reversible for Symbol { }
-impl Sorted for Symbol { }
-
-impl Notation for Symbol {
+impl Aggregate for Symbol_ { }
+impl Sequential for Symbol_ { }
+impl Associative for Symbol_ { }
+impl Reversible for Symbol_ { }
+impl Sorted for Symbol_ { }
+impl Notation for Symbol_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
         write!(f, "{}", guide.str())
     }
 }
-
-impl Numeral for Symbol { }
-impl Callable for Symbol { }
+impl Numeral for Symbol_ { }
+impl Callable for Symbol_ { }
 
 #[cfg(test)]
 mod tests {

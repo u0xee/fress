@@ -32,6 +32,8 @@ impl Value {
 
     fn consume(self) -> Handle { Handle::from(self) }
     fn handle(&self) -> Handle { self.handle }
+    pub fn _consume(self) -> Handle { self.consume() }
+    pub fn _handle(&self) -> Handle { self.handle() }
 
     pub fn split(self) -> (Value, Value) {
         let v = self.consume();
@@ -64,6 +66,7 @@ impl Value {
     pub fn is_map(&self) -> bool { self.handle().is_map() }
     pub fn is_symbol(&self) -> bool { self.handle().is_symbol() }
     pub fn is_integral(&self) -> bool { self.handle().is_integral() }
+
     pub fn count(&self) -> u32 { self.handle().count() }
     pub fn is_empty(&self) -> bool { self.count() == 0 }
     pub fn hash(&self) -> u32 { self.handle().hash() }
@@ -71,13 +74,11 @@ impl Value {
     pub fn contains(&self, k: &Value) -> bool { self.handle().contains(k.handle()) }
 
     pub fn assoc(self, k: Value, v: Value) -> Value {
-        let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
-        displaced.retire();
-        c.value()
+        self.consume().assoc(k.consume(), v.consume()).value()
     }
 
     pub fn assoc_out(self, k: Value, v: Value) -> (Value, Value) {
-        let (c, displaced) = self.consume().assoc(k.consume(), v.consume());
+        let (c, displaced) = self.consume().assoc_out(k.consume(), v.consume());
         (c.value(), displaced.value())
     }
 
@@ -94,12 +95,17 @@ impl Value {
     }
 
     pub fn meta(&self) -> &Value {
-        let v = self.handle().meta() as *const Value;
-        unsafe { &*v }
+        let m = self.handle().meta() as *const Value;
+        unsafe { &*m }
     }
-
-    pub fn with_meta(self, m: Value) -> Value { self.consume().with_meta(m.consume()).value() }
-
+    pub fn with_meta(self, m: Value) -> Value {
+        let (v, prev_meta) = self.consume().with_meta(m.consume());
+        prev_meta.retire();
+        v.value()
+    }
+    pub fn assoc_meta(self, meta_key: Value, meta_val: Value) -> Value {
+        self.consume().assoc_meta(meta_key.consume(), meta_val.consume()).value()
+    }
     pub fn has_namespace(&self) -> bool { self.handle().has_namespace() }
 
     pub fn inc(self) -> Value { self.consume().inc().value() }
@@ -126,73 +132,44 @@ impl Value {
 }
 
 impl From<Handle> for Value {
-    fn from(h: Handle) -> Self {
-        Value { handle: h }
-    }
+    fn from(h: Handle) -> Self { Value { handle: h } }
 }
-
 impl Drop for Value {
-    fn drop(&mut self) {
-        self.handle().retire();
-    }
+    fn drop(&mut self) { self.handle().retire(); }
 }
-
 impl fmt::Display for Value {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.handle.fmt(f)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { self.handle().fmt(f) }
 }
-
 impl fmt::Debug for Value {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.handle.fmt(f)
-    }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { self.handle().fmt(f) }
 }
-
-// derived?
-// unsafe impl Send for Value {}
-// unsafe impl Sync for Value {}
-// index with i32, Value, &str ?
-// partialEq with i32, &str
-// iterator, intoiterator
-
 impl default::Default for Value {
     fn default() -> Self { Value::nil() }
 }
-
 impl Clone for Value {
     fn clone(&self) -> Self { self.split_out() }
 }
-
 impl PartialEq for Value {
     fn eq(&self, other: &Value) -> bool { self.handle().eq(other.handle()) }
 }
-
 impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Value) -> Option<cmp::Ordering> {
         self.handle().cmp(other.handle())
     }
 }
-
 impl<'a> ops::Index<&'a Value> for Value {
     type Output = Value;
-    fn index(&self, index: &'a Value) -> &Value {
-        self.get(index)
-    }
+    fn index(&self, index: &'a Value) -> &Value { self.get(index) }
 }
-
 impl<'a> ops::Index<Value> for Value {
     type Output = Value;
-    fn index(&self, index: Value) -> &Value {
-        self.index(&index)
-    }
+    fn index(&self, index: Value) -> &Value { self.index(&index) }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
 }
-
 // Important Traits:
 // Drop, Default, Display, Debug, Clone
 // math:       + - * / % neg(-)
@@ -202,6 +179,13 @@ mod test {
 // PartialEq:  == !=
 // PartialOrd: < <= => >
 // From: numbers, strings
+
+// derived?
+// unsafe impl Send for Value {}
+// unsafe impl Sync for Value {}
+// index with i32, Value, &str ?
+// partialEq with i32, &str
+// iterator, intoiterator
 
 //struct MapValue {}
 //struct SetValue {}
@@ -216,4 +200,6 @@ mod test {
 //struct Integral {}
 //struct Rational {}
 //struct FloatPoint {}
+//struct Instant {}
+//struct Uuid {}
 

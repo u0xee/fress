@@ -8,23 +8,22 @@
 extern crate fress;
 use fress::value::Value;
 use fress::handle::Handle;
-use fress::integral::Integral;
-use fress::map::Map;
-use fress::set::Set;
-use fress::map::pop::Pop;
 use fress::memory::segment;
+use fress::integral;
+use fress::set;
+use fress::map;
 
 fn main() {
     let (new_a, free_a) = segment::new_free_counts();
 
     let limit = 100_000;
-    let mut s = Set::new().handle();
+    let mut s = set::new().handle();
 
     for i in 0..limit {
         if i % 4 == 0 {
             continue
         }
-        let k = Integral::new(i).handle();
+        let k = integral::new(i).handle();
         s = s.conj(k);
     }
 
@@ -58,13 +57,13 @@ fn main() {
     s.split();
 
     for i in 50..90 {
-        let k = Integral::new(i).handle();
+        let k = integral::new(i).handle();
         s = s.dissoc(k);
         k.retire();
     }
 
     for i in 0..100 {
-        let k = Integral::new(i).handle();
+        let k = integral::new(i).handle();
         println!("Contains {}: {}", i, s.contains(k));
         k.retire();
     }

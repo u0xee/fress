@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use std::fmt;
+use std::cmp::Ordering;
 use memory::*;
 use dispatch::*;
 use handle::Handle;
@@ -13,39 +14,32 @@ use handle::Handle;
 pub mod guide;
 use self::guide::Guide;
 
-pub static UUID_SENTINEL: u8 = 0;
-
-pub struct Uuid { }
-
-pub const HEX: (u64, u64) = (0x_03FF_0000_0000_0000, 0x_0000_007E_0000_007E); // 0123456789 afAF
+pub struct Uuid_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Uuid_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_uuid(h: Handle) -> bool { find_prism(h).is_some() }
 
 pub fn get_bit(x: u64, y: u64, idx: u8) -> u32 {
     let z = x ^ y;
-    let word_idx = idx & 0x3F;
+    let word_idx = (idx & 0x3F) as u64;
     let x_ = (x >> word_idx) as u32;
     let z_ = (z >> word_idx) as u32;
     let masked = z_ & (idx as u32 >> 6);
     (masked ^ x_) & 0x01
 }
-
+pub const HEX: (u64, u64) = (0x_03FF_0000_0000_0000, 0x_0000_007E_0000_007E); // 0123456789 afAF
 pub fn hit(b: u8, pattern: (u64, u64)) -> bool {
     get_bit(pattern.0, pattern.1, b) == 1
 }
-
-pub fn is_hex(b: u8) -> bool {
-    hit(b, HEX)
-}
-
+pub fn is_hex(b: u8) -> bool { hit(b, HEX) }
 pub fn as_hex(b: u8) -> u8 {
     let d: u8 = if b <= b'9' { b - b'0' }
         else if b <= b'F' { b - b'A' + 10 } else
         { b - b'a' + 10 };
     d
 }
-
-pub fn ascii(b: u8) -> bool {
-    (b & 0x80) == 0x00
-}
+pub fn ascii(b: u8) -> bool { (b & 0x80) == 0x00 }
 
 pub fn gather(hex_digits: &[u8]) -> Option<u64> {
     let mut x = 0u64;
@@ -102,38 +96,24 @@ pub fn parse(source: &[u8]) -> Result<(u64, u64), String> {
     Ok((top, bot))
 }
 
-impl Uuid {
-    pub fn new_parsed(source: &[u8]) -> Result<Handle, String> {
-        let (top, bot) = match parse(source) {
-            Err(msg) => { return Err(msg) },
-            Ok(x) => x,
-        };
-        let needed = 1 /*prism*/ + Guide::units();
-        let s = Segment::new(needed);
-        let prism = s.line_at(0);
-        prism.set(0, mechanism::prism::<Uuid>());
-        let guide = Guide { hash: 0, top, bot, prism };
-        Ok(guide.store().segment().unit().handle())
-    }
+pub fn new_parsed(source: &[u8]) -> Result<Handle, String> {
+    let (top, bot) = match parse(source) {
+        Err(msg) => { return Err(msg) },
+        Ok(x) => x,
+    };
+    let needed = 1 /*prism*/ + Guide::units();
+    let s = Segment::new(needed);
+    let prism = s.line_at(0);
+    prism.set(0, prism_unit());
+    let guide = Guide { hash: 0, top, bot, prism };
+    Ok(guide.store().segment().unit().handle())
 }
 
-impl Dispatch for Uuid {
-    fn tear_down(&self, prism: AnchoredLine) {
-        // segment has 0 aliases
-        Segment::free(prism.segment())
-    }
-
-    fn unaliased(&self, _prism: AnchoredLine) -> Unit {
-        unimplemented!()
-    }
-}
-
-impl Identification for Uuid {
+impl Dispatch for Uuid_ { /*default tear_down, alias_components*/ }
+impl Identification for Uuid_ {
     fn type_name(&self) -> &'static str { "Uuid" }
-    fn type_sentinel(&self) -> *const u8 { (& UUID_SENTINEL) as *const u8 }
 }
-
-impl Distinguish for Uuid {
+impl Distinguish for Uuid_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() { return guide.hash; }
@@ -142,26 +122,30 @@ impl Distinguish for Uuid {
         let h = hash_128(guide.top, guide.bot, 16);
         guide.set_hash(h).store_hash().hash
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if !o.is_ref() { return false }
-        if o.type_sentinel() != (& UUID_SENTINEL) as *const u8 { return false }
-        let g = Guide::hydrate(prism);
-        let h = Guide::hydrate(o.prism());
-        g.top == h.top && g.bot == h.bot
+        if let Some(o_uuid) = find_prism(o) {
+            let g = Guide::hydrate(prism);
+            let h = Guide::hydrate(o_uuid);
+            g.top == h.top && g.bot == h.bot
+        } else {
+            false
+        }
+    }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
+        // sort by time fields
+        unimplemented!()
     }
 }
-
-impl Aggregate for Uuid { }
-impl Sequential for Uuid { }
-impl Associative for Uuid { }
-impl Reversible for Uuid {}
-impl Sorted for Uuid {}
+impl Aggregate for Uuid_ { }
+impl Sequential for Uuid_ { }
+impl Associative for Uuid_ { }
+impl Reversible for Uuid_ {}
+impl Sorted for Uuid_ {}
 
 pub fn field(width: u32) -> u64 { (1 << width as u64) - 1 }
 
-impl Notation for Uuid {
+impl Notation for Uuid_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         let guide = Guide::hydrate(prism);
         let time_low = (guide.top >> 32) & field(32);
@@ -174,8 +158,8 @@ impl Notation for Uuid {
     }
 }
 
-impl Numeral for Uuid {}
-impl Callable for Uuid {}
+impl Numeral for Uuid_ {}
+impl Callable for Uuid_ {}
 
 #[cfg(test)]
 mod tests {

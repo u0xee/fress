@@ -34,8 +34,11 @@ pub enum Pending {
     Set,    // match closing }
     Tagged, // read next, interpret(?) based on tag
     Discard, // read next, retire
+    // Meta, // TODO
+    // Quote ', Deref @, Syntax Quote `
     String,
 }
+
 
 impl Pending {
     pub fn name(self) -> &'static str {
@@ -44,6 +47,7 @@ impl Pending {
             Pending::List => "list",
             Pending::Map => "map",
             Pending::Mapping => "mapping pair",
+            Pending::Namespace => "namespace",
             Pending::Set => "set",
             Pending::Tagged => "tagged",
             Pending::Discard => "discard",
@@ -66,30 +70,36 @@ pub struct EdnReader {
     pub pending: PendingStack,
 }
 
+pub fn attach_counter(reader: EdnReader, v: Value) -> Value {
+    // assign meta counter info
+    unimplemented!()
+}
+// TODO struct contain options like
+//  * attach provenance metadata:
+//   * base metadata map (file name, request id, etc)
+//   * row col, byte byte-count id
+//   * scape: collections, symbols, all heap types, everything (nil true false)
+//  * read meta literals
+//  * read quotes
+//  * intern keywords?
+//  * collect comment ranges (; single line, and #_(comment form here)
 impl EdnReader {
     pub fn new() -> EdnReader {
         EdnReader { counter: Counter::new(), pending: PendingStack::new() }
     }
 }
-
 impl Drop for EdnReader {
-    fn drop(&mut self) {
-        self.pending.tear_down()
-    }
+    fn drop(&mut self) { self.pending.tear_down() }
 }
 
-// TODO file name
 pub struct EdnRdr {
     pub reader: EdnReader,
     pub buf: Vec<u8>,
     pub resume: usize,
 }
-
+// TODO drop method, tear down
 impl EdnRdr {
-    pub fn new() -> EdnRdr {
-        EdnRdr::with_buffer_capacity(0)
-    }
-
+    pub fn new() -> EdnRdr { EdnRdr::with_buffer_capacity(0) }
     pub fn with_buffer_capacity(n: usize) -> EdnRdr {
         EdnRdr { reader: EdnReader { counter: Counter::new(), pending: PendingStack::new() },
             buf: Vec::with_capacity(n), resume: 0 }
@@ -173,7 +183,6 @@ impl EdnRdr {
 
 impl Counter {
     pub fn new() -> Counter { Counter { byte: 0, row: 1, col: 1 } }
-
     pub fn count(mut self, s: &str) -> Counter {
         for c in s.chars() {
             if c == '\n' {
@@ -186,7 +195,6 @@ impl Counter {
         self.byte += s.as_bytes().len() as u32;
         self
     }
-
     pub fn count_ascii(mut self, s: &[u8]) -> Counter {
         for b in s {
             if *b == b'\n' {
@@ -199,14 +207,12 @@ impl Counter {
         self.byte += s.len() as u32;
         self
     }
-
     pub fn newline(mut self) -> Counter {
         self.byte += 1;
         self.row += 1;
         self.col = 1;
         self
     }
-
     pub fn add_ascii(mut self, n: u32) -> Counter {
         self.byte += n;
         self.col += n;
@@ -261,11 +267,8 @@ impl PendingStack {
             None
         }
     }
-    pub fn set_top(&mut self, u: Unit) {
-        self.boxes[self.count - 1] = u;
-    }
+    pub fn set_top(&mut self, u: Unit) { self.boxes[self.count - 1] = u; }
     pub fn resolve(&mut self, bytes: &[u8]) {
-        use string::Str;
         for i in 0..self.count {
             let lab = self.labels[i];
             if lab == Pending::Namespace || lab == Pending::Tagged {
@@ -274,7 +277,8 @@ impl PendingStack {
                     let resolved = {
                         let (start, length) = demediate_both(ns_unit);
                         let b = &bytes[start..(start + length)];
-                        Str::new_from_str(from_utf8(b).unwrap()).unit()
+                        use string;
+                        string::new_from_str(from_utf8(b).unwrap()).unit()
                     };
                     self.boxes[i] = resolved;
                 }
@@ -305,6 +309,7 @@ pub fn reference(name: Unit, bytes: &[u8]) -> &[u8] {
     if name.is_even() {
         if name.handle().is_string() {
             use string::guide::Guide;
+            // TODO wrong, should unwrap (in case of metadata on the string)
             let g = Guide::hydrate(name.handle().prism());
             let bs = g.whole_byte_slice();
             use std::slice;

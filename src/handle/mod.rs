@@ -11,6 +11,7 @@ use memory::*;
 use dispatch::*;
 use value::*;
 use transduce::{Transducers, Process};
+use meta;
 
 #[derive(Copy, Clone)]
 pub struct Handle {
@@ -37,25 +38,25 @@ impl Handle {
     pub fn segment(self) -> Segment { self.unit.segment() }
     pub fn value(self) -> Value { Value { handle: self } }
 
-    pub const NIL: Unit = Unit { word: 0x07 };
-    pub const TRUE: Unit = Unit { word: !0x00usize };
+    pub const NIL:   Unit = Unit { word: 0x07 };
+    pub const TRUE:  Unit = Unit { word: !0x00usize };
     pub const FALSE: Unit = Unit { word: !0x08usize };
 
-    pub fn nil() -> Handle { Handle::from(Handle::NIL) }
-    pub fn tru() -> Handle { Handle::from(Handle::TRUE) }
+    pub fn nil()  -> Handle { Handle::from(Handle::NIL) }
+    pub fn tru()  -> Handle { Handle::from(Handle::TRUE) }
     pub fn fals() -> Handle { Handle::from(Handle::FALSE) }
 
-    pub fn is_nil(self) -> bool { self.unit == Handle::NIL }
-    pub fn is_true(self) -> bool { self.unit == Handle::TRUE }
+    pub fn is_nil(self)   -> bool { self.unit == Handle::NIL }
+    pub fn is_true(self)  -> bool { self.unit == Handle::TRUE }
     pub fn is_false(self) -> bool { self.unit == Handle::FALSE }
-    pub fn is_bool(self) -> bool { self.unit.u() | 0x8 == !0 }
-    pub fn is_flag(self) -> bool { self.unit.u() & 0x7 == 0x7 } // bool or nil
-    pub fn is_not(self) -> bool { self.unit.u() & 0xF == 0x7 }
-    pub fn is_so(self) -> bool { !self.is_not() }
+    pub fn is_bool(self)  -> bool { self.unit.u() | 0x8 == !0 }
+    pub fn is_flag(self)  -> bool { self.unit.u() & 0x7 == 0x7 } // bool or nil
+    pub fn is_not(self)   -> bool { self.unit.u() & 0xF == 0x7 }
+    pub fn is_so(self)    -> bool { !self.is_not() }
 
     fn tag(self) -> usize { self.unit.u() & 0xF }
-    pub fn is_imm_char(self) -> bool { self.tag() == 0x3 }
-    pub fn is_imm_int(self) -> bool { self.tag() == 0x1 }
+    pub fn is_imm_char(self)  -> bool { self.tag() == 0x3 }
+    pub fn is_imm_int(self)   -> bool { self.tag() == 0x1 }
     pub fn is_imm_float(self) -> bool { self.tag() == 0x9 }
 }
 
@@ -77,35 +78,37 @@ impl Handle {
 
 impl Handle {
     pub fn is_ref(self) -> bool { self.unit.is_even() }
-    pub fn split(self) { if self.is_ref() { self.segment().alias() } }
+    pub fn split(self) -> Handle {
+        if self.is_ref() { self.segment().alias() }
+        self
+    }
     pub fn retire(self) {
         if self.is_ref() && self.segment().unalias() == 0 {
-            self.tear_down()
+            self._tear_down()
         }
     }
     pub fn prism(self) -> AnchoredLine { self.segment().line_at(0) }
 
-    pub fn tear_down(self) {
-        let prism = self.prism();
-        let p = prism[0];
-        mechanism::as_dispatch(&p).tear_down(prism);
+    pub fn _tear_down(self) {
+        log!("Handle tearing down 0x{:016X}", self.unit().u());
+        mechanism::tear_down(self.prism())
     }
-
+    pub fn _alias_components(self) {
+        mechanism::alias_components(self.prism())
+    }
     pub fn unaliased(self) -> Handle {
         if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).unaliased(prism).handle()
-        } else { unimplemented!() }
-    }
-
-    pub fn type_sentinel(self) -> *const u8 {
-        if self.is_ref() {
-            let prism = self.logical_value();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).type_sentinel()
+            let seg = self.segment();
+            if seg.is_aliased() {
+                self._alias_components();
+                let s = seg.carbon_copy();
+                self.retire();
+                s.unit().handle()
+            } else {
+                self
+            }
         } else {
-            self.tag() as *const u8
+            self
         }
     }
 
@@ -126,25 +129,19 @@ impl Handle {
 
     pub fn logical_value(self) -> AnchoredLine {
         if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).logical_value(prism)
+            mechanism::logical_value(self.prism())
         } else { unimplemented!() }
     }
 
     pub fn eq(self, other: Handle) -> bool {
-        log!("handle eq");
+        log!("Handle eq");
         if self.unit == other.unit { return true; }
         if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).eq(prism, other.unit)
+            mechanism::eq(self.prism(), other.unit)
         } else if other.is_ref() {
-            let prism = other.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).eq(prism, self.unit)
+            mechanism::eq(other.prism(), self.unit)
         } else {
-            false
+            self.unit == other.unit
         }
     }
 
@@ -165,30 +162,36 @@ impl Handle {
     pub fn hash(self) -> u32 {
         log!("handle hash");
         if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).hash(prism)
+            mechanism::hash(self.prism())
         } else {
             use hash::hash_64;
             hash_64(self.unit.u64(), 8)
         }
     }
 
+    // get back, prism ALine and Interface unit
+    // now can call Interface methods
+    // Or, look in metadata map for ns-qualified symbol, use associated fn
     pub fn meta(self) -> *const Handle {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            let elem = mechanism::as_dispatch(&p).meta(prism);
-            elem as *const Handle
-        } else { unimplemented!() }
+        meta::get_meta(self)
     }
-
-    pub fn with_meta(self, m: Handle) -> Handle {
+    pub fn with_meta(self, m: Handle) -> (Handle, Handle) {
+        meta::with_meta(self, m)
+    }
+    pub fn assoc_meta(self, meta_key: Handle, meta_val: Handle) -> Handle {
+        meta::assoc_meta(self, meta_key, meta_val)
+    }
+    pub fn as_immediate(self) -> Handle {
         if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).with_meta(prism, m.unit()).handle()
-        } else { unimplemented!() }
+            let prism = self.logical_value();
+            if meta::is_prism(prism) {
+                meta::get_imm(prism)
+            } else {
+                Handle::nil()
+            }
+        } else {
+            self
+        }
     }
 
     pub fn invoke1(self, a: Handle) -> Handle {
@@ -217,8 +220,8 @@ impl fmt::Display for Handle {
             } else if self.is_imm_float() {
                 unimplemented!()
             } else if self.is_imm_char() {
-                use character::Character;
-                Character::display(self.unit, f)
+                use character;
+                character::display(self.unit, f)
             } else {
                 unreachable!("Bad handle unit!: 0x{:016X}", self.unit.u())
             }
@@ -228,15 +231,10 @@ impl fmt::Display for Handle {
 
 impl fmt::Debug for Handle {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_ref() {
-            let prism = self.prism();
-            let p = prism[0];
-            mechanism::as_dispatch(&p).debug(prism, f)
-        } else {
-            write!(f, "{}<", self.type_name())?;
-            fmt::Display::fmt(self, f)?;
-            write!(f, ">")
-        }
+        meta::do_print_meta();
+        let res = fmt::Display::fmt(self, f);
+        meta::end_print_meta();
+        res
     }
 }
 
@@ -292,8 +290,14 @@ impl Handle {
         } else { unimplemented!() }
     }
 
-    pub fn assoc(self, k: Handle, v: Handle) -> (Handle, Handle) {
-        log!("handle assoc");
+    pub fn assoc(self, k: Handle, v: Handle) -> Handle {
+        let (c, displaced) = self.assoc_out(k, v);
+        displaced.retire();
+        c
+    }
+
+    pub fn assoc_out(self, k: Handle, v: Handle) -> (Handle, Handle) {
+        log!("handle assoc on {}", self);
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -318,7 +322,13 @@ impl Handle {
             let p = prism[0];
             let v = mechanism::as_dispatch(&p).get(prism, k.unit);
             v as *const Handle
-        } else { unimplemented!() }
+        } else {
+            if self.is_nil() {
+                (& STATIC_NIL) as *const Unit as *const Handle
+            } else {
+                unimplemented!()
+            }
+        }
     }
 
     pub fn nth(self, idx: u32) -> *const Handle {
@@ -346,28 +356,28 @@ impl Handle {
         }
         impl Process for Collect {
             fn ingest   (&mut self, stack: &mut [Box<dyn Process>], v: Value) -> Option<Value> {
-                self.c = self.c.conj(Handle::from(v));
+                self.c = self.c.conj(v._consume());
                 None
             }
             fn ingest_kv(&mut self, stack: &mut [Box<dyn Process>], k: Value, v: Value)
                          -> Option<Value> {
-                let (c, displaced) = self.c.assoc(Handle::from(k), Handle::from(v));
-                displaced.retire();
-                self.c = c;
+                self.c = self.c.assoc(k._consume(), v._consume());
                 None
             }
             fn last_call(&mut self, stack: &mut [Box<dyn Process>]) -> Value { self.c.value() }
         }
-        let stack: Vec<Box<dyn Process>> = vec!(Box::new(Collect { c: sink }));
-        let mut stack2 = xf.apply(stack);
-        Handle::from(self.reduce(&mut stack2))
+        let mut stack = {
+            let stack: Vec<Box<dyn Process>> = vec!(Box::new(Collect { c: sink }));
+            xf.apply(stack)
+        };
+        self.reduce(&mut stack)._consume()
     }
 
     pub fn as_i64(self) -> i64 {
         if self.is_ref() {
-            if let Some(prism) = self.integral_prism() {
-                use integral::Integral;
-                Integral::as_i64(prism)
+            use integral;
+            if let Some(prism) = integral::find_prism(self) {
+                integral::as_i64(prism)
             } else {
                 unimplemented!("Can't turn {} into an integer.", self)
             }
@@ -383,76 +393,71 @@ impl Handle {
 }
 
 impl Handle {
-    pub fn prism_for(self, sentinel: *const u8) -> Option<AnchoredLine> {
+    pub fn find_prism(self, prism_unit: Unit) -> Option<AnchoredLine> {
         if self.is_ref() {
-            let prism = self.logical_value();
-            let p = prism[0];
-            if sentinel == mechanism::as_dispatch(&p).type_sentinel() {
+            let prism = self.prism();
+            if prism[0] == prism_unit {
                 Some(prism)
-            } else { None }
-        } else { None }
+            } else {
+                let prism = self.logical_value();
+                if prism[0] == prism_unit {
+                    Some(prism)
+                } else {
+                    None
+                }
+            }
+        } else {
+            None
+        }
     }
-
-    pub fn integral_prism(self) -> Option<AnchoredLine> {
-        use integral::INTEGRAL_SENTINEL;
-        self.prism_for((& INTEGRAL_SENTINEL) as *const u8)
+    pub fn is_integral(self) -> bool {
+        use integral;
+        integral::is_integral(self)
     }
-    pub fn is_integral(self) -> bool { self.integral_prism().is_some() }
-
-    pub fn string_prism(self) -> Option<AnchoredLine> {
-        use string::STR_SENTINEL;
-        self.prism_for((& STR_SENTINEL) as *const u8)
+    pub fn is_string(self) -> bool {
+        use string;
+        string::is_string(self)
     }
-    pub fn is_string(self) -> bool { self.string_prism().is_some() }
-
-    pub fn symbol_prism(self) -> Option<AnchoredLine> {
-        use symbol::SYMBOL_SENTINEL;
-        self.prism_for((& SYMBOL_SENTINEL) as *const u8)
+    pub fn is_symbol(self) -> bool {
+        use symbol;
+        symbol::is_symbol(self)
     }
-    pub fn is_symbol(self) -> bool { self.symbol_prism().is_some() }
-
-    pub fn list_prism(self) -> Option<AnchoredLine> {
-        use list::LIST_SENTINEL;
-        self.prism_for((& LIST_SENTINEL) as *const u8)
+    pub fn is_list(self) -> bool {
+        use list;
+        list::is_list(self)
     }
-    pub fn is_list(self) -> bool { self.list_prism().is_some() }
-
-    pub fn vector_prism(self) -> Option<AnchoredLine> {
-        use vector::VECTOR_SENTINEL;
-        self.prism_for((& VECTOR_SENTINEL) as *const u8)
+    pub fn is_vector(self) -> bool {
+        use vector;
+        vector::is_vector(self)
     }
-    pub fn is_vector(self) -> bool { self.vector_prism().is_some() }
-
     pub fn is_set(self) -> bool {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            mechanism::as_dispatch(&p).is_set()
+            mechanism::as_dispatch(&p).is_set(prism)
         } else { false }
     }
-
     pub fn is_map(self) -> bool {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            mechanism::as_dispatch(&p).is_map()
+            mechanism::as_dispatch(&p).is_map(prism)
         } else { false }
     }
-
     pub fn is_aggregate(self) -> bool {
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
-            mechanism::as_dispatch(&p).is_aggregate()
+            mechanism::as_dispatch(&p).is_aggregate(prism)
         } else { false }
     }
 }
 
 impl Handle {
     pub fn has_namespace(self) -> bool {
-        if let Some(prism) = self.symbol_prism() {
-            use symbol::Symbol;
-            Symbol::has_namespace(prism)
+        use symbol;
+        if let Some(prism) = symbol::find_prism(self) {
+            symbol::has_namespace(prism)
         } else {
             // keyword
             unimplemented!()
@@ -547,5 +552,12 @@ impl Handle {
     pub fn bitxor(self, rhs: Handle) -> Handle { unimplemented!() }
     pub fn shl(self, rhs: u32) -> Handle { unimplemented!() }
     pub fn shr(self, rhs: u32) -> Handle { unimplemented!() }
+}
+
+impl PartialEq for Handle {
+    fn eq(&self, other: &Handle) -> bool { (*self).eq(*other) }
+}
+impl PartialOrd for Handle {
+    fn partial_cmp(&self, other: &Handle) -> Option<cmp::Ordering> { self.cmp(*other) }
 }
 

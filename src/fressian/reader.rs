@@ -90,7 +90,6 @@ impl PendingStack {
         self.boxes[self.count - 1] = u;
     }
     pub fn resolve(&mut self, bytes: &[u8]) {
-        use string::Str;
         for i in 0..self.count {
             let lab = self.labels[i];
             if lab == Pending::Namespace || lab == Pending::Tagged {
@@ -99,7 +98,8 @@ impl PendingStack {
                     let resolved = {
                         let (start, length) = demediate_both(ns_unit);
                         let b = &bytes[start..(start + length)];
-                        Str::new_from_str(from_utf8(b).unwrap()).unit()
+                        use string;
+                        string::new_from_str(from_utf8(b).unwrap()).unit()
                     };
                     self.boxes[i] = resolved;
                 }

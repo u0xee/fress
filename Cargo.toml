@@ -31,11 +31,12 @@ segment_free = []
 segment_magic = []
 segment_null = []
 segment_unaligned = []
-segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut", "segment_free", "segment_magic", "segment_null", "segment_unaligned"]
+segment_fallow = []
+segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut",
+           "segment_free", "segment_magic", "segment_null", "segment_unaligned", "segment_fallow"]
 
-fuzz_segment_extra_cap = []
-fuzz_segment_random_content = []
+
 fuzz_segment_spurious_aliased = []
-fuzz_segment = ["fuzz_segment_extra_cap", "fuzz_segment_random_content", "fuzz_segment_spurious_aliased"]
+fuzz_segment = ["fuzz_segment_spurious_aliased"]
 
 fuzz = ["fuzz_segment"]

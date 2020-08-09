@@ -8,7 +8,7 @@
 extern crate fress;
 use fress::*;
 use fress::handle::Handle;
-use fress::vector::Vector;
+use fress::vector;
 use fress::memory::segment;
 use fress::transduce::Transducers;
 
@@ -49,18 +49,18 @@ fn m() {
         println!("{}", i % 3);
     }
 
-    use fress::string::Str;
-    let h = Str::new_value_from_str("");
-    let t = Str::new_value_from_str("H");
+    use fress::string;
+    let h = string::new_value_from_str("");
+    let t = string::new_value_from_str("H");
     println!("h == t: {}", h == t);
     println!("h > t: {}", h > t);
     println!("Here's a string: {}", h);
     println!("Here's a hash: 0x{:08X}", h.hash());
 
     let m = {
-        let k = Str::new_value_from_str("cats");
+        let k = string::new_value_from_str("cats");
         let val = Value::from(7);
-        let k2 = Str::new_value_from_str("dogs");
+        let k2 = string::new_value_from_str("dogs");
         let val2 = Value::from(5);
         hash_map().assoc(k, val).assoc(k2, val2)
     };

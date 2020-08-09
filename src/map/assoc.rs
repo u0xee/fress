@@ -179,7 +179,7 @@ pub fn unalias_child(p: Pop, has_vals: u32, c: Segment) -> Segment {
 
 pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
              -> (Guide, Result<AnchoredLine, AnchoredLine>) {
-    let guide = unaliased_root(Guide::hydrate(prism), has_vals);
+    let guide = Guide::hydrate(unaliased(prism, has_vals));
     let p = Pop::from(guide.root[-1]);
     let chunk = hash & MASK;
     if p.has_child(chunk) {
@@ -246,45 +246,6 @@ pub fn assoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
             Segment::free(guide.segment());
             (g, Ok(g.root.offset(root_idx as i32)))
         }
-    }
-}
-
-pub fn unalias_root(guide: Guide, has_vals: u32) -> Guide {
-    let (child_count, key_count) = {
-        let p = Pop::from(guide.root[-1]);
-        (p.child_count(), p.key_count())
-    };
-    let root_units = address(child_count, key_count, has_vals);
-    let g = {
-        let cap = guide.root.index + size(root_units);
-        let s = Segment::new(cap);
-        let mut g = guide;
-        g.prism = guide.prism.with_seg(s);
-        g.reroot()
-    };
-    guide.segment().at(0..(guide.root.index + root_units)).to(g.segment());
-    guide.split_meta();
-    for i in 0..(child_count as i32) {
-        guide.root[1 + (i << 1)].segment().alias();
-    }
-    let kvs = guide.root.offset((child_count << 1) as i32).span(key_count << has_vals);
-    kvs.split();
-    if guide.segment().unalias() == 0 {
-        guide.retire_meta();
-        for i in 0..(child_count as i32) {
-            guide.root[1 + (i << 1)].segment().unalias();
-        }
-        kvs.retire();
-        Segment::free(guide.segment());
-    }
-    g
-}
-
-pub fn unaliased_root(guide: Guide, has_vals: u32) -> Guide {
-    if guide.segment().is_aliased() {
-        unalias_root(guide, has_vals)
-    } else {
-        guide
     }
 }
 

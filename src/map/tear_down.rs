@@ -9,9 +9,8 @@ use super::*;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
 
 pub fn tear_down(prism: AnchoredLine, has_vals: u32) {
-    // segment has 0 aliases
+    assert_eq!(0, prism.segment().anchor().aliases());
     let guide = Guide::hydrate(prism);
-    guide.retire_meta();
     let (child_count, key_count) = {
         let p = Pop::from(guide.root[-1]);
         (p.child_count(), p.key_count())

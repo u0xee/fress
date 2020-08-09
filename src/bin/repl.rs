@@ -14,13 +14,19 @@ use fress::edn::reader::EdnRdr;
 
 fn n() {
     let mut reader = EdnRdr::with_buffer_capacity(1 << 10);
+    let stop_cmd = fress::read(":repl/quit ").unwrap();
     println!("Ready!");
+    //println!("Ready! stop_cmd 0x{:016X}", stop_cmd._handle().unit().u());
+    //println!("Here is stop_cmd {}", stop_cmd);
     loop {
         //io::stdout().flush().ok().expect("Could not flush stdout.");
         let v = read_one_stdin(&mut reader);
-        // TODO if :repl/quit, stop
-        let result = eval::eval(v);
-        println!("■■  {}   ", result);
+        if v == stop_cmd {
+            return;
+        }
+        //let result = eval::eval(v);
+        //let result = v;
+        //println!("■■  {}   ", result);
     }
 }
 
@@ -31,7 +37,7 @@ fn read_one_stdin(reader: &mut EdnRdr) -> Value {
             None => {
                 use std::io::{self, Read};
                 let n = io::stdin().read(reader.buffer_wilderness()).unwrap();
-                if n == 0 { panic!("End of file reached."); }
+                if n == 0 { panic!("End of input reached."); }
                 reader.buffer_consume(n);
                 /*use std::str;
                 let x = str::from_utf8(reader.buf.as_slice()).unwrap();

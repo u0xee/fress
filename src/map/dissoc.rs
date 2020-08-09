@@ -6,7 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
-use super::assoc::{unaliased_root, unalias_child, address, chunk_at};
+use super::assoc::{unalias_child, address, chunk_at};
 
 pub fn child_dissoc(guide: Guide, root_child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Guide {
     let mut child_stack = [root_child_pop; 8];
@@ -152,7 +152,7 @@ pub fn merge_child(parent_pop: AnchoredLine, child_pop: AnchoredLine,
 }
 
 pub fn dissoc(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Guide {
-    let guide = unaliased_root(Guide::hydrate(prism), has_vals);
+    let guide = Guide::hydrate(unaliased(prism, has_vals));
     let p = Pop::from(guide.root[-1]);
     let chunk = hash & MASK;
     if p.has_child(chunk) {

@@ -8,9 +8,8 @@
 use super::*;
 
 pub fn tear_down(prism: AnchoredLine) {
-    // segment has 0 aliases
+    assert_eq!(0, prism.segment().anchor().aliases());
     let guide = Guide::hydrate(prism);
-    guide.retire_meta();
     if guide.count <= TAIL_CAP {
         guide.root.span(guide.count).retire();
         Segment::free(guide.segment());

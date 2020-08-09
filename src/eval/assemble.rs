@@ -41,9 +41,11 @@ pub fn wasm_module(ctx: &Context) -> Vec<u8> {
         append_data_section(&mut buf, &ctx.constant_data);
         buf
     };
-    // TODO also return table and memory space required
-    // or store in custom section
     module
+}
+
+pub fn mem_and_table_needs(ctx: &Context) -> (u32, u32) {
+    (ctx.constant_data.len() as u32, ctx.vtable.count())
 }
 
 pub fn append_section(buf: &mut Vec<u8>, sec_id: u8, sec: &[u8]) {
@@ -82,6 +84,7 @@ pub fn signatures(ctx: &Context) -> (Value, Vec<u32>, Vec<u32>) {
         let mut ids: Vec<u32> = vec![];
         let declare_ct = ctx.funcs.len();
         for i in 0..declare_ct {
+            // TODO instead use local_slots and argc
             let argc = ctx.funcs.get(i).unwrap().argc;
             let s = argc_to_wasm_signature(argc);
             let idx = sig_map.get(&s).split_out();
@@ -129,7 +132,6 @@ pub fn signature_section(sigs: &Value) -> Vec<u8> {
     let type_map = read("{i32 0x7F, i64 0x7E, f32 0x7D, f64 0x7C}").unwrap();
     let mut buf: Vec<u8> = vec![];
     let sig_ct = sigs.count();
-    println!("Signatures:");
     wasm::uleb128(&mut buf, sig_ct as u64);
     for i in 0..sig_ct {
         let s = sigs.nth(i);
@@ -188,7 +190,7 @@ pub fn import_section(ctx: &Context, sigs: Vec<u32>) -> Vec<u8> {
         buf.push(wasm::Type::GLOBAL_CONST);
     }
     {
-        let name_key = read(":name").unwrap();
+        let name_key = read(":name ").unwrap();
         let import_ct = ctx.import_v.count();
         for i in 0..import_ct {
             let name = ctx.import_v.nth(i).get(&name_key);
@@ -207,9 +209,9 @@ pub fn name_pair_to_buf(buf: &mut Vec<u8>, name_pair: &Value) {
 }
 
 pub fn name_to_buf(buf: &mut Vec<u8>, name: &Value) {
-    use string::byte_slice;
-    let string_p = name.handle.string_prism().unwrap();
-    let bytes = byte_slice(&string_p);
+    use string;
+    let prism = string::find_prism(name._handle()).unwrap();
+    let bytes = string::byte_slice(&prism);
     wasm::uleb128(buf, bytes.len() as u64);
     buf.extend_from_slice(bytes);
 }
@@ -285,10 +287,12 @@ pub fn code_section(ctx: &Context) -> Vec<u8> {
 
 pub fn local_declaration(f: &Func) -> Vec<u8> {
     let mut buf: Vec<u8> = vec![];
+    // TODO if no locals, run_ct should be 0
+    // use f.local_slots && f.argc to get locals (not args) array
+    // chop into runs
     let run_ct = 1u8;
     buf.push(run_ct);
-    let local_ct = f.localc;
-    // TODO if no locals, run_ct should be 0
+    let local_ct = 0;
     buf.push(local_ct as u8);
     buf.push(wasm::Type::I32); // single run of i32s
     buf

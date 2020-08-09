@@ -11,6 +11,7 @@ use dispatch::*;
 use value::*;
 use handle::Handle;
 use transduce::Process;
+use std::cmp::Ordering;
 
 use vector;
 use vector::{BITS, TAIL_CAP, MASK};
@@ -18,52 +19,38 @@ use vector::util::{tailoff, root_content_count, digit_count, size};
 use vector::guide::Guide;
 pub mod reduce;
 
-pub static LIST_SENTINEL: u8 = 0;
+pub struct List_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<List_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_list(h: Handle) -> bool { find_prism(h).is_some() }
 
-pub struct List { }
-
-impl List {
-    pub fn new() -> Unit {
-        log!("list new");
-        let guide = {
-            let cap = 1 /*prism*/ + Guide::units() + size(1);
-            let s = Segment::new(cap);
-            let prism = s.line_at(0);
-            prism.set(0, mechanism::prism::<List>());
-            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
-            g.is_compact_bit = 0x1;
-            g
-        };
-        guide.store().segment().unit()
-    }
-
-    pub fn new_value() -> Value { List::new().handle().value() }
+pub fn new() -> Unit {
+    log!("List new");
+    let s = vector::new().segment();
+    s.set(0, prism_unit());
+    s.unit()
 }
+pub fn new_value() -> Value { new().handle().value() }
 
-impl Dispatch for List {
+impl Dispatch for List_ {
     fn tear_down(&self, prism: AnchoredLine) {
-        group!("list tear down");
+        group!("List tear down");
         vector::tear_down::tear_down(prism);
         group_end!();
     }
-
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        vector::conj::unaliased_root(Guide::hydrate(prism)).segment().unit()
-    }
+    fn alias_components(&self, prism: AnchoredLine) { vector::alias_components(prism); }
 }
-
-impl Identification for List {
+impl Identification for List_ {
     fn type_name(&self) -> &'static str { "List" }
-    fn type_sentinel(&self) -> *const u8 { (& LIST_SENTINEL) as *const u8 }
 }
-
-impl Distinguish for List {
+impl Distinguish for List_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() {
             return guide.hash;
         }
-        group!("list hash");
+        group!("List hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
@@ -81,73 +68,52 @@ impl Distinguish for List {
             }
         }
 
-        let mut y = cycle_abc(7, PI[321] + guide.count as u64);
+        let mut y = cycle_abc(7, PI[321].wrapping_add(guide.count as u64));
         let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
         let h = cycle_abc(210, y) as u32;
-        log!("hash of list {:#08X}", h);
+        log!("Hash of list: {:#08X}", h);
         group_end!();
         guide.set_hash(h).store_hash().hash
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.is_ref() {
-            let o_prism = o.logical_value();
-            if prism[0] == o_prism[0] {
-                group!("list eq");
-                let res = vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism));
-                group_end!();
-                res
-            } else {
-                use vector::VECTOR_SENTINEL;
-                let p = o_prism[0];
-                if mechanism::as_dispatch(&p).type_sentinel() == (& VECTOR_SENTINEL) as *const u8 {
-                    unimplemented!()
-                } else {
-                    false
-                }
-            }
-        } else {
-            false
+        if let Some(l_prism) = find_prism(o) {
+            group!("List eq");
+            let res = vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(l_prism));
+            group_end!();
+            return res
         }
+        if vector::is_vector(o) {
+            return o.eq(prism.segment().unit().handle())
+        }
+        false
+    }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
+        unimplemented!()
     }
 }
-
-impl Aggregate for List {
-    fn is_aggregate(&self) -> bool { true }
+impl Aggregate for List_ {
+    fn is_aggregate(&self, prism: AnchoredLine) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
     }
-    fn empty(&self, prism: AnchoredLine) -> Unit {
-        List::new()
-    }
+    fn empty(&self, prism: AnchoredLine) -> Unit { new() }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        group!("list conj");
+        group!("List conj");
         let res = vector::conj::conj(prism, x);
         group_end!();
         res
     }
-    fn meta(&self, prism: AnchoredLine) -> *const Unit {
-        vector::meta::meta(prism)
-    }
-    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit {
-        vector::meta::with_meta(prism, m)
-    }
-    fn peek(&self, prism: AnchoredLine) -> *const Unit {
-        self.nth(prism, 0)
-    }
-    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) {
-        vector::pop::pop(prism)
-    }
+    fn peek(&self, prism: AnchoredLine) -> *const Unit { self.nth(prism, 0) }
+    fn pop(&self, prism: AnchoredLine) -> (Unit, Unit) { vector::pop::pop(prism) }
     fn reduce(&self, prism: AnchoredLine, process: &mut [Box<dyn Process>]) -> Value {
         reduce::reduce(prism, process)
     }
 }
-
-impl Sequential for List {
-    fn is_sequential(&self) -> bool { true }
+impl Sequential for List_ {
+    fn is_sequential(&self, prism: AnchoredLine) -> bool { true }
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit {
         let guide = Guide::hydrate(prism);
         if idx >= guide.count {
@@ -156,22 +122,20 @@ impl Sequential for List {
         vector::nth::nth(prism, guide.count - 1 - idx).line().star()
     }
 }
-
-impl Associative for List {
+impl Associative for List_ {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let guide = Guide::hydrate(prism);
         let idx = k.handle().as_i64();
         k.handle().retire();
-        if idx < 0 || (idx as u32) >= guide.count {
+        if idx < 0 || (idx as u32) > guide.count {
             panic!("Index out of bounds: {} in list of count {}", idx, guide.count);
         }
         vector::assoc::assoc(prism, guide.count - 1 - (idx as u32), v)
     }
 }
-
-impl Reversible for List {}
-impl Sorted for List {}
-impl Notation for List {
+impl Reversible for List_ { }
+impl Sorted for List_ { }
+impl Notation for List_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         struct Printer {
             pub is_first: bool,
@@ -205,9 +169,8 @@ impl Notation for List {
         write!(f, ")")
     }
 }
-
-impl Numeral for List {}
-impl Callable for List {}
+impl Numeral for List_ {}
+impl Callable for List_ {}
 
 #[cfg(test)]
 mod tests {

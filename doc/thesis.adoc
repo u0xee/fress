@@ -1,6 +1,6 @@
-= A Library of Values: Persistent Data Structures using Explicit Aliasing
+= A Library of Values[.subtitle]##: _Persistent Data Structures using Explicit Aliasing_ ##
 Cole Frederick
-v0.7
+v0.8
 
 Persistent data structures _are the crux of_ functional programming.
 We find here a rich history; and an opportunity to apply it.
@@ -319,21 +319,33 @@ image::vector-grow4.svg[vector,width=90%,align="center"]
 [glossary]
 include::glossary.adoc[]
 
+// Reader
+// Hashing
+// Memory Subsystem
+// WebAssembly
+// Fressian
+// Garbage collection
+// Trees
+// Aggregates
+
 == Thanks
 * Adele Howe
 * Michelle Strout
 
 .Using callouts in code
-[source,clojure]
+[.live]
 ----
-(defn say-hello
-  [name] <1>
-  (let [x (str "Hello, " name)] <2>
-    (println x))) <3>
+(defn hello
+  [name]
+  (let [x (str "Jello, " name)]
+    (println x)))
 ----
-<1> Accepts a single param
-<2> Compute the string
-<3> Print it
+
+[.live]
+----
+(let [a 7 b (conj [] a)] {a b})
+----
+
 
 [appendix]
 include::topic/big-O.adoc[]
@@ -342,9 +354,11 @@ include::topic/big-O.adoc[]
 include::topic/quadratic-residue.adoc[]
 
 
+link:notes.html#xyz[My notes practice link.]
 ////
 == Templates
 Learn more about `Value` in the link:/fress/value[rustdoc].
+link:thesis[My thesis]
 How does [.caps]#Clojure# actually work?
 Can it read an [.caps]#svg# easily?
 <<simple>> is a great section, & a citation to the bibliography <<Ackerman-Thesis>>.

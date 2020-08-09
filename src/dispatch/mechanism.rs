@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 use super::*;
+use handle::Handle;
 use std::mem::transmute;
 
 pub fn prism<T: Dispatch>() -> Unit {
@@ -24,3 +25,29 @@ pub fn as_dispatch<'a>(prism: &'a Unit) -> &'a dyn Dispatch {
         transmute::<[Unit; 2], &dyn Dispatch>(ptr_and_table)
     }
 }
+
+pub fn eq(prism: AnchoredLine, other: Unit) -> bool {
+    let p = prism[0];
+    as_dispatch(&p).eq(prism, other)
+}
+
+pub fn logical_value(prism: AnchoredLine) -> AnchoredLine {
+    let p = prism[0];
+    mechanism::as_dispatch(&p).logical_value(prism)
+}
+
+pub fn tear_down(prism: AnchoredLine) {
+    let p = prism[0];
+    mechanism::as_dispatch(&p).tear_down(prism);
+}
+
+pub fn alias_components(prism: AnchoredLine) {
+    let p = prism[0];
+    mechanism::as_dispatch(&p).alias_components(prism);
+}
+
+pub fn hash(prism: AnchoredLine) -> u32 {
+    let p = prism[0];
+    mechanism::as_dispatch(&p).hash(prism)
+}
+

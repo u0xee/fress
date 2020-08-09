@@ -46,6 +46,7 @@ Click on the map to jump to sections like:
 * 1983 <<MacLennan-OO>>
 * 1991 <<SELF>>
 * 1997 <<Squeak>>
+* 2020 <<Hickey-History>>
 
 === Complexity
 * 1972 <<Parnas-Modules>>

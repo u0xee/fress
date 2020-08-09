@@ -18,10 +18,8 @@ use transduce::Process;
 pub mod guide;
 use self::guide::Guide;
 pub mod conj;
-use self::conj::unaliased_root;
 pub mod pop;
 pub mod nth;
-pub mod meta;
 pub mod assoc;
 pub mod eq;
 pub mod tear_down;
@@ -38,52 +36,73 @@ pub const ARITY: u32 = 1 << BITS;
 pub const TAIL_CAP: u32 = ARITY;
 pub const MASK: u32 = ARITY - 1;
 
-pub static VECTOR_SENTINEL: u8 = 0;
-
 /// Vector dispatch.
-pub struct Vector { }
+pub struct Vector_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Vector_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_vector(h: Handle) -> bool { find_prism(h).is_some() }
 
-impl Vector {
-    pub fn new() -> Unit {
-        log!("vector new");
-        let guide = {
-            let cap = 1 /*prism*/ + Guide::units() + size(1);
-            let s = Segment::new(cap);
-            let prism = s.line_at(0);
-            prism.set(0, mechanism::prism::<Vector>());
-            let mut g = Guide::hydrate_top_bot(prism, 0, 0);
-            g.is_compact_bit = 0x1;
-            g
-        };
-        guide.store().segment().unit()
+pub fn new() -> Unit {
+    log!("Vector new");
+    let guide = {
+        let cap = 1 /*prism*/ + Guide::units() + size(1);
+        let s = Segment::new(cap);
+        let prism = s.line_at(0);
+        prism.set(0, prism_unit());
+        let mut g = Guide::hydrate_top_bot(prism, 0, 0);
+        g.is_compact_bit = 0x1;
+        g
+    };
+    guide.store().segment().unit()
+}
+pub fn new_value() -> Value { new().handle().value() }
+
+pub fn alias_components(prism: AnchoredLine) {
+    let guide = Guide::hydrate(prism);
+    if guide.count <= TAIL_CAP {
+        guide.root.span(guide.count).split()
+    } else {
+        let root_count = root_content_count(tailoff(guide.count));
+        let tail_and_roots = guide.root.offset(-1).span(root_count + 1);
+        tail_and_roots.split()
     }
-
-    pub fn new_value() -> Value { Vector::new().handle().value() }
+}
+pub fn unaliased(prism: AnchoredLine) -> AnchoredLine {
+    let seg = prism.segment();
+    if seg.is_aliased() {
+        if prism.index() == 0 {
+            alias_components(prism);
+        } else {
+            seg.unit().handle()._alias_components();
+        }
+        let s = seg.carbon_copy();
+        let p = prism.with_seg(s);
+        seg.unit().handle().retire();
+        p
+    } else {
+        prism
+    }
 }
 
-impl Dispatch for Vector {
+impl Dispatch for Vector_ {
     fn tear_down(&self, prism: AnchoredLine) {
-        group!("vector tear down");
+        group!("Vector tear_down");
         tear_down::tear_down(prism);
         group_end!();
     }
-    fn unaliased(&self, prism: AnchoredLine) -> Unit {
-        unaliased_root(Guide::hydrate(prism)).segment().unit()
-    }
+    fn alias_components(&self, prism: AnchoredLine) { alias_components(prism); }
 }
-
-impl Identification for Vector {
+impl Identification for Vector_ {
     fn type_name(&self) -> &'static str { "Vector" }
-    fn type_sentinel(&self) -> *const u8 { (& VECTOR_SENTINEL) as *const u8 }
 }
-
-impl Distinguish for Vector {
+impl Distinguish for Vector_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         if guide.has_hash() {
             return guide.hash;
         }
-        group!("vector hash");
+        group!("Vector hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
@@ -99,59 +118,78 @@ impl Distinguish for Vector {
             fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value { Handle::nil().value() }
         }
 
-        let mut y = cycle_abc(7, PI[321] + guide.count as u64);
+        let mut y = cycle_abc(7, PI[321].wrapping_add(guide.count as u64));
         let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
         let h = cycle_abc(210, y) as u32;
-        log!("hash of vector {:#08X}", h);
+        log!("Hash of vector: {:#08X}", h);
         group_end!();
         guide.set_hash(h).store_hash().hash
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.is_ref() {
-            let o_prism = o.logical_value();
-            if prism[0] == o_prism[0] {
-                group!("vector eq");
-                let res = eq::eq(Guide::hydrate(prism), Guide::hydrate(o_prism));
-                group_end!();
-                res
-            } else {
-                use list::LIST_SENTINEL;
-                let p = o_prism[0];
-                if mechanism::as_dispatch(&p).type_sentinel() == (& LIST_SENTINEL) as *const u8 {
-                    unimplemented!()
-                } else {
-                    false
+        if let Some(v_prism) = find_prism(o) {
+            group!("Vector eq");
+            let res = eq::eq(Guide::hydrate(prism), Guide::hydrate(v_prism));
+            group_end!();
+            return res
+        }
+        use list;
+        if let Some(l_prism) = list::find_prism(o) {
+            let ct = {
+                let ct = Guide::hydrate(prism).count;
+                if Guide::hydrate(l_prism).count != ct {
+                    return false
+                }
+                ct
+            };
+            for i in 0..ct {
+                let x = nth::nth(prism, i)[0];
+                let y = nth::nth(l_prism, ct - 1 - i)[0];
+                if x.handle() != y.handle() { return false }
+            }
+            return true
+        }
+        false
+    }
+    fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
+        let o = other.handle();
+        if let Some(v_prism) = find_prism(o) {
+            let ct = Guide::hydrate(prism).count;
+            let v_ct = Guide::hydrate(v_prism).count;
+            let cmp_ct = ct.min(v_ct);
+            for i in 0..cmp_ct {
+                let x = nth::nth(prism, i)[0];
+                let y = nth::nth(v_prism, i)[0];
+                let res = x.handle().cmp(y.handle());
+                match res {
+                    Some(Ordering::Equal) => { },
+                    _ => { return res },
                 }
             }
+            return Some(ct.cmp(&v_ct))
+        }
+        if o.is_ref() {
+            let o_prism_unit = o.logical_value()[0];
+            Some(prism_unit().cmp(&o_prism_unit))
         } else {
-            false
+            Some(Ordering::Greater)
         }
     }
-
-    fn cmp(&self, _prism: AnchoredLine, _other: Unit) -> Option<Ordering> {
-        // cast other to vector, compare pairwise
-        unimplemented!("Vector compare")
-    }
 }
-
-impl Aggregate for Vector {
-    fn is_aggregate(&self) -> bool { true }
+impl Aggregate for Vector_ {
+    fn is_aggregate(&self, prism: AnchoredLine) -> bool { true }
     fn count(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
         guide.count
     }
-    fn empty(&self, _prism: AnchoredLine) -> Unit { Vector::new() }
+    fn empty(&self, _prism: AnchoredLine) -> Unit { new() }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        group!("vector conj");
+        group!("Vector conj");
         let res = conj::conj(prism, x);
         group_end!();
         res
     }
-    fn meta(&self, prism: AnchoredLine) -> *const Unit { meta::meta(prism) }
-    fn with_meta(&self, prism: AnchoredLine, m: Unit) -> Unit { meta::with_meta(prism, m) }
     fn peek(&self, prism: AnchoredLine) -> *const Unit {
         let guide = Guide::hydrate(prism);
         self.nth(prism, guide.count - 1)
@@ -161,29 +199,26 @@ impl Aggregate for Vector {
         reduce::reduce(prism, process)
     }
 }
-
-impl Sequential for Vector {
-    fn is_sequential(&self) -> bool { true }
+impl Sequential for Vector_ {
+    fn is_sequential(&self, prism: AnchoredLine) -> bool { true }
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit {
         nth::nth(prism, idx).line().star()
     }
 }
-
-impl Associative for Vector {
+impl Associative for Vector_ {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let guide = Guide::hydrate(prism);
         let idx = k.handle().as_i64();
-        k.handle().retire();
-        if idx < 0 || (idx as u32) >= guide.count {
+        if idx < 0 || (idx as u32) > guide.count {
             panic!("Index out of bounds: {} in vector of count {}", idx, guide.count);
         }
+        k.handle().retire();
         assoc::assoc(prism, idx as u32, v)
     }
 }
-
-impl Reversible for Vector {}
-impl Sorted for Vector {}
-impl Notation for Vector {
+impl Reversible for Vector_ {}
+impl Sorted for Vector_ {}
+impl Notation for Vector_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
         // conversion to and from &Formatter
         // factor out Printer parts
@@ -191,14 +226,12 @@ impl Notation for Vector {
             pub is_first: bool,
             pub f: usize,
         }
-
         impl Printer {
             pub fn new(f: &mut fmt::Formatter) -> Printer {
                 use std::mem::transmute;
                 unsafe { Printer { is_first: true, f: transmute::<& fmt::Formatter, usize>(f) } }
             }
         }
-
         impl Process for Printer {
             fn inges(&mut self, _stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
                 use std::mem::transmute;
@@ -219,12 +252,11 @@ impl Notation for Vector {
         write!(f, "]")
     }
 }
-
-impl Numeral for Vector {}
-impl Callable for Vector {}
+impl Numeral for Vector_ {}
+impl Callable for Vector_ {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
 }
+

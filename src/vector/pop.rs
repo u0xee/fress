@@ -9,7 +9,7 @@ use super::*;
 use super::conj::*;
 
 pub fn pop(prism: AnchoredLine) -> (Unit, Unit) {
-    let guide = unaliased_root(Guide::hydrate(prism));
+    let guide = Guide::hydrate(unaliased(prism));
     if guide.count <= TAIL_CAP {
         pop_untailed(guide)
     } else {

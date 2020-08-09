@@ -6,126 +6,87 @@
 // You must not remove this notice, or any other, from this software.
 
 use std::fmt;
+use std::cmp::Ordering;
 use memory::*;
 use dispatch::*;
 use handle::Handle;
+use integral;
+use std::fmt::Debug;
 
-pub static RATIONAL_SENTINEL: u8 = 0;
+pub struct Rational_ { }
+pub fn prism_unit() -> Unit { mechanism::prism::<Rational_>() }
+pub fn is_prism(prism: AnchoredLine) -> bool { prism[0] == prism_unit() }
+pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()) }
+pub fn is_rational(h: Handle) -> bool { find_prism(h).is_some() }
 
-pub struct Rational { }
-
-impl Rational {
-    pub fn new(top: i64, bot: i64) -> Unit {
-        // A | P T B
-        let s = Segment::new(if cfg!(target_pointer_width = "32") { 5 } else { 3 });
-        s.set(0, mechanism::prism::<Rational>());
-        store(s.line_at(0), top);
-        let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
-        store(s.line_at(next), bot);
-        s.unit()
-    }
-
-    pub fn is_instance(h: Handle) -> bool {
-        h.is_ref() && h.type_sentinel() == (& RATIONAL_SENTINEL) as *const u8
-    }
-
-    pub fn parse(negate: bool, top: &[u8], bot: &[u8]) -> Handle {
-        let mut x = 0i64;
-        for b in top.iter() {
-            if *b == b'_' {
-                continue
-            }
-            x = x * 10 + (*b - b'0') as i64;
+pub fn new(top: Handle, bot: Handle) -> Handle {
+    assert!(integral::is_integral(top));
+    assert!(integral::is_integral(bot));
+    let s = Segment::new(3 /*prism numerator denominator*/);
+    s.set(0, prism_unit());
+    s.set(1, top.unit());
+    s.set(2, bot.unit());
+    s.unit().handle()
+}
+pub fn new_from_i64(top: i64, bot: i64) -> Handle {
+    new(integral::new(top).handle(), integral::new(bot).handle())
+}
+pub fn parse(negate: bool, top: &[u8], bot: &[u8]) -> Handle {
+    let mut x = 0i64;
+    for b in top.iter() {
+        if *b == b'_' {
+            continue
         }
-        let mut y = 0i64;
-        for b in bot.iter() {
-            if *b == b'_' {
-                continue
-            }
-            y = y * 10 + (*b - b'0') as i64;
+        x = x * 10 + (*b - b'0') as i64;
+    }
+    let mut y = 0i64;
+    for b in bot.iter() {
+        if *b == b'_' {
+            continue
         }
-        if negate { x = -x; }
-        Rational::new(x, y).handle()
+        y = y * 10 + (*b - b'0') as i64;
     }
+    if negate { x = -x; }
+    new_from_i64(x, y)
 }
 
-pub fn store(prism: AnchoredLine, x: i64) {
-    if cfg!(target_pointer_width = "32") {
-        prism.set(1, Unit::from(x as i32));
-        prism.set(2, Unit::from((x >> 32) as i32));
-    } else {
-        prism.set(1, Unit::from(x));
-    }
-}
-
-pub fn hydrate(prism: AnchoredLine) -> i64 {
-    if cfg!(target_pointer_width = "32") {
-        let low: u32 = prism[1].into();
-        let hi: u32 = prism[2].into();
-        let res = ((hi as u64) << 32) | (low as u64);
-        res as i64
-    } else {
-        prism[1].into()
-    }
-}
-
-impl Dispatch for Rational {
-    fn tear_down(&self, prism: AnchoredLine) {
-        // segment has 0 aliases
-        Segment::free(prism.segment())
-    }
-}
-
-impl Identification for Rational {
+impl Dispatch for Rational_ { }
+impl Identification for Rational_ {
     fn type_name(&self) -> &'static str { "Rational" }
-    fn type_sentinel(&self) -> *const u8 { (& RATIONAL_SENTINEL) as *const u8 }
 }
-
-//use std::cmp::Ordering;
-impl Distinguish for Rational {
+impl Distinguish for Rational_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
-        let x = hydrate(prism) as u64;
-        let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
-        let y = hydrate(prism.offset(next)) as u64;
-        use hash::hash_128;
-        hash_128(x, y, 16)
+        use random::{PI, cycle_abc};
+        let x = cycle_abc(75, PI[212].wrapping_add(prism[1].handle().hash() as u64));
+        let z = cycle_abc(57, x.wrapping_add(prism[2].handle().hash() as u64));
+        z as u32
     }
-
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
-        if o.type_sentinel() == (& RATIONAL_SENTINEL) as *const u8 {
-            let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
-            let x =  hydrate(prism);
-            let y =  hydrate(prism.offset(next));
-            let oprism = o.prism();
-            let ox = hydrate(oprism);
-            let oy = hydrate(oprism.offset(next));
-            return x == ox && y == oy
+        if let Some(o_rat) = find_prism(o) {
+            prism[1].handle() == o_rat[1].handle() &&
+                prism[2].handle() == o_rat[2].handle()
+        } else {
+            false
         }
-        false
     }
 }
 
-impl Aggregate for Rational { }
-
-impl Sequential for Rational { }
-
-impl Associative for Rational { }
-
-impl Reversible for Rational {}
-impl Sorted for Rational {}
-
-impl Notation for Rational {
+impl Aggregate for Rational_ { }
+impl Sequential for Rational_ { }
+impl Associative for Rational_ { }
+impl Reversible for Rational_ {}
+impl Sorted for Rational_ {}
+impl Notation for Rational_ {
     fn edn(&self, prism: AnchoredLine, f: &mut fmt::Formatter) -> fmt::Result {
-        let next = if cfg!(target_pointer_width = "32") { 2 } else { 1 };
-        let x =  hydrate(prism);
-        let y =  hydrate(prism.offset(next));
-        write!(f, "{}/{}", x, y)
+        // write!(f, "{}/{}", prism[1].handle(), prism[2].handle()) // equivalent?
+        prism[1].handle().fmt(f)?;
+        write!(f, "/")?;
+        prism[2].handle().fmt(f)
     }
 }
-
-impl Numeral for Rational { }
-impl Callable for Rational { }
+impl Numeral for Rational_ { }
+impl Callable for Rational_ { }
 
 #[cfg(test)]
 mod tests {

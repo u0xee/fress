@@ -33,7 +33,7 @@ pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()
 pub fn is_integral(h: Handle) -> bool { find_prism(h).is_some() }
 
 pub fn new(x: i64) -> Unit {
-    log!("New integral, {}", x);
+    //log!("New integral, {}", x);
     let guide = blank();
     store(guide.root, x);
     guide.store().segment().unit()
@@ -144,13 +144,13 @@ impl Distinguish for Integral_ {
             let x = hydrate(guide.root) as u64;
             hash_64(x, 8)
         };
-        log!("Hash integral {} {:#08X}", prism.segment().unit().handle(), h);
+        //log!("Hash integral {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(o_int) = find_prism(o) {
-            log!("Integral eq");
+            //log!("Integral eq");
             let guide = Guide::hydrate(prism);
             let guide2 = Guide::hydrate(o_int);
             let x = hydrate(guide.root);
@@ -162,7 +162,7 @@ impl Distinguish for Integral_ {
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if let Some(o_int) = find_prism(o) {
-            log!("Integral cmp");
+            //log!("Integral cmp");
             let guide = Guide::hydrate(prism);
             let guide2 = Guide::hydrate(o_int);
             let x = hydrate(guide.root);
@@ -193,7 +193,7 @@ impl Numeral for Integral_ {
     fn inc(&self, prism: AnchoredLine) -> Unit {
         let guide = Guide::hydrate(prism);
         let x = hydrate(guide.root);
-        log!("integral inc, {}", x);
+        //log!("integral inc, {}", x);
         let s = guide.segment();
         if s.is_aliased() {
             if s.unalias() == 0 {

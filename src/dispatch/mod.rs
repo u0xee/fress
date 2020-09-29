@@ -30,7 +30,7 @@ Callable {
     fn tear_down(&self, prism: AnchoredLine) {
         let seg = prism.segment();
         assert_eq!(0, seg.anchor().aliases());
-        log!("Tearing down {} {}", self.type_name(), seg.unit().handle());
+        //log!("Tearing down {} {}", self.type_name(), seg.unit().handle());
         Segment::free(seg);
     }
     fn alias_components(&self, prism: AnchoredLine) { return; }

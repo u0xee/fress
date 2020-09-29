@@ -24,6 +24,8 @@
 // array definitions
 // header, like string/symbol etc, and pointer to primitive typed buffer
 // byte array to base64
+// printing arrays nicely
+// TODO look at R arrays and other data types
 
 // heap sort, merge sort, quick sort
 pub struct BigIntegral {}
@@ -36,5 +38,14 @@ pub struct Matrix {}
 
 pub fn multiply(a: Matrix, b: Matrix) -> Matrix {
     unimplemented!()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn it_works() {
+        assert_eq!(2 + 2, 4);
+    }
 }
 

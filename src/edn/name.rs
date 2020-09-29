@@ -69,7 +69,7 @@ pub fn parse_symbol_keyword(s: &[u8], default: Option<&[u8]>) -> Result<Handle, 
         solidus
     } else { 0 };
     if s[0] == b':' {
-        log!("parsing keyword {}", from_utf8(s).unwrap());
+        //log!("parsing keyword {}", from_utf8(s).unwrap());
         if !valid_name_start(&s[1..]) {
             return Err(format!("Keyword has invalid starting characters ({})",
                                from_utf8(s).unwrap()))
@@ -85,7 +85,7 @@ pub fn parse_symbol_keyword(s: &[u8], default: Option<&[u8]>) -> Result<Handle, 
         }
         return Ok(keyword::new(s, solidus as u32).handle())
     } else {
-        log!("parsing symbol {}", from_utf8(s).unwrap());
+        //log!("parsing symbol {}", from_utf8(s).unwrap());
         if s.len() < 6 {
             if s == b"nil"   { return Ok(Handle::nil()) }
             if s == b"true"  { return Ok(Handle::tru()) }

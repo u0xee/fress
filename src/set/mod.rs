@@ -26,7 +26,7 @@ pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()
 pub fn is_set(h: Handle) -> bool { find_prism(h).is_some() }
 
 pub fn new() -> Unit {
-    log!("set new");
+    //log!("set new");
     let s = map::new().segment();
     s.set(0, prism_unit());
     s.unit()
@@ -35,9 +35,9 @@ pub fn new_value() -> Value { new().handle().value() }
 
 impl Dispatch for Set_ {
     fn tear_down(&self, prism: AnchoredLine) {
-        group!("Set tear down");
+        //group!("Set tear down");
         map::tear_down::tear_down(prism, 0);
-        group_end!();
+        //group_end!();
     }
     fn alias_components(&self, prism: AnchoredLine) { map::alias_components(prism, 0); }
 }
@@ -50,7 +50,7 @@ impl Distinguish for Set_ {
         if guide.has_hash() {
             return guide.hash;
         }
-        group!("Set hash");
+        //group!("Set hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
@@ -73,16 +73,16 @@ impl Distinguish for Set_ {
         let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = map::reduce::reduce(prism, &mut procs, 0);
         let h = cycle_abc(27, y) as u32;
-        log!("Hash of set {:#08X}", h);
-        group_end!();
+        //log!("Hash of set {:#08X}", h);
+        //group_end!();
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(s_prism) = find_prism(o) {
-            group!("Set eq");
+            //group!("Set eq");
             let res = map::eq::eq(Guide::hydrate(prism), Guide::hydrate(s_prism), 0);
-            group_end!();
+            //group_end!();
             return res
         }
         false
@@ -99,9 +99,9 @@ impl Aggregate for Set_ {
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
         let k = x;
         let h = k.handle().hash();
-        group!("set conj");
+        //group!("set conj");
         let (g, key_slot) = map::assoc::assoc(prism, k, h, 0);
-        group_end!();
+        //group_end!();
         match key_slot {
             Ok(new_slot) => {
                 new_slot.set(0, k);

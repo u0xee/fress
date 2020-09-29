@@ -90,7 +90,7 @@ impl Handle {
     pub fn prism(self) -> AnchoredLine { self.segment().line_at(0) }
 
     pub fn _tear_down(self) {
-        log!("Handle tearing down 0x{:016X}", self.unit().u());
+        //log!("Handle tearing down 0x{:016X}", self.unit().u());
         mechanism::tear_down(self.prism())
     }
     pub fn _alias_components(self) {
@@ -134,7 +134,7 @@ impl Handle {
     }
 
     pub fn eq(self, other: Handle) -> bool {
-        log!("Handle eq");
+        //log!("Handle eq");
         if self.unit == other.unit { return true; }
         if self.is_ref() {
             mechanism::eq(self.prism(), other.unit)
@@ -160,7 +160,7 @@ impl Handle {
     }
 
     pub fn hash(self) -> u32 {
-        log!("handle hash");
+        //log!("handle hash");
         if self.is_ref() {
             mechanism::hash(self.prism())
         } else {
@@ -273,7 +273,7 @@ impl Handle {
     }
 
     pub fn conj(self, x: Handle) -> Handle {
-        log!("handle conj");
+        //log!("handle conj");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -297,7 +297,7 @@ impl Handle {
     }
 
     pub fn assoc_out(self, k: Handle, v: Handle) -> (Handle, Handle) {
-        log!("handle assoc on {}", self);
+        //log!("handle assoc on {}", self);
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -316,7 +316,7 @@ impl Handle {
     }
 
     pub fn get(self, k: Handle) -> *const Handle {
-        log!("handle get");
+        //log!("handle get");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -332,7 +332,7 @@ impl Handle {
     }
 
     pub fn nth(self, idx: u32) -> *const Handle {
-        log!("handle nth");
+        //log!("handle nth");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -342,7 +342,7 @@ impl Handle {
     }
 
     pub fn reduce(self, stack: &mut [Box<dyn Process>]) -> Value {
-        log!("handle reduce");
+        //log!("handle reduce");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];

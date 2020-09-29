@@ -191,12 +191,38 @@ pub fn comp_def(ctx: &mut Context, form: &Value,
     let x = comp(ctx, form.nth(2), named, terminal, dormant, vacant, next_local);
     unimplemented!()
 }
+pub fn sym_to_idx(v: &Value) -> Value {
+    let mut to_idx = hash_map();
+    let ct = v.count();
+    for i in 0..ct {
+        to_idx = to_idx.assoc(v.nth(i).split_out(), i.into());
+    }
+    to_idx
+}
 pub fn comp_fn(ctx: &mut Context, form: &Value,
                named: &Value, terminal: &Value, dormant: &Value, vacant: &Value, next_local: u32) -> Value {
     // (def square (fn [x] (* x x)))
+    // (fn name ([x] 7)
+    //          ([x y) 8)
+    //          ([x y & zs] 9))
+    let captures_vector = form.meta().get(&get_statics().captures).split_out();
+    let capture_map = {
+        let capture_map = sym_to_idx(&captures_vector);
+        if form.nth(1).is_symbol() {
+            capture_map.assoc(form.nth(1).split_out(), Value::from(-1))
+        } else {
+            capture_map
+        }
+    };
+    let b = "{:name [\"fress\" \"new_func\"]\
+                    :args [i32 i32 i32]\
+                    :ret  i32}";
+    let c = "{:name [\"fress\" \"add_capture\"]\
+                    :args [i32 i32]\
+                    :ret  nil}";
+    let new_int = read(b).unwrap();
+    let idx = register_import(ctx, &new_int);
     /*
-    let captured = notes.get(form);
-    let captured_map = xyz(captured);
     let body_ct = z();
     let first_func = ctx.funcs.len();
     for i in 0..body_ct {
@@ -230,9 +256,6 @@ pub fn comp_fn(ctx: &mut Context, form: &Value,
     }
     ctx.curr_func = orig_curr_func;
     */
-    // emit bytecode to allocate closure
-    // install meta info, indirect fn indices
-    // each captured value, access in current env and store in closure
     unimplemented!()
 }
 pub fn comp_if(ctx: &mut Context, form: &Value,

@@ -29,7 +29,7 @@ pub fn new_full_name(full_name: &str) -> Unit {
     unimplemented!()
 }
 pub fn new(name: &[u8], solidus_position: u32) -> Unit {
-    log!("new keyword {}", from_utf8(name).unwrap());
+    //log!("new keyword {}", from_utf8(name).unwrap());
     // TODO intern based on flag
     // global, thread local, hash set
     new_(name, solidus_position)
@@ -93,15 +93,15 @@ impl Distinguish for Keyword_ {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        log!("Keyword hash: {} {:#08X}", prism.segment().unit().handle(), h);
-        prism.segment().print_bits();
+        //log!("Keyword hash: {} {:#08X}", prism.segment().unit().handle(), h);
+        //prism.segment().print_bits();
         guide.set_hash(h).store_hash(); // TODO
         h
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(o_key) = find_prism(o) {
-            log!("Keyword eq: {} {}", prism.segment().unit().handle(), o);
+            //log!("Keyword eq: {} {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o_key);
             return g.byte_slice() == h.byte_slice()
@@ -112,7 +112,7 @@ impl Distinguish for Keyword_ {
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if let Some(o_key) = find_prism(o) {
-            log!("Keyword cmp: {} {}", prism.segment().unit().handle(), o);
+            //log!("Keyword cmp: {} {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o_key);
             Some(g.str().cmp(&h.str()))

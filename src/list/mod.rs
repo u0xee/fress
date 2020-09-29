@@ -26,7 +26,7 @@ pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()
 pub fn is_list(h: Handle) -> bool { find_prism(h).is_some() }
 
 pub fn new() -> Unit {
-    log!("List new");
+    //log!("List new");
     let s = vector::new().segment();
     s.set(0, prism_unit());
     s.unit()
@@ -35,9 +35,9 @@ pub fn new_value() -> Value { new().handle().value() }
 
 impl Dispatch for List_ {
     fn tear_down(&self, prism: AnchoredLine) {
-        group!("List tear down");
+        //group!("List tear down");
         vector::tear_down::tear_down(prism);
-        group_end!();
+        //group_end!();
     }
     fn alias_components(&self, prism: AnchoredLine) { vector::alias_components(prism); }
 }
@@ -50,7 +50,7 @@ impl Distinguish for List_ {
         if guide.has_hash() {
             return guide.hash;
         }
-        group!("List hash");
+        //group!("List hash");
         use random::{PI, cycle_abc};
         struct Pointer {
             pub ptr: *mut u64,
@@ -72,16 +72,16 @@ impl Distinguish for List_ {
         let mut procs: [Box<dyn Process>; 1] = [Box::new(Pointer { ptr: (&mut y) as *mut u64 })];
         let _ = reduce::reduce(prism, &mut procs);
         let h = cycle_abc(210, y) as u32;
-        log!("Hash of list: {:#08X}", h);
-        group_end!();
+        //log!("Hash of list: {:#08X}", h);
+        //group_end!();
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(l_prism) = find_prism(o) {
-            group!("List eq");
+            //group!("List eq");
             let res = vector::eq::eq(Guide::hydrate(prism), Guide::hydrate(l_prism));
-            group_end!();
+            //group_end!();
             return res
         }
         if vector::is_vector(o) {
@@ -101,9 +101,9 @@ impl Aggregate for List_ {
     }
     fn empty(&self, prism: AnchoredLine) -> Unit { new() }
     fn conj(&self, prism: AnchoredLine, x: Unit) -> Unit {
-        group!("List conj");
+        //group!("List conj");
         let res = vector::conj::conj(prism, x);
-        group_end!();
+        //group_end!();
         res
     }
     fn peek(&self, prism: AnchoredLine) -> *const Unit { self.nth(prism, 0) }

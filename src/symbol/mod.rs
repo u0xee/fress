@@ -22,7 +22,7 @@ pub fn find_prism(h: Handle) -> Option<AnchoredLine> { h.find_prism(prism_unit()
 pub fn is_symbol(h: Handle) -> bool { find_prism(h).is_some() }
 
 pub fn new(name: &[u8], solidus_position: u32) -> Unit {
-    log!("Symbol new {}", from_utf8(name).unwrap());
+    //log!("Symbol new {}", from_utf8(name).unwrap());
     let guide = {
         let byte_count = name.len() as u32;
         let content_count = units_for(byte_count);
@@ -88,14 +88,14 @@ impl Distinguish for Symbol_ {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        log!("Symbol hash: {} {:#08X}", prism.segment().unit().handle(), h);
+        //log!("Symbol hash: {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         assert_eq!(0, self as *const Symbol_ as usize);
         let o = other.handle();
         if let Some(o_sym) = find_prism(o) {
-            log!("Symbol eq: {} {}", prism.segment().unit().handle(), o);
+            //log!("Symbol eq: {} {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o_sym);
             return g.byte_slice() == h.byte_slice()
@@ -106,7 +106,7 @@ impl Distinguish for Symbol_ {
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if let Some(o_sym) = find_prism(o) {
-            log!("Symbol cmp: {} {}", prism.segment().unit().handle(), o);
+            //log!("Symbol cmp: {} {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o_sym);
             Some(g.str().cmp(&h.str()))

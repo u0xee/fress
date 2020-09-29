@@ -154,36 +154,61 @@ pub fn res_fn(sum: &mut Sum, v: &Value, locals: &Value, tail_of: Value) -> Resul
         assert!(valid_name(&name));
         locals.split_out().assoc(name.split_out(), name.split_out())
     };
+    let mut arity_bitmap = 0u32;
+    let mut vararg_arity = 0u32;
+    let mut arity_to_idx = hash_map();
     let mut locals_used = hash_map();
     let ct = bodies.count();
     for i in 0..ct {
         let body = bodies.nth(i);
         assert!(body.is_list() && body.peek().is_vector());
-        let (bod, used) = res_fn_body(sum, body, &locals_plus)?;
+        let (bod, used, arg_ct, var_arg) = res_fn_body(sum, body, &locals_plus)?;
+        assert!(!has_bit(arity_bitmap, arg_ct));
+        arity_bitmap = set_bit(arity_bitmap, arg_ct);
+        if var_arg {
+            assert_eq!(vararg_arity, 0);
+            vararg_arity = arg_ct;
+        }
+        arity_to_idx = arity_to_idx.assoc(arg_ct.into(), i.into());
         locals_used = merge_counts(locals_used, used);
         bodies = bodies.assoc(i.into(), bod);
     }
+    if vararg_arity != 0 {
+        assert_eq!(vararg_arity, max_arity(arity_bitmap));
+    }
     let locals_sans = locals_used.dissoc(&name);
-    // Data structure for mapping out which bodies are which arity?
-    // Check arity collisions (aware that second-to-last & doesn't count)
-    // Check max one vararg arity, the largest arity
+    let captures = right_into(vector(), set_of_keys(locals_sans.split_out()));
     let b = if bodies.is_list() { bodies } else { bodies.pop().1 };
     let a = if name.is_nil() { b } else { b.conj(name) };
     let resolved = a.conj(fn_sym);
-    Ok(resolved.assoc_meta(get_statics().local_use.split_out(), locals_sans))
+    let res = resolved
+        .assoc_meta(get_statics().local_use.split_out(), locals_sans)
+        .assoc_meta(get_statics().arity_bitmap.split_out(), arity_bitmap.into())
+        .assoc_meta(get_statics().arity_to_idx.split_out(), arity_to_idx)
+        .assoc_meta(get_statics().vararg.split_out(), (vararg_arity != 0).into())
+        .assoc_meta(get_statics().captures.split_out(), captures);
+    Ok(res)
 }
+pub fn has_bit(bitmap: u32, idx: u32) -> bool { bitmap & (1u32 << idx) != 0 }
+pub fn set_bit(bitmap: u32, idx: u32) -> u32 { bitmap | (1u32 << idx) }
+pub fn max_arity(bitmap: u32) -> u32 { 32 - 1 - bitmap.leading_zeros() }
 pub fn args_arity(args_form: &Value) -> (u32, bool) {
-    unimplemented!()
+    let ct = args_form.count();
+    if ct > 1 && args_form.nth(ct - 2) == &get_statics().sym_amp {
+        (ct - 1, true)
+    } else { (ct, false) }
 }
 pub fn res_fn_body(sum: &mut Sum, fn_body: &Value, locals: &Value)
-                   -> Result<(Value, Value), String> {
+                   -> Result<(Value, Value, u32, bool), String> {
     // ([x y] _ _ _)
+    // ([x y & z] _)
     let (body, args) = fn_body.split_out().pop();
-    let args_locals = args_locals(&args)?;
+    let (arg_ct, var_arg) = args_arity(&args);
+    let args_locals = args_locals(&args, var_arg)?;
     let locals_plus = right_into(locals.split_out(), args_locals);
-    let recur_target = args.split_out(); // TODO excise &, or make recur & aware
+    let recur_target = args.split_out();
     let (bod, locals_used) = res_body(sum, &body, &locals_plus, recur_target)?;
-    let (locals_sans, args_meta) = count_args_bindings(sum, locals_used, args);
+    let (locals_sans, args_meta) = count_args_bindings(locals_used, args, var_arg);
     let resolved = bod.conj(args_meta);
 
     let recur_sym = get_statics().sym_recur.split_out();
@@ -192,23 +217,25 @@ pub fn res_fn_body(sum: &mut Sum, fn_body: &Value, locals: &Value)
         //let locals_sans = locals_used.dissoc(&recur_sym);
         unimplemented!()
     }
-    Ok((resolved, locals_sans))
+    Ok((resolved, locals_sans, arg_ct, var_arg))
 }
-pub fn args_locals(args_form: &Value) -> Result<Value, String> {
+pub fn args_locals(args_form: &Value, is_var_args: bool) -> Result<Value, String> {
     let mut locals = hash_map();
     let ct = args_form.count();
     for i in 0..ct {
+        if is_var_args && i == ct - 2 { continue; }
         let loc = locals_from(args_form.nth(i))?;
         locals = merge_disjoint_locals(locals, loc)?;
     }
     Ok(locals)
 }
-pub fn count_args_bindings(sum: &mut Sum, locals_used: Value, args_form: Value) -> (Value, Value) {
+pub fn count_args_bindings(locals_used: Value, args_form: Value, is_var_args: bool) -> (Value, Value) {
     let mut locals = locals_used;
     let mut a = args_form;
     let ct = a.count();
     for i in 0..ct {
-        let (loc, binding_form) = count_bindings(sum, locals, a.nth(i));
+        if is_var_args && i == ct - 2 { continue; }
+        let (loc, binding_form) = count_bindings(locals, a.nth(i));
         locals = loc;
         a = a.assoc(i.into(), binding_form);
     }
@@ -268,7 +295,7 @@ pub fn let_rec(sum: &mut Sum, bindings: &Value, body: &Value, bind_idx: u32,
         let (bind, bod, locals_used) =
             let_rec(sum, bindings, body, bind_idx + 1, &locals_with_bindings, tail_of)?;
         let (locals_sans, binding_form_meta) =
-            count_bindings(sum, locals_used, binding_form);
+            count_bindings(locals_used, binding_form);
         let locals_exp = count_form(sum, locals_sans, &resolved_exp);
         let b = bind.assoc(idx.into(), binding_form_meta)
             .assoc((idx + 1).into(), resolved_exp);
@@ -282,8 +309,7 @@ pub fn with_bindings(locals: &Value, binding_form: &Value) -> Result<Value, Stri
 pub fn locals_from(binding_form: &Value) -> Result<Value, String> {
     // to "locals" map from all the symbols in the binding form
     // (also names in def) validate names, no namespace, not one of the special form names
-    if binding_form.is_symbol() {
-        assert!(!binding_form.has_namespace()); // TODO Err(msg about proper binding forms)
+    if valid_name(binding_form) {
         return Ok(hash_map().assoc(binding_form.split_out(), binding_form.split_out()))
     }
     // [a b c]  [a b :as v]
@@ -295,7 +321,7 @@ pub fn valid_name(s: &Value) -> bool {
     // TODO check not special form name
     s.is_symbol() && !s.has_namespace()
 }
-pub fn count_bindings(sum: &mut Sum, locals_used: Value, binding_form: &Value) -> (Value, Value) {
+pub fn count_bindings(locals_used: Value, binding_form: &Value) -> (Value, Value) {
     if binding_form.is_symbol() {
         let entry = locals_used.get(binding_form).split_out();
         let ct = if entry.is_nil() { 0.into() } else { entry };

@@ -33,7 +33,7 @@ pub fn more(reader: &mut EdnReader, bytes: &[u8], bytes_not_used: usize) -> Read
 // profile guided optimization; slow path error branches.
 // maybe split out error branches into #[cold] function calls
 pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
-    log!("edn read call");
+    //log!("edn read call");
     let mut i = 0usize;
     let mut ready = Handle::NIL;
     let mut string_ready = false;
@@ -47,7 +47,7 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
         }
         let c = bytes[i];
         if hit(c, NUM_NAME) || !ascii(c) { // alphanum .*+!-_?$%&=<>|:/
-            log!("reading a symbolic");
+            //log!("reading a symbolic");
             let sym = match isolate_symbolic(&bytes[i..]) {
                 Some(s) => s,
                 None => { return more(reader, bytes, bytes.len() - i) },

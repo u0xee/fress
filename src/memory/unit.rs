@@ -37,121 +37,56 @@ impl Unit {
     pub fn handle(self) -> Handle { Handle::from(self) }
 }
 
-
-// Conversions around primitives
-impl From<usize> for Unit {
-    fn from(x: usize) -> Self { Unit { word: x } }
-}
-
-impl Into<usize> for Unit {
-    fn into(self) -> usize { self.word }
-}
-
-impl From<isize> for Unit {
-    fn from(x: isize) -> Self { Unit { word: x as usize } }
-}
-
-impl Into<isize> for Unit {
-    fn into(self) -> isize { self.word as isize }
-}
-
-impl From<u64> for Unit {
-    fn from(x: u64) -> Self { Unit { word: x as usize } }
-}
-
-impl Into<u64> for Unit {
-    fn into(self) -> u64 { self.word as u64 }
-}
-
-impl From<i64> for Unit {
-    fn from(x: i64) -> Self { Unit { word: x as usize } }
-}
-
-impl Into<i64> for Unit {
-    fn into(self) -> i64 { self.word as i64 }
-}
-
-impl From<u32> for Unit {
-    fn from(x: u32) -> Self { Unit { word: x as usize } }
-}
-
-impl Into<u32> for Unit {
-    fn into(self) -> u32 { self.word as u32 }
-}
-
-impl From<u16> for Unit {
-    fn from(x: u16) -> Self { Unit { word: x as usize } }
-}
-
-impl Into<u16> for Unit {
-    fn into(self) -> u16 { self.word as u16 }
-}
-
-impl From<i32> for Unit {
-    fn from(x: i32) -> Self { Unit { word: x as usize } }
-}
-
-impl Into<i32> for Unit {
-    fn into(self) -> i32 { self.word as i32 }
-}
-
-pub fn f64_into_u64(f: f64) -> u64 {
-    unsafe { transmute(f) }
-}
-pub fn f64_from_u64(f: u64) -> f64 {
-    unsafe { transmute(f) }
-}
-
-impl From<f64> for Unit {
-    fn from(x: f64) -> Self { Unit { word: f64_into_u64(x) as usize } }
-}
-
-impl Into<f64> for Unit {
-    fn into(self) -> f64 { f64_from_u64(self.word as u64) }
-}
-
-pub fn f32_into_u32(f: f32) -> u32 {
-    unsafe { transmute(f) }
-}
-pub fn f32_from_u32(f: u32) -> f32 {
-    unsafe { transmute(f) }
-}
-
-impl From<f32> for Unit {
-    fn from(x: f32) -> Self { Unit { word: f32_into_u32(x) as usize } }
-}
-
-impl Into<f32> for Unit {
-    fn into(self) -> f32 { f32_from_u32(self.word as u32) }
-}
-
-impl<T> From<*const T> for Unit {
-    fn from(ptr: *const T) -> Self { Unit { word: ptr as usize } }
-}
-
-impl<T> Into<*const T> for Unit {
-    fn into(self) -> *const T { self.word as *const T }
-}
-
-impl<T> From<*mut T> for Unit {
-    fn from(ptr: *mut T) -> Self { Unit { word: ptr as usize } }
-}
-
-impl<T> Into<*mut T> for Unit {
-    fn into(self) -> *mut T { self.word as *mut T }
-}
-
+impl From<usize> for Unit { fn from(x: usize) -> Self { Unit { word: x } } }
+impl Into<usize> for Unit { fn into(self) -> usize { self.word } }
+impl From<isize> for Unit { fn from(x: isize) -> Self { Unit { word: x as usize } } }
+impl Into<isize> for Unit { fn into(self) -> isize { self.word as isize } }
+impl From<u64> for Unit { fn from(x: u64) -> Self { Unit { word: x as usize } } }
+impl Into<u64> for Unit { fn into(self) -> u64 { self.word as u64 } }
+impl From<i64> for Unit { fn from(x: i64) -> Self { Unit { word: x as usize } } }
+impl Into<i64> for Unit { fn into(self) -> i64 { self.word as i64 } }
+impl From<u32> for Unit { fn from(x: u32) -> Self { Unit { word: x as usize } } }
+impl Into<u32> for Unit { fn into(self) -> u32 { self.word as u32 } }
+impl From<u16> for Unit { fn from(x: u16) -> Self { Unit { word: x as usize } } }
+impl Into<u16> for Unit { fn into(self) -> u16 { self.word as u16 } }
+impl From<i32> for Unit { fn from(x: i32) -> Self { Unit { word: x as usize } } }
+impl Into<i32> for Unit { fn into(self) -> i32 { self.word as i32 } }
+pub fn f64_into_u64(f: f64) -> u64 { unsafe { transmute(f) } }
+pub fn f64_from_u64(f: u64) -> f64 { unsafe { transmute(f) } }
+pub fn f32_into_u32(f: f32) -> u32 { unsafe { transmute(f) } }
+pub fn f32_from_u32(f: u32) -> f32 { unsafe { transmute(f) } }
+impl From<f64> for Unit { fn from(x: f64) -> Self { Unit { word: f64_into_u64(x) as usize } } }
+impl Into<f64> for Unit { fn into(self) -> f64 { f64_from_u64(self.word as u64) } }
+impl From<f32> for Unit { fn from(x: f32) -> Self { Unit { word: f32_into_u32(x) as usize } } }
+impl Into<f32> for Unit { fn into(self) -> f32 { f32_from_u32(self.word as u32) } }
+impl<T> From<*const T> for Unit { fn from(ptr: *const T) -> Self { Unit { word: ptr as usize } } }
+impl<T> Into<*const T> for Unit { fn into(self) -> *const T { self.word as *const T } }
+impl<T> From<*mut T> for Unit { fn from(ptr: *mut T) -> Self { Unit { word: ptr as usize } } }
+impl<T> Into<*mut T> for Unit { fn into(self) -> *mut T { self.word as *mut T } }
 
 #[cfg(test)]
 mod test {
     use super::*;
-
     #[test]
-    fn from_ptr() {
+    fn ptr_roundtrip() {
         let x = &5;
         let x_raw = x as *const i32;
-        let u = Unit::from(x_raw);
-        let xx: *const i32 = u.into();
-        assert_eq!(x_raw, xx)
+        assert_eq!(x_raw, Unit::from(x_raw).into())
+    }
+    #[test]
+    fn float_roundtrip() {
+        let x = 5f32;
+        assert_eq!(x, Unit::from(x).into());
+        if cfg!(target_pointer_width = "64") {
+            let x = 5f64;
+            assert_eq!(x, Unit::from(x).into());
+        }
+    }
+    #[test]
+    fn int_roundtrip() {
+        let x = -5i32;
+        assert_eq!(x, Unit::from(x).into());
+        let x = 5u32;
+        assert_eq!(x, Unit::from(x).into());
     }
 }

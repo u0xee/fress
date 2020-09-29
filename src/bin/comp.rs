@@ -13,15 +13,27 @@ use std::fs::File;
 use std::io::Write;
 
 fn n() {
-    let s = "(conj [] 8)";
+    let s = "(let [a 7]\
+                     (fn ([x]\
+                          (conj x a))\
+                         ([y & z]\
+                          (conj a a))))";
     let form = fress::read(s).unwrap();
     eval::init();
     let structured = eval::structure::structure(&form).unwrap();
+
+    use fress::meta;
+    meta::do_print_meta();
+    println!("Structured: {}", structured);
+    meta::end_print_meta();
+    unimplemented!();
+
     let ctx = eval::compile::compile_top_level(&structured);
     eval::compile::show_context(&ctx);
     let module_bytes = eval::assemble::wasm_module(&ctx);
     let mut file = File::create("out.wasm").unwrap();
     file.write_all(&module_bytes).expect("Failed to write out.wasm");
+    // TODO eval::uninit();
 }
 
 fn main() {

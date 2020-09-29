@@ -45,10 +45,6 @@ impl Anchor {
     pub fn unit(&self) -> Unit { self.unit }
 }
 
-impl From<Unit> for Anchor {
-    fn from(u: Unit) -> Self { Anchor { unit: u } }
-}
+impl From<Unit> for Anchor { fn from(u: Unit) -> Self { Anchor { unit: u } } }
+impl Into<Unit> for Anchor { fn into(self) -> Unit { self.unit } }
 
-impl Into<Unit> for Anchor {
-    fn into(self) -> Unit { self.unit }
-}

@@ -43,7 +43,7 @@ pub fn imm_with_meta(imm: Handle, m: Handle) -> Handle {
     s.set(0, prism_unit());
     s.set(1, 1.into());
     // TODO
-    log!("imm_with_meta: {} {} as_unit: 0x{:016X}", imm, m, imm.unit().u());
+    //log!("imm_with_meta: {} {} as_unit: 0x{:016X}", imm, m, imm.unit().u());
     s.set(2, m.unit());
     s.set(3, imm.unit());
     let h = s.unit().handle();
@@ -63,7 +63,7 @@ pub fn shim_with_meta(v: Handle, m: Handle) -> Handle {
         seg.at(0..cap).to_offset(s, 3);
         s.set(0, prism_unit());
         s.set(1, 0.into());
-        log!("shim_with_meta: {} {} next_prism_unit: 0x{:016X}", v, m, s[3].u());
+        //log!("shim_with_meta: {} {} next_prism_unit: 0x{:016X}", v, m, s[3].u());
         s.set(2, m.unit());
         s.unit().handle()
     };
@@ -83,7 +83,7 @@ pub fn with_meta(v: Handle, m: Handle) -> (Handle, Handle) {
             let mp = m_prism.with_seg(w.segment());
             let curr_meta = mp[2].handle();
             // TODO
-            log!("with_meta: Setting meta unit 0x{:016X}", m.unit().u());
+            //log!("with_meta: Setting meta unit 0x{:016X}", m.unit().u());
             mp.set(2, m.unit());
             (w, curr_meta)
         } else {
@@ -97,7 +97,7 @@ pub fn with_meta(v: Handle, m: Handle) -> (Handle, Handle) {
 pub fn assoc_meta(v: Handle, meta_key: Handle, meta_val: Handle) -> Handle {
     if v.is_ref() {
         if let Some(m_prism) = find_prism(v) {
-            log!("assoc_meta on v = {} 0x{:016X}", v, v.unit().u());
+            //log!("assoc_meta on v = {} 0x{:016X}", v, v.unit().u());
             let w = v.unaliased();
             let mp = m_prism.with_seg(w.segment());
             let curr_meta = {
@@ -107,7 +107,7 @@ pub fn assoc_meta(v: Handle, meta_key: Handle, meta_val: Handle) -> Handle {
             let (m, old_value) = curr_meta.assoc_out(meta_key, meta_val);
             assert!(old_value.is_nil()); // TODO Remove
             mp.set(2, m.unit());
-            log!("assoc_meta done! 0x{:016X}", w.unit().u());
+            //log!("assoc_meta done! 0x{:016X}", w.unit().u());
             w
         } else {
             let m = hash_map().assoc(meta_key.value(), meta_val.value());
@@ -122,7 +122,7 @@ pub fn assoc_meta(v: Handle, meta_key: Handle, meta_val: Handle) -> Handle {
 impl Dispatch for Meta_ {
     fn tear_down(&self, prism: AnchoredLine) {
         assert_eq!(0, prism.segment().anchor().aliases());
-        log!("Meta tear down");
+        //log!("Meta tear down");
         prism[2].handle().retire();
         if prism[1].u() == 0 {
             mechanism::tear_down(prism.offset(3))
@@ -172,8 +172,8 @@ impl Notation for Meta_ {
         if do_print > 0 {
             write!(f, "^{} ", prism[2].handle())?;
         }
-        log!("Meta edn:");
-        prism.segment().print_bits();
+        //log!("Meta edn:");
+        //prism.segment().print_bits();
         if prism[1].u() == 0 {
             let next_prism = prism.offset(3);
             let p = next_prism[0];

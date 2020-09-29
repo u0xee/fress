@@ -37,7 +37,7 @@ impl Segment {
             unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
             unanchored
         };
-        log!("New segment, capacity {}, @ 0x{:016X}", cap, anchored.line().unit().u());
+        //log!("New segment, capacity {}, @ 0x{:016X}", cap, anchored.line().unit().u());
         #[cfg(any(test, feature = "segment_clear"))]
             {
                 let mut anchored = anchored;
@@ -50,7 +50,7 @@ impl Segment {
 
     pub fn free(s: Segment) {
         inc_free_count();
-        log!("Free segment, capacity {}, @ 0x{:016X}", s.capacity(), s.line().unit().u());
+        //log!("Free segment, capacity {}, @ 0x{:016X}", s.capacity(), s.line().unit().u());
         let a = Anchor::from(s.anchor_line[0]);
         #[cfg(any(test, feature = "segment_free"))]
             assert_eq!(a.aliases(), 0,
@@ -77,7 +77,7 @@ impl Segment {
     }
 
     pub fn alias(&self) {
-        log!("Segment alias");
+        //log!("Segment alias");
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.aliased();
@@ -88,7 +88,7 @@ impl Segment {
         }
     }
     pub fn unalias(&self) -> u32 {
-        log!("Segment unalias");
+        //log!("Segment unalias");
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.unaliased();
@@ -308,6 +308,29 @@ mod test {
     fn aliased_free() {
         let s = Segment::new(5);
         Segment::free(s);
+    }
+    #[test]
+    fn zeroed() {
+        let s = Segment::new(5);
+        for i in 0..5 {
+            assert_eq!(0, s[i].u());
+        }
+    }
+    #[test]
+    fn wiped() {
+        let s = Segment::new(5);
+        for i in 0..5 {
+            s.set(i, 1.into());
+        }
+        let line = s.line().offset(-1 as isize);
+        for i in 0..7 {
+            assert_ne!(0, line[i].u());
+        }
+        s.unalias();
+        Segment::free(s);
+        for i in 0..7 {
+            assert_eq!(0, line[i].u());
+        }
     }
 }
 

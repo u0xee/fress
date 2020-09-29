@@ -32,6 +32,28 @@ pub struct Func { }
 
 // Func prism, guide, IFn table base, closed-over values
 
+#[no_mangle]
+pub extern fn new_func(arity_bitmap: u32, vtable: u32, capture_ct: u32) -> u32 {
+    let cap = 4 /*prism, arity bitmap, vtable base, capture count*/ + capture_ct;
+    let s = Segment::new(cap);
+    let prism = s.line_at(0);
+    //prism.set(0, mechanism::prism::<Func>());
+    prism.set(1, arity_bitmap.into());
+    prism.set(2, vtable.into());
+    prism.set(3, 0.into());
+    s.unit().u32()
+}
+#[no_mangle]
+pub extern fn add_capture(func: u32, capture: u32) {
+    let s = Segment::from(Unit::from(func));
+    assert!(!s.anchor().is_aliased());
+    //assert_eq!(s.get(0), mechanism::prism::<Func>());
+    let capture_ct = s.get(3).u32();
+    let captures = s.line_at(4);
+    captures.set(capture_ct as i32, capture.into());
+    s.set(3, (capture_ct + 1).into());
+}
+
 #[link(wasm_import_module = "ifn")]
 extern {
     fn func_invoke0(segment: u32, index: u32, table_idx: u32);

@@ -39,6 +39,10 @@ pub struct Statics {
     pub forms_using: Value,
     pub refers_to: Value,
     pub resolved_from: Value,
+    pub arity_bitmap: Value,
+    pub arity_to_idx: Value,
+    pub vararg: Value,
+    pub captures: Value,
 
     pub sym_value: Value,
     pub sym_value_ref: Value,
@@ -48,6 +52,7 @@ pub struct Statics {
     pub key_mapped: Value,
     pub key_alias: Value,
     pub sym_fress: Value,
+    pub sym_amp: Value,
 }
 use std::cell::Cell;
 thread_local! {
@@ -66,6 +71,10 @@ pub fn load_statics() {
         forms_using: read(":forms-using").unwrap(),
         refers_to: read(":refers-to").unwrap(),
         resolved_from: read(":resolved-from").unwrap(),
+        arity_bitmap: read(":arity-bitmap").unwrap(),
+        arity_to_idx: read(":arity-to-idx").unwrap(),
+        vararg: read(":vararg").unwrap(),
+        captures: read(":captures").unwrap(),
         sym_value: read("value").unwrap(),
         sym_value_ref: read("&value").unwrap(),
         key_name: read(":name").unwrap(),
@@ -74,6 +83,7 @@ pub fn load_statics() {
         key_mapped: read(":mapped").unwrap(),
         key_alias: read(":alias").unwrap(),
         sym_fress: read("fress").unwrap(),
+        sym_amp: read("&").unwrap(),
     });
     let y = Box::into_raw(x) as usize;
     STATICS.with(|c| c.set(y));
@@ -94,11 +104,11 @@ pub extern fn initialize_global_state() {
 }
 
 pub fn init() {
-    group!("Init global state");
+    //group!("Init global state");
     load_statics();
     compile::init_primitives();
     var::init();
-    group_end!();
+    //group_end!();
 }
 
 #[no_mangle]

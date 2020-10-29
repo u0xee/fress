@@ -303,7 +303,9 @@ impl Handle {
             let p = prism[0];
             let (c, displaced) = mechanism::as_dispatch(&p).assoc(prism, k.unit, v.unit);
             (c.handle(), displaced.handle())
-        } else { unimplemented!() }
+        } else {
+            unimplemented!("assoc_out on {}", self)
+        }
     }
 
     pub fn dissoc(self, k: Handle) -> Handle {

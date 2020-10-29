@@ -12,20 +12,54 @@ WebAssembly.compileStreaming(fetch("fress.wasm"))
   document.fress_module = mod;
 });
 
-
 for (live of document.getElementsByClassName("live")) {
-  let c = live.getElementsByClassName("content")[0];
+  let c = live.getElementsByTagName("pre")[0];
   c.classList.add("live-content");
   c.contentEditable = true;
   c.spellcheck = false;
   c.addEventListener("focus", first_focus);
 }
 
+function key_down(ev) {
+  if (ev.repeat && !contains(["Backspace", "ArrowLeft", "ArrowRight"], ev.key)) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    return;
+  }
+  var x = (ev.ctrlKey ? "ctrl " : "") + (ev.altKey ? "alt " : "") +
+       (ev.shiftKey ? "shift " : "") + (ev.metaKey ? "meta " : "");
+  console.log("Key: " + ev.key + ", code: " + ev.code + " " + x);
+
+  if (ev.key == "Enter" && ev.ctrlKey) {
+    let live_elem = ev.target.closest('.live');
+    let c = live_elem.getElementsByClassName("live-content")[0];
+    live_elem.worker.postMessage(c.innerText.trim());
+    ev.preventDefault();
+    ev.stopPropagation();
+    return;
+  }
+}
+function contains(arr, elem) {
+  return arr.indexOf(elem) != -1;
+}
+function on_paste(ev) {
+  let p = ev.clipboardData.getData("text");
+  console.log('Paste event |' + p + "|");
+  let s = window.getSelection(); // Caret Range
+  let r = s.getRangeAt(0);
+  console.log(s.type + ", rangeCount: " + s.toString() + " " + s.isCollapsed);
+  console.dir(s)
+  ev.preventDefault();
+  ev.stopPropagation();
+}
 function first_focus(ev) {
   if (!document.fress_module) { return }
+  ev.target.removeEventListener("focus", first_focus);
+
   let content = ev.target;
-  let live = content.parentNode;
-  content.removeEventListener("focus", first_focus);
+  let live = content.closest('.live');
+  content.addEventListener("keydown", key_down);
+  content.addEventListener("paste", on_paste);
 
   var w = new Worker('repl_worker.js');
   w.postMessage(document.fress_module);
@@ -49,7 +83,8 @@ function output_div(live_elem) {
   } else {
     var o = document.createElement('div');
     o.classList.add("live-output");
-    live_elem.appendChild(o);
+    live_elem.insertBefore(o, live_elem.childNodes[0]);
+    //live_elem.appendChild(o);
     return o;
   }
 }
@@ -64,7 +99,3 @@ function add_button(live_elem) {
   };
   live_elem.appendChild(b);
 }
-
-// logic for sending messages to worker, on button or edit.
-// logic for receiving and displaying response messages from worker
-

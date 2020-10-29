@@ -606,32 +606,15 @@ pub fn digit(b: u8) -> bool {
     // b.wrapping_sub(b'0') < 10
     b <= b'9' && b >= b'0' // branch prediction
 }
-
-pub fn sign(b: u8) -> bool {
-    b == b'+' || b == b'-'
-}
-
-pub fn ascii(b: u8) -> bool {
-    (b & 0x80) == 0x00
-}
-
-pub fn unicode_start(b: u8) -> bool {
-    (b & 0xC0) == 0xC0
-}
-
-pub fn unicode_cont(b: u8) -> bool {
-    (b & 0xC0) == 0x80
-}
-
+pub fn sign(b: u8) -> bool { b == b'+' || b == b'-' }
+pub fn ascii(b: u8) -> bool { (b & 0x80) == 0x00 }
+pub fn unicode_start(b: u8) -> bool { (b & 0xC0) == 0xC0 }
+pub fn unicode_cont(b: u8) -> bool { (b & 0xC0) == 0x80 }
 pub fn printing(b: u8) -> bool {
     // see digit, single branch
     b'!' <= b && b <= b'~'
 }
-
-pub fn control_char(b: u8) -> bool {
-    ascii(b) && !printing(b)
-}
-
+pub fn control_char(b: u8) -> bool { ascii(b) && !printing(b) }
 pub fn whitespace(b: u8) -> bool {
     // ascii(b) && hit(pattern) ?
     // TODO nbsp 0xA0
@@ -646,7 +629,6 @@ pub fn get_bit(x: u64, y: u64, idx: u8) -> u32 {
     let masked = z_ & (idx as u32 >> 6);
     (masked ^ x_) & 0x01
 }
-
 pub fn hit(b: u8, pattern: (u64, u64)) -> bool {
     get_bit(pattern.0, pattern.1, b) == 1
 }

@@ -111,9 +111,25 @@ pub fn init() {
     //group_end!();
 }
 
+// TODO Entry points
+//  Analysis (read analysis compile?) -> results, markup, colored, notes, errors
+//   -> Read -> Error
+//   -> Structure -> Error
+//   -> Compile
+//   -> Assemble
+//   -> Load, Run -> Error
+//   - Report: Markup on input, Run results. Compiled code stats
+//  TAB Completion at cursor, "dictionary" of in-scope locals and globals (names, symbols)
+//    - takes utf-8 buffer (before cursor), reads, structure
+//  ENTER New line indent, read partial data structure, retrieve latest collection
+//   Use position meta to compute indent.
+//  EXPAND/MOVE Delimiting elements with byte-ranges, used for expand-selection
+//    Can be just a list of byte-ranges, element nesting can be computed from the ranges.
+//  CLOSE Close all open collections (ctrl-] or something)
+//  Run nearest top-level form
 #[no_mangle]
 pub extern fn read_eval_print(byte_address: u32, byte_count: u32) {
-    group!("Read-eval-print routine");
+    group!("Read-eval-print routine!");
     let m = _read_structure_compile_assemble(byte_address, byte_count);
     unsafe {
         wasm_compile_init(m.as_ptr() as usize as u32, m.len() as u32,

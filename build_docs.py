@@ -30,12 +30,35 @@ asciidoc_base = ['asciidoctor',
                  '-a', 'toc=left']
 
 
+reset, bold, underline, invert = '\u001b[0m', '\u001b[1m', '\u001b[4m', '\u001b[7m'
+
+
+def is_byte(i):
+    return 0 <= i <= 256
+
+
+def color(byte):
+    assert(is_byte(byte))
+    # f'\u001b[48;5;{byte}m' background
+    return f'\u001b[38;5;{byte}m'
+
+
+def rgb(r, g, b):
+    assert(is_byte(r) and is_byte(g) and is_byte(b))
+    return f'\u001b[38;2;{r};{g};{b}m'
+
+
+def run(command, env=None):
+    program = f'⬛ {bold}{color(208)}{command[0]}{reset} '
+    print(program + ' '.join(command[1:]))
+    subprocess.run(command, env=env)
+
+
 def generate_html_from_asciidoc(dir, out_dir):
     command = asciidoc_base + ['--destination-dir', out_dir]
     adocs = find_files(dir, ['-maxdepth', '1', '-name', '*.adoc'])
     full_command = command + adocs
-    print('Running: {}'.format(' '.join(full_command)))
-    subprocess.run(full_command)
+    run(full_command)
     thesis_html = find_files(out_dir, ['-name', 'thesis.html'])
     subprocess.run(['sed', '-i', 's/100%px/100%/g'] + thesis_html)
 
@@ -44,15 +67,11 @@ def generate_html_from_asciidoc(dir, out_dir):
 
 
 def copy_images():
-    command = ['rsync', '-r', doc_dir + '/images', target_dir]
-    print('Running: {}'.format(' '.join(command)))
-    subprocess.run(command)
+    run(['rsync', '-r', doc_dir + '/images', target_dir])
 
 
 def copy_favicons():
-    command = ['rsync', '-r', doc_dir + '/images/favicon/', target_dir]
-    print('Running: {}'.format(' '.join(command)))
-    subprocess.run(command)
+    run(['rsync', '-r', doc_dir + '/images/favicon/', target_dir])
 
 
 def build_adoc(args):
@@ -61,8 +80,13 @@ def build_adoc(args):
     copy_favicons()
 
 
+def after_cargo():
+    print(f'{invert}{bold}                        cargo done                     {reset}')
+
+
 def build_project(args):
     subprocess.run(["cargo", "doc"])
+    after_cargo()
     build_adoc(args)
 
 
@@ -70,25 +94,21 @@ wasm_triple = 'wasm32-unknown-unknown'
 
 
 def build_wasm_repl(args):
-    command = ['cargo', 'build', '--target', wasm_triple]
-    print('Running: {}'.format(' '.join(command)))
     e = os.environ.copy()
     e['RUSTFLAGS'] = '-C link-arg=--export-table'
-    subprocess.run(command, env=e)
+    run(['cargo', 'build', '--target', wasm_triple], env=e)
+    after_cargo()
 
-    c = ['rsync', 'target/' + wasm_triple + '/debug/fress.wasm', target_dir]
-    print('Running: {}'.format(' '.join(c)))
-    subprocess.run(c)
+    run(['rsync', 'target/' + wasm_triple + '/debug/fress.wasm', target_dir])
     js = find_files(src_dir, ['-name', '*.js'])
-    c = ['rsync'] + js + [target_dir]
-    print('Running: {}'.format(' '.join(c)))
-    subprocess.run(c)
+    run(['rsync'] + js + [target_dir])
     build_adoc(args)
 
 
 def http_server(args):
     import http.server
     import socketserver
+    import webbrowser
     os.chdir(target_dir)
     handler = http.server.SimpleHTTPRequestHandler
     handler.extensions_map = {'.manifest': 'text/cache-manifest',
@@ -100,9 +120,10 @@ def http_server(args):
                               '.js': 'application/x-javascript',
                               '.wasm': 'application/wasm',
                               '': 'application/octet-stream'}
-    port = 8888
-    httpd = socketserver.TCPServer(("", port), handler)
-    print("Serving directory {} at port {}".format(target_dir, port))
+    httpd = socketserver.TCPServer(("", args.port), handler)
+    location = 'http://localhost:' + str(args.port) + '/thesis.html'
+    print("Serving directory {} at port {}".format(target_dir, args.port))
+    webbrowser.open(location)
     httpd.serve_forever()
 
 
@@ -130,6 +151,7 @@ wasm_parser.set_defaults(func=build_wasm_repl)
 server_parser = subparsers.add_parser('http', description='Start local file server.',
                                     help='Starts an http server, on port')
 server_parser.set_defaults(func=http_server)
+server_parser.add_argument('--port', default=8888, type=int)
 
 # Parse and dispatch
 args = parser.parse_args()

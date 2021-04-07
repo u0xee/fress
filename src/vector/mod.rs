@@ -25,6 +25,7 @@ pub mod eq;
 pub mod tear_down;
 pub mod reduce;
 pub mod iter;
+pub mod harness;
 pub mod util;
 use self::util::*;
 
@@ -78,6 +79,9 @@ pub fn unaliased(prism: AnchoredLine) -> AnchoredLine {
         }
         let s = seg.carbon_copy();
         let p = prism.with_seg(s);
+        if !seg.is_aliased() {
+            //panic!("Race condition here!");
+        }
         seg.unit().handle().retire();
         p
     } else {

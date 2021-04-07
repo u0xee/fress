@@ -5,6 +5,12 @@
 // TODO add infoq, podcasts, conf presentations, languages
 // « » … † ¶ ↑ → ∞
 
+// Bracha Dynamic Class Loading
+// Learning-based controlled concurrency testing
+// Dietz Persistence, Amortization and Randomization
+// Concurrency  Testing  Using  Schedule  Bounding
+// Delay Bounded Scheduling
+
 [.big]
 [cols="8*^"]
 |===
@@ -48,6 +54,12 @@
   [.provenance]##Object-Oriented Programming, [.acro]#ECOOP#, Lecture Notes in Computer Science, Vol. 1241.
   Springer, Berlin, Heidelberg##
   {scholar}almeida&title=balloon+types+controlling+sharing+of+state+in+data+types[¤^]
+
+* [[[Sandboxing-JITs]]] Jason *Ansel*, Petr *Marchenko*, Úlfar *Erlingsson*, Elijah *Taylor*,
+  Brad *Chen*, Derek *Schuff*, David *Sehr*, Cliff L. *Biffle* and Bennet *Yee* (2011)
+  _Language-independent sandboxing of just-in-time compilation and self-modifying code._
+  [.provenance]#ACM [.acro .semi]*SIGPLAN* Programming Language Design and Implementation#
+  {scholar}ansel&title=language+independent+sandboxing+of+just+in+time+compilation[¤^] • see <<Native-Client>>
 
 * [[[Appel-GC]]] Andrew *Appel* (1987) _Garbage collection can be faster than stack allocation._
   [.provenance]#Information Processing Letters 25.4#
@@ -236,6 +248,11 @@
   _Garbage collection in an uncooperative environment._
   [.provenance]#Software Practice and Experience 18.9#
   {scholar}boehm&title=garbage+collection+in+an+uncooperative+environment[¤^]
+
+* [[[Ropes]]] Hans-Juergen *Boehm*, Russ *Atkinson* and Michael *Plass* (1995)
+  _Ropes: an alternative to strings._
+  [.provenance]#Software Practice and Experience 25.12#
+  {scholar}boehm&title=ropes+an+alternative+to+strings[¤^]
 
 * [[[Bohm-Single]]] Wim *Böhm* <<Sisal,†>> et al. (2002)
   _Mapping a single assignment programming language to reconfigurable systems._
@@ -426,6 +443,11 @@
   [.provenance]#Programming Symposium. Springer, Berlin, Heidelberg#
   {scholar}denning&title=first+version+of+a+data+flow+procedure+language[¤^]
 
+* [[[G1-Collector]]] David *Detlefs*, Christine *Flood* <<Shenandoah,†>>, Steve *Heller* and Tony *Printezis* (2004)
+  _Garbage-First Garbage Collection._
+  [.provenance]#Proc. of Intl. Symposium on Memory Management#
+  {scholar}detlefs&title=garbage+first+garbage+collection[¤^]
+
 * [[[ZLIB]]] Peter *Deutsch* and Jean-Loup *Gailly* (1996)
   _[.acro]#ZLIB# Compressed Data Format Specification 3.3._
   [.provenance]##RFC 1950, [.acro]#DOI 10.17487/RFC1950# ## {rfc}1950[→^]
@@ -456,6 +478,10 @@
 
 * [[[Downey]]] Allen *Downey* (2007) _Generating Pseudo-random Floating-Point Values._
   {scholar}downey&title=generating+pseudo+random+floating+point+values[¤^]
+
+* [[[Drepper]]] Ulrich *Drepper* (2007) _What every programmer should know about memory._
+  [.provenance]#Red Hat, Inc 11#
+  {scholar}drepper&title=what+every+programmer+should+know+about+memory[¤^]
 
 * [[[Driscoll-Thesis]]] James R. *Driscoll* (1986)
   _The Diameter of Permutation Groups--Fully Persistent Search Trees._
@@ -512,6 +538,11 @@
   _Digital search trees revisited._
   [.provenance]#SIAM Journal on Computing 15.3#
   {scholar}flajolet&title=digital+search+trees+revisited[¤^]
+
+* [[[Shenandoah]]] Christine *Flood*, Roman *Kennke*, Andrew *Dinn*, Andrew *Haley* and Roland *Westrelin* (2016)
+  _Shenandoah: An open-source concurrent compacting garbage collector for OpenJDK._
+  [.provenance]#Proc. of Intl. Conf. on Principles and Practices of Programming on the Java Platform#
+  {scholar}flood&title=shenandoah+an+open+source+concurrent+compacting+garbage+collector[¤^]
 
 * [[[Floyd-Paradigms]]] Robert *Floyd* (1979) _The paradigms of programming._
   [.provenance]#1978 ACM [.semi]*Turing Award* Lecture, Comm. of ACM 22.8#
@@ -600,6 +631,10 @@
   [.provenance]#Journées Francophones des Langages Applicatifs#
   {scholar}goubault&title=implementing+functional+languages+with+fast+equality[¤^]
 
+* [[[Gray-Why]]] Jim *Gray* (1986) _Why do computers stop and what can be done about it?_
+  [.provenance]#Symposium on Reliability in Distributed Software and Database Systems#
+  {scholar}gray&title=why+do+computers+stop[¤^]
+
 * [[[Red-Black-Tree]]] Leo *Guibas* and Robert *Sedgewick* <<Flajolet-Sedgewick,†>> (1978)
   _A dichromatic framework for balanced trees._
   [.provenance]##[.ordn]#19th# Annual Symposium on Foundations of Computer Science, IEEE##
@@ -615,7 +650,8 @@
   {scholar}guzman&title=on+expressing+the+mutation+of+state+in+a+functional+programming+language[¤^]
 
 [[bib-h]]
-* [[[Haas]]] Andreas *Haas* et al. (2017)
+* [[[WebAssembly]]] Andreas *Haas*, Andreas *Rossberg*, Derek *Schuff*, Ben *Titzer*, Michael *Holman*,
+  Dan *Gohman*, Luke *Wagner*, Alon *Zakai* and JF *Bastien* (2017)
   _Bringing the web up to speed with WebAssembly._
   [.provenance]#ACM [.acro .semi]*SIGPLAN* Programming Language Design and Implementation#
   {scholar}haas&title=bringing+the+web+up+to+speed+with+webassembly[¤^]
@@ -986,6 +1022,11 @@
   {scholar}ongaro&title=in+search+of+an+understandable+consensus+algorithm[¤^]
 
 [[bib-p]]
+* [[[HotSpot]]] Michael *Paleczny*, Christopher *Vick* and Cliff *Click* (2001)
+  _The Java HotSpot Server Compiler._
+  [.provenance]#Symposium on Java Virtual Machine Research and Technology#
+  {scholar}paleczny&title=the+java+hotspot+server+compiler[¤^]
+
 * [[[Parnas-Modules]]] David *Parnas* (1972) _On the criteria to be used in decomposing systems into modules._
   [.provenance]#Comm. of ACM 15.12#
   {scholar}parnas&title=on+the+criteria+to+be+used+in+decomposing+systems+into+modules[¤^]
@@ -1037,7 +1078,7 @@
   [.provenance]#Proc. of ACM Annual Conf Vol. 2#
   {scholar}reynolds&title=definitional+interpreters+for+higher+order+programming+languages[¤^]
 
-* [[[UNIX]]] Dennis *Ritchie* and Ken *Thompson* (1978) _The [.acro .medi]*UNIX* time-sharing system._
+* [[[UNIX]]] Dennis *Ritchie* and Ken *Thompson* <<Thompson-Trust,†>> (1978) _The [.acro .medi]*UNIX* time-sharing system._
   [.provenance]#[.semi]*Bell* System Technical Journal 57.6#
   {scholar}ritchie&title=the+unix+time+sharing+system[¤^]
 
@@ -1163,6 +1204,11 @@
   [.provenance]#SIAM Journal on Algebraic Discrete Methods 6.2#
   {scholar}tarjan&title=amortized+computational+complexity[¤^]
 
+* [[[C4-Collector]]] Gil *Tene*, Balaji *Iyengar* and Michael *Wolf* (2011)
+  _C4: The continuously concurrent compacting collector._
+  [.provenance]#Proc. of Intl. Symposium on Memory Management#
+  {scholar}tene&title=c4+the+continuously+concurrent+compacting+collector[¤^]
+
 * [[[Thompson-Trust]]] Ken *Thompson* <<UNIX,†>> (1984) _Reflections on trusting trust._ [.provenance]#Comm. of ACM 27.8#
   {scholar}thompson&title=reflections+on+trusting+trust[¤^]
 
@@ -1265,6 +1311,12 @@ to be _spent in finding errors in my own programs._"
   {scholar}wilson&title=dynamic+storage+allocation[¤^]
 
 [[bib-y]]
+* [[[Native-Client]]] Bennet *Yee*, David *Sehr*, Gregory *Dardyk*, Brad *Chen*, Robert *Muth*,
+  Tavis *Ormandy*, Shiki *Okasaka*, Neha *Narula* and Nicholas *Fullagar* (2009)
+  _Native Client: A sandbox for portable, untrusted x86 native code._
+  [.provenance]#IEEE Symposium on Security and Privacy#
+  {scholar}yee&title=native+client+a+sandbox+for+portable+untrusted[¤^] • see <<Sandboxing-JITs>>
+
 * [[[UTF-8]]] Francois *Yergeau* (2003) _UTF-8 -- a transformation format of ISO 10646._
   [.provenance]##STD 63, RFC 3629, [.acro]#DOI 10.17487/RFC3629# ## {rfc}3629[→^] •
   https://en.wikipedia.org/wiki/UTF-8[wiki^]

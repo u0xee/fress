@@ -5,24 +5,11 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-pub mod unit;
-pub mod line;
-pub mod segment;
-pub mod anchor;
-pub mod anchored_line;
-pub mod anchored_range;
-pub mod schedule;
+extern crate fress;
+use fress::*;
 
-pub use self::unit::Unit;
-pub use self::line::Line;
-pub use self::segment::Segment;
-pub use self::anchor::Anchor;
-pub use self::anchored_line::AnchoredLine;
-pub use self::anchored_range::AnchoredRange;
-
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
+#[test]
+fn test_a() {
+    assert_eq!(vector().conj(7.into()), vec![7].into());
 }
+

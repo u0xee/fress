@@ -17,7 +17,7 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 [dependencies]
 
 [features]
-default = ["anchor_non_atomic", "segment", "eval", "trace"]
+default = ["segment", "eval", "trace"]
 
 anchor_non_atomic = []
 eval = []

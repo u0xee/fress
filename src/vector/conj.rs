@@ -59,6 +59,7 @@ pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
             tails.to(t);
             tails.split();
             if tail.unalias() == 0 {
+                //panic!("Race condition releasing tail!");
                 tails.retire();
                 Segment::free(tail);
             }
@@ -194,6 +195,7 @@ pub fn unalias_edge_path(mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine
                 range.to(t);
                 range.alias();
                 if s.unalias() == 0 {
+                    //panic!("Race condition unalias_edge_path");
                     range.unalias();
                     Segment::free(s);
                 }
@@ -225,6 +227,7 @@ pub fn unalias_grown_index(curr: AnchoredLine, grown_digit: u32) -> AnchoredLine
         range.to(t);
         range.alias();
         if s.unalias() == 0 {
+            //panic!("Race condition unalias_grown_index");
             range.unalias();
             Segment::free(s);
         }

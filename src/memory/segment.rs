@@ -31,7 +31,6 @@ pub struct Segment {
 
 impl Segment {
     pub fn new(cap: u32) -> Segment {
-        inc_new_count();
         let anchored = {
             let mut unanchored = unanchored_new(cap);
             unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
@@ -49,7 +48,6 @@ impl Segment {
     }
 
     pub fn free(s: Segment) {
-        inc_free_count();
         //log!("Free segment, capacity {}, @ 0x{:016X}", s.capacity(), s.line().unit().u());
         let a = Anchor::from(s.anchor_line[0]);
         #[cfg(any(test, feature = "segment_free"))]
@@ -65,30 +63,42 @@ impl Segment {
     pub fn capacity(&self) -> u32 { self.anchor_line[0].anchor().capacity() }
 
     pub fn is_aliased(&self) -> bool {
-        let real_ret = self.anchor_line[0].anchor().is_aliased();
-        if cfg!(feature = "fuzz_segment_spurious_aliased") {
+        if cfg!(feature = "anchor_non_atomic") {
+            let real_ret = self.anchor_line[0].anchor().is_aliased();
+            real_ret
+        } else {
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            let ptr = self.anchor_line.star() as *const usize as *const AtomicUsize;
+            let curr = unsafe { (&*ptr).load(Ordering::SeqCst) };
+            let real_ret = Unit::from(curr).anchor().is_aliased();
+            if real_ret {
+                use memory::schedule;
+                schedule::step();
+            }
+            real_ret
+        }
+        /*if cfg!(feature = "fuzz_segment_spurious_aliased") {
             use random::fuzz;
             let (seed, _log_tail) = fuzz::next_random();
             let spurious = ((seed ^ (seed >> 32)) & 0x7) == 0x7;
             real_ret || spurious
         } else {
             real_ret
-        }
+        }*/
     }
-
     pub fn alias(&self) {
-        //log!("Segment alias");
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.aliased();
             let mut x = *self;
             x.anchor_line[0] = new_a.into();
         } else {
-            unimplemented!()
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            let ptr = self.anchor_line.star() as *const usize as *const AtomicUsize;
+            let prev = unsafe { (&*ptr).fetch_add(1, Ordering::SeqCst) };
         }
     }
     pub fn unalias(&self) -> u32 {
-        //log!("Segment unalias");
         if cfg!(feature = "anchor_non_atomic") {
             let a: Anchor = self.anchor_line[0].into();
             let new_a = a.unaliased();
@@ -96,8 +106,24 @@ impl Segment {
             x.anchor_line[0] = new_a.into();
             new_a.aliases()
         } else {
-            unimplemented!()
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            let ptr = self.anchor_line.star() as *const usize as *const AtomicUsize;
+            let prev = unsafe { (&*ptr).fetch_sub(1, Ordering::SeqCst) };
+            let new_anchor = Unit::from(prev - 1).anchor();
+            if new_anchor.aliases() == 0 {
+                use memory::schedule;
+                schedule::step();
+            }
+            new_anchor.aliases()
         }
+    }
+    // TODO atomic inc/dec
+    //      unalias_void (no check)
+    //      prefer set to index assignment operator
+    pub fn unalias_expect_nonzero(&self) {
+        // unalias expecting > 0
+        // don't instrument as decision point
+        unimplemented!()
     }
 
     pub fn get(&self, index: u32) -> Unit { self[index] }
@@ -195,6 +221,7 @@ pub fn unanchored_new(cap: u32) -> Segment {
 }
 
 pub fn alloc(raw_cap: u32) -> Line {
+    count_new(raw_cap);
     let v: Vec<Unit> = Vec::with_capacity(raw_cap as usize);
     let ptr = v.as_ptr();
     mem::forget(v);
@@ -202,6 +229,7 @@ pub fn alloc(raw_cap: u32) -> Line {
 }
 
 pub fn dealloc(line: Line, raw_cap: u32) {
+    count_free(raw_cap);
     #[cfg(any(test, feature = "segment_erase"))]
         {
             let mut line = line;
@@ -248,18 +276,48 @@ impl IndexMut<u32> for Segment {
 }
 
 // TODO collect event counts and mem units totals
-//  Total allocated: segment count and units sum
-//  Total freed: segment count and units sum
 //  Map of segment sizes (in units) to segment count allocated and freed
+
+#[derive(Copy, Clone, Debug)]
+pub struct Usage {
+    pub new_count: u64,
+    pub new_units: u64,
+    pub free_count: u64,
+    pub free_units: u64,
+}
+impl Usage {
+    pub fn new() -> Usage {
+        Usage { new_count: 0, new_units: 0, free_count: 0, free_units: 0 }
+    }
+    pub fn add(mut self, other: &Usage) -> Usage {
+        self.new_count += other.new_count;
+        self.new_units += other.new_units;
+        self.free_count += other.free_count;
+        self.free_units += other.free_units;
+        self
+    }
+}
 use std::cell::Cell;
 thread_local! {
-    pub static NEW_COUNT: Cell<u64> = Cell::new(0);
-    pub static FREE_COUNT: Cell<u64> = Cell::new(0);
+    pub static USAGE: Cell<Usage> = Cell::new(Usage::new());
 }
-pub fn inc_new_count() { NEW_COUNT.with(|c| c.set(c.get() + 1)) }
-pub fn inc_free_count() { FREE_COUNT.with(|c| c.set(c.get() + 1)) }
+pub fn usage() -> Usage { USAGE.with(|c| c.get()) }
+pub fn set_usage(u: Usage) { USAGE.with(|c| c.set(u)) }
+pub fn count_new(capacity: u32) {
+    let mut u = usage();
+    u.new_count += 1;
+    u.new_units += capacity as u64;
+    set_usage(u);
+}
+pub fn count_free(capacity: u32) {
+    let mut u = usage();
+    u.free_count += 1;
+    u.free_units += capacity as u64;
+    set_usage(u);
+}
 pub fn new_free_counts() -> (u64, u64) {
-    (NEW_COUNT.with(|c| c.get()), FREE_COUNT.with(|c| c.get()))
+    let u = usage();
+    (u.new_count, u.free_count)
 }
 
 #[cfg(test)]

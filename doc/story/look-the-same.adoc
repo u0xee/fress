@@ -1,0 +1,392 @@
+= image:logo/shield.svg[fress,47,link="./"] They sure look the same! [.subtitle]##_A fun bughunt leads to the usual suspect_ ##
+Cole Frederick
+:revdate: April 21, 2021
+
+My eyes widened in horror; the error message *made no sense*..
+My Rust project skirts the language's guardrails when implementing
+core functionality (like memory management, memory layout, polymorphism),
+and this nonsense error was surely my chickens coming home to roost.
+In diagnosing the error, I learned about the interaction between
+a compiler added attribute, an [.acro]#LLVM# optimization,
+and an assertion I had written months ago
+-- <<TL;DR>>
+
+== The Symptom
+The offending code asserts that a number is zero, like this:
+`assert_eq!(0, x)`.
+It failed, complaining that the two numbers are _not equal_:
+
+[source,subs=+quotes]
+----
+thread 'main' panicked at:
+assertion *failed*: (left == right)
+  left: 0
+ right: 0
+----
+
+Normally, when an _equality_ assertion _fails_, we would see two _different_
+numbers printed. Not here. So why did this fail?
+
+First off, debug builds (without inlining, constant propagation, etc)
+always pass the assertion. Only optimized builds fail the assertion.
+Printing the number (before the assertion) confirms it is zero. _But_ adding a
+print has the side effect that the assertion now passes! Ideally,
+printing a local variable would have no effect on the control flow of the program.
+
+Using a debugger also confirms the number _really is_ zero.
+So why is the assertion failing?
+
+== What's happening?
+To get a look at the program being produced, we can ask the Rust compiler tool
+to emit [.acro]#LLVM-IR# and assembly:
+
+[source,shell]
+----
+$ RUSTFLAGS="--emit llvm-ir,asm" cargo build --release
+----
+
+(You can ignore these assembly snippets,
+they are not important for following the story.
+You can <<after-asm,skip>> them.)
+
+.[.acro]#LLVM-IR# for the function
+[source,llvm]
+----
+; <fress::symbol::Symbol_ as fress::dispatch::Distinguish>::eq
+; Function Attrs: nonlazybind uwtable
+define zeroext i1 @"_ZN71_$LT$fress..symbol..Symbol_
+                    $u20$as$u20$fress..dispatch..Distinguish$GT$2
+                    eq17heb3954f6f633f085E"
+  (%"symbol::Symbol_"* noalias nonnull readonly align 1 %self,
+   i64* %prism.0, i32 %prism.1, i64 %other) unnamed_addr #7 {
+start:
+%_23.i = alloca i64*, align 8
+%_21.i = alloca i64*, align 8
+%_18.i = alloca [2 x { i8*, i64* }], align 8
+%_11.i = alloca %"std::fmt::Arguments", align 8
+%self_usize.i = alloca i64, align 8
+%self_usize = ptrtoint %"symbol::Symbol_"* %self to i64
+%0 = bitcast i64* %self_usize.i to i8*
+call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %0)
+store i64 %self_usize, i64* %self_usize.i, align 8
+%1 = bitcast %"std::fmt::Arguments"* %_11.i to i8*
+call void @llvm.lifetime.start.p0i8(i64 48, i8* nonnull %1)
+%2 = bitcast [2 x { i8*, i64* }]* %_18.i to i8*
+call void @llvm.lifetime.start.p0i8(i64 32, i8* nonnull %2)
+%3 = bitcast i64** %_21.i to i8*
+call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %3)
+store i64* bitcast (<{ [8 x i8] }>* @alloc2182 to i64*),
+      i64** %_21.i, align 8
+%4 = bitcast i64** %_23.i to i8*
+call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %4)
+store i64* %self_usize.i, i64** %_23.i, align 8
+%5 = bitcast [2 x { i8*, i64* }]* %_18.i to i64***
+store i64** %_21.i, i64*** %5, align 8
+%6 = getelementptr inbounds [2 x { i8*, i64* }],
+     [2 x { i8*, i64* }]* %_18.i, i64 0, i64 0, i32 1
+store i64* bitcast (i1 (i64**, %"std::fmt::Formatter"*)*
+      @"_ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3
+        fmt17h4fe07cec5c3f1898E" to i64*), i64** %6, align 8
+%7 = getelementptr inbounds [2 x { i8*, i64* }],
+     [2 x { i8*, i64* }]* %_18.i, i64 0, i64 1, i32 0
+%8 = bitcast i8** %7 to i64***
+store i64** %_23.i, i64*** %8, align 8
+%9 = getelementptr inbounds [2 x { i8*, i64* }],
+     [2 x { i8*, i64* }]* %_18.i, i64 0, i64 1, i32 1
+store i64* bitcast (i1 (i64**, %"std::fmt::Formatter"*)*
+      @"_ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3
+        fmt17h4fe07cec5c3f1898E" to i64*), i64** %9, align 8
+%10 = bitcast %"std::fmt::Arguments"* %_11.i to
+      [0 x { [0 x i8]*, i64 }]**
+store [0 x { [0 x i8]*, i64 }]* bitcast
+      (<{ i8*, [8 x i8], i8*, [8 x i8], i8*, [8 x i8] }>*
+      @alloc5703 to [0 x { [0 x i8]*, i64 }]*),
+      [0 x { [0 x i8]*, i64 }]** %10, align 8,
+      !alias.scope !21826, !noalias !21829
+%11 = getelementptr inbounds %"std::fmt::Arguments",
+      %"std::fmt::Arguments"* %_11.i, i64 0, i32 1, i32 1
+store i64 3, i64* %11, align 8,
+      !alias.scope !21826, !noalias !21829
+%12 = getelementptr inbounds %"std::fmt::Arguments",
+      %"std::fmt::Arguments"* %_11.i, i64 0, i32 3, i32 0
+store i64* null, i64** %12, align 8,
+      !alias.scope !21826, !noalias !21829
+%13 = getelementptr inbounds %"std::fmt::Arguments",
+      %"std::fmt::Arguments"* %_11.i, i64 0, i32 5, i32 0
+%14 = bitcast [0 x { i8*, i64* }]** %13
+      to [2 x { i8*, i64* }]**
+store [2 x { i8*, i64* }]* %_18.i, [2 x { i8*, i64* }]** %14,
+      align 8, !alias.scope !21826, !noalias !21829
+%15 = getelementptr inbounds %"std::fmt::Arguments",
+      %"std::fmt::Arguments"* %_11.i, i64 0, i32 5, i32 1
+store i64 2, i64* %15, align 8,
+      !alias.scope !21826, !noalias !21829
+; call core::panicking::panic_fmt
+call void @_ZN4core9panicking9panic_fmt17hcd56f7f635f62c74E
+ (%"std::fmt::Arguments"* noalias nocapture nonnull
+                          dereferenceable(48) %_11.i,
+  %"std::panic::Location"* noalias readonly align 8
+    dereferenceable(24) bitcast (<{ i8*, [16 x i8] }>*
+    @alloc9130 to %"std::panic::Location"*))
+unreachable
+}
+----
+
+.Assembly for the function
+[source,x86asm]
+----
+.section ".text._ZN71_$LT$fress..symbol..Symbol_
+          $u20$as$u20$fress..dispatch..Distinguish$GT$2
+          eq17heb3954f6f633f085E"
+sub    rsp, 104
+mov    qword ptr [rsp], rdi
+lea    rax, [rip + .Lalloc2183]
+mov    qword ptr [rsp + 8], rax
+mov    rax, rsp
+mov    qword ptr [rsp + 16], rax
+lea    rax, [rsp + 8]
+mov    qword ptr [rsp + 24], rax
+lea    rax, [rip + _ZN42_$LT$$RF$T$u20$as$u20$
+       core..fmt..Debug$GT$3fmt17h4fe07cec5c3f1898E]
+mov    qword ptr [rsp + 32], rax
+lea    rcx, [rsp + 16]
+mov    qword ptr [rsp + 40], rcx
+mov    qword ptr [rsp + 48], rax
+lea    rax, [rip + .Lalloc5703]
+mov    qword ptr [rsp + 56], rax
+mov    qword ptr [rsp + 64], 3
+mov    qword ptr [rsp + 72], 0
+lea    rax, [rsp + 24]
+mov    qword ptr [rsp + 88], rax
+mov    qword ptr [rsp + 96], 2
+lea    rsi, [rip + .Lalloc9130]
+lea    rdi, [rsp + 56]
+call   qword ptr [rip + _ZN4core9panicking9
+       panic_fmt17hcd56f7f635f62c74E@GOTPCREL]
+ud2
+----
+
+[[after-asm]]
+There is a lot going on, but something is conspicuously missing: *branches*!
+An `assert` normally performs a test, then _branches_ to either halting the program
+[.underline]#or# continuing the program.
+
+Instead, this code performs string formatting and calls the `panic` entry point,
+which is not expected to ever return, as evidenced by the
+https://www.felixcloutier.com/x86/ud[`ud2`^] instruction or `unreachable`
+that follows the call. The code _unconditionally_ prints a failed assertion
+and halts the program, *regardless* of whether the number is zero or not.
+It doesn't even check.
+
+We can ask the compiler tool to skip [.acro]#LLVM# optimization passes entirely:
+[source,shell]
+----
+$ RUSTFLAGS="-C no-prepopulate-passes --emit llvm-ir,asm" cargo build --release
+----
+
+Without optimization passes, we can see the branch in the program as we would expect.
+The code tests the input, and branches to either halting the program
+(failed assertion) or continuing on to other work.
+
+.Assembly w/o optimizations: has branch point
+[source,x86asm]
+----
+; ...
+cmp    qword ptr [rip + .Lalloc2183], rdi
+jne    .LBB3998_5
+; ...
+----
+
+.[.acro]#LLVM-IR# w/o optimizations: has branch point
+[source,llvm]
+----
+; ...
+%_12 = icmp eq i64 %_13, %_14
+%_11 = xor i1 %_12, true
+br i1 %_11, label %bb1, label %bb2
+; ...
+----
+
+Before optimization passes, the code tests and branches.
+After optimization, only one branch remains, the other has been pruned.
+Why would an optimization get rid of a test?
+Because *it assumed it already knew the answer*.
+It's time to look at the Rust code.
+
+== Why it happens
+The number compared to zero is special, it was cast from a reference.
+A reference in Rust is a pointer (a memory address). Specifically,
+it is a pointer to an *existing* structure in memory (on the stack or the heap).
+Here, you can see the `eq` function takes an argument `self` which
+is a reference to a `Symbol_` struct. It casts this pointer to
+an integer and asserts it is zero:
+
+[source,rust]
+----
+impl Distinguish for Symbol_ {
+    fn eq(&self, /* ... */) -> bool {
+        assert_eq!(0, self as *const Symbol_ as usize);
+        // ...
+----
+
+How can [.acro]#LLVM# optimizations presume this assertion always fails?
+Well, look at how the Rust compiler declares the `self` argument:
+
+.[.acro]#LLVM-IR# argument declaration
+[source,llvm]
+----
+%"symbol::Symbol_"* noalias nonnull readonly align 1 %self
+----
+
+It is declared as a `nonnull` pointer to a `Symbol_`, meaning it
+should never be the all-zero bit pattern. This is consistent with
+the Rust language rule that references are pointers to existing
+structures, and address zero is never used for storage.
+
+From the premise that the pointer is *never null*, optimization passes
+conclude that casting it to an integer produces a number that
+is *never zero*. So comparing to zero should always fail, and
+the produced code does not include a test at all.
+
+=== When the optimization applies
+As previously mentioned, printing the number prior to the assertion
+impairs the optimization that prunes the branch. In theory, printing
+a number should have no effect on the compiler's assumptions about
+that number, and optimizations based on those assumptions.
+
+But there are plenty of variations that the optimizations _will_ see through,
+and still prune the branch.
+You can stuff the number in a struct member, pull it out, then assert.
+The branch is still pruned. You can bitwise cast into a float and back,
+then assert, and the optimization still applies. You can separate out the
+assertion into a function:
+
+[source,rust]
+----
+fn assert_zero(x: usize) { assert_eq!(0, x) }
+----
+
+The optimization passes will inline the function and prune the branch
+just the same. Calling `assert_zero` from multiple places in the
+codebase doesn't matter; the compiler will inline, specialize and prune.
+However, telling the compiler not to inline _will_ prevent the pruning,
+and the assertion passes (since `x` really _is_ zero):
+
+[source,rust]
+----
+#[inline(never)]
+fn assert_zero(x: usize) { assert_eq!(0, x) }
+----
+
+The optimizations see through some bitwise and mathematical
+operations, but not others:
+
+[source,rust]
+----
+// Presumes test result; prunes branch
+assert_eq!(!0, !x);
+assert_eq!( 0, x.swap_bytes());
+assert_eq!( 0, x.rotate_left(0));
+assert_eq!( 0, x.pow(1));
+
+// Preserves test and both branches
+assert_eq!( 0, x.rotate_left(17));
+assert_eq!(64, x.count_zeros());
+assert_eq!( 0, x.count_ones());
+assert_eq!( 0, x.reverse_bits());
+assert_eq!(64, x.leading_zeros());
+----
+
+The `leading_zeros` assertion does not eliminate the test,
+but _does_ use the assumption of a non-zero `x` to compile a
+specialized calculation that gives nondeterministic results
+when `x` is zero.
+
+.Computing `leading_zeros` assuming input is *not zero*
+[source,x86asm]
+----
+bsr    rax, rdi
+xor    rax, 63
+----
+
+.Computing `leading_zeros` on arbitrary input
+[source,x86asm]
+----
+mov    rax, 64
+test   rdi, rdi
+je     .done
+bsr    rax, rdi
+xor    rax, 63
+.done:
+----
+
+The https://www.felixcloutier.com/x86/bsr[`bsr`^] instruction gives
+the highest one-bit position, and ``xor``ing with 63 flips that to
+the count of leading zero bits. However, `bsr` is not defined on
+an input of zero. That's why the general case tests if the
+input is zero (`test rdi, rdi`) and either returns 64 or performs
+the `bsr` calculation.
+
+When it assumes the input is not zero, but then the
+input actually _is_ zero, we get undefined results (whatever happens to
+be in `rax` beforehand; in this case the address of the current function).
+The run-to-run nondeterminism of this address is a consequence of
+https://en.wikipedia.org/wiki/Address_space_layout_randomization[layout randomization^].
+
+== The [.big]#Elephant# [.small]#in the Room#
+The compiler was _so_ sure the number wouldn't be zero.
+Who broke the rule and passed a zero? I did, of course.
+The number was supposed to be a pointer to an _existing_
+`Symbol_` struct.
+But _there are no_ existing `Symbol_` structs, at any
+point in the program; they are *never* created.
+
+What is the purpose of a struct that never exists in memory?
+It defines a virtual table (an array of functions).
+`Distinguish` is an interface (trait in Rust) that defines several
+function names and signatures, including `eq`.
+Here, we are implementing this interface for `Symbol_`:
+
+[source,rust]
+----
+impl Distinguish for Symbol_ {
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        assert_eq!(0, self as *const Symbol_ as usize);
+        // ...
+----
+
+Chunks of heap memory (managed separately) store the
+base address of the virtual table. Later, a caller will
+want to invoke one of the functions in the table;
+what should they pass as the `self` parameter?
+There is nothing suitable to pass, so I just pass
+some arbitrary bit pattern (zero is as good as any other).
+The arguments after `self` are the _real_ parameters to the
+function, which identify chunks of heap memory.
+
+== Where is the bug?
+The compiler assumed the parameter would never be zero;
+I broke the rules and passed a zero anyway,
+leading to a failing assertion confusingly stating `0 != 0`.
+We understand how and why this happens.
+Now, what should I do to fix things?
+
+I could use `rotate_left(17)`
+or pick a _non-zero_ arbitrary bit pattern (42 maybe)
+to pass as `self`, then the assertion would work just fine.
+But the real issue is _I don't care_ about `self`, it's an
+arbitrarily chosen number that is used *only once*
+in my entire project: in _that_ assertion.
+
+I wrote the assertion to help me confirm that the virtual
+function was receiving the arguments I thought it should;
+it served its purpose.
+Now verifying an _unused_ and _arbitrary_ number just isn't useful,
+so I will delete the assertion.
+
+Thus concludes the bug hunt!
+
+== TL;DR
+I passed a zero to code that didn't expect zero,
+leading to unexpected behavior. Ultimately,
+I didn't need that code, so I deleted it.

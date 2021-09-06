@@ -1,3 +1,4 @@
+[bibliography]
 == Bibliography
 :scholar: https://scholar.google.com/scholar_lookup?author=
 :rfc: https://tools.ietf.org/html/rfc
@@ -5,7 +6,7 @@
 // TODO add infoq, podcasts, conf presentations, languages
 // « » … † ¶ ↑ → ∞
 
-// Bracha Dynamic Class Loading
+// McKenney Memory Barriers: a Hardware View for Software Hackers
 // Learning-based controlled concurrency testing
 // Dietz Persistence, Amortization and Randomization
 // Concurrency  Testing  Using  Schedule  Bounding
@@ -371,17 +372,22 @@
   [.provenance]#ACM [.acro .semi]*SIGPLAN* Notices 33.10#
   {scholar}clarke&title=ownership+types+for+flexible+alias+protection[¤^]
 
-* [[[Clarke-Thesis]]] David *Clarke* (2001) _Object ownership and containment_
+* [[[Clarke-Thesis]]] David *Clarke* (2001) _Object ownership and containment._
   [.provenance]#Doctoral thesis, University of [.semi]*New South Wales*, Australia#
   {scholar}clarke&title=object+ownership+and+containment[¤^]
 
 * [[[Clebsch]]] Sylvan *Clebsch* et al. (2015)
-  _Ownership and reference counting based garbage collection in the actor world_
+  _Ownership and reference counting based garbage collection in the actor world._
   [.provenance]#[.acro]##ICOOOLPS## ACM#
   {scholar}clebsch&title=ownership+and+reference+counting+based+garbage+collection[¤^]
 
+* [[[Subtype-Checking]]] Cliff *Click* and John *Rose* (2002)
+  _Fast subtype checking in the HotSpot JVM._
+  [.provenance]#Proc. of ACM-ISCOPE Conf on Java Grande#
+  {scholar}click&title=fast+subtype+checking+in+the+hotspot+jvm[¤^]
+
 * [[[Clinger-Continuation]]] William *Clinger*, Anne *Hartheimer* and Eric *Ost* (1988)
-  _Implementation Strategies for Continuations_
+  _Implementation Strategies for Continuations._
   [.provenance]#Proc. of ACM Conf on [.caps]##Lisp## and Functional Programming#
   {scholar}clinger&title=implementation+strategies+for+continuations[¤^]
 
@@ -862,6 +868,10 @@
 * [[[UUID]]] Paul *Leach*, Michael *Mealling* and Rich *Salz* (2005)
   _[.acro]#UUID#: A Universally Unique IDentifier URN Namespace._
   [.provenance]##RFC 4122, [.acro]#DOI 10.17487/RFC4122# ## {rfc}4122[→^]
+
+* [[[Class-Loading]]] Sheng *Liang* and Gilad *Bracha* (1998) _Dynamic class loading in the Java virtual machine._
+  [.provenance]#ACM [.acro .semi]*SIGPLAN* Notices 33.10#
+  {scholar}liang&title=dynamic+class+loading+in+the+java+virtual+machine[¤^]
 
 * [[[Liljenzin]]] Olle *Liljenzin* (2013) _Confluently Persistent Sets and Maps._
   [.provenance]##[.semi]*arXiv* preprint [.caps]#arXiv:1301.3388# ##

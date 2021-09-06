@@ -119,6 +119,11 @@ impl EdnRdr {
         unsafe { self.buf.set_len(new_len) }
     }
 
+    pub fn clear_buffer(&mut self) {
+        self.buf.clear();
+        self.resume = 0;
+    }
+
     pub fn align_buffer(&mut self) {
         if self.resume != 0 {
             let byte_count = self.buf.len() - self.resume;

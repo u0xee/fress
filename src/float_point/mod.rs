@@ -47,6 +47,7 @@ pub fn blank() -> Guide {
 
 pub fn parse(negate: bool, whole: &[u8], part: &[u8], promote: bool) -> Handle {
     use std::str::from_utf8;
+    // TODO remove underscores from whole, allowing floats like 42_000.0
     let b = format!("{}.{}", from_utf8(whole).unwrap(), from_utf8(part).unwrap());
     if promote { unimplemented!() }
     let mut x = b.parse::<f64>().unwrap();

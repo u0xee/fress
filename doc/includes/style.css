@@ -51,6 +51,9 @@ html{font-size: 100%; text-rendering: optimizeLegibility;}
   background-color: #5881d8;
   color: #fff;
 }
+html {
+  scroll-padding-top: 6px;
+}
 body {
   padding: 0; margin: 0;
   position: relative;
@@ -67,10 +70,14 @@ body {
   profile-pro gitan-latin productus
   livory
   */
-  font-family: gitan-latin, monospace;
+  font-family: gitan-latin, sans-serif;
   font-weight: 400;
   font-style: normal;
   font-feature-settings: 'kern' 1, 'liga' 1, 'onum' 1;
+}
+.cramped {
+  font-family: productus, sans-serif;
+  font-size: 100%;
 }
 
 .caps {
@@ -187,10 +194,10 @@ blockquote cite:before{content:"\2014 \0020"}
 blockquote cite a,blockquote cite a:visited{color:rgba(0,0,0,.6)}
 blockquote,blockquote p{line-height:1.6;color:rgba(0,0,0,.85)}
 @media only screen and (min-width:768px){h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2}
-h1{font-size:2.75em}
-h2{font-size:2.3125em}
-h3,#toctitle,.sidebarblock>.content>.title{font-size:1.6875em}
-h4{font-size:1.4375em}}
+h1{ font-size:2.75em }
+h2{font-size:1.6em}
+h3,#toctitle,.sidebarblock>.content>.title{font-size:1.4em}
+h4{font-size:1.2em}}
 table{background:#fff;margin-bottom:1.25em;border:solid 1px #dedede}
 table thead,table tfoot{background:#f8f8f8;font-weight:bold}
 table thead tr th,table thead tr td,table tfoot tr th,table tfoot tr td{padding:.5em .625em .625em;font-size:inherit;color:rgba(0,0,0,.75);text-align:left}
@@ -202,7 +209,13 @@ h1,h2,h3,#toctitle,.sidebarblock>.content>.title,h4,h5,h6{line-height:1.2;}
 h1 strong,h2 strong,h3 strong,#toctitle strong,.sidebarblock>.content>.title strong,h4 strong,h5 strong,h6 strong{font-weight:400}
 .clearfix:before,.clearfix:after,.float-group:before,.float-group:after{content:" ";display:table}
 .clearfix:after,.float-group:after{clear:both}
-*:not(pre)>code{font-size:.9375em;font-style:normal!important;padding:.1em .5ex;background-color:#f3f3f3;-webkit-border-radius:4px;border-radius:4px;line-height:1.45;text-rendering:optimizeSpeed}
+*:not(pre)>code {
+  font-size:.9375em;
+  font-style:normal!important;padding:.1em .5ex;
+  background-color:#eee;
+  -webkit-border-radius:4px;border-radius:4px;
+  line-height:1.45;text-rendering:optimizeSpeed
+}
 pre,pre>code{
   line-height:1.45;
   font-family: source-code-pro, monospace;
@@ -235,7 +248,10 @@ b.button:before,b.button:after{position:relative;top:-1px;font-weight:400}
 b.button:before{content:"[";padding:0 3px 0 2px}
 b.button:after{content:"]";padding:0 2px 0 3px}
 p a>code:hover{color:rgba(0,0,0,.9)}
-#header,#content,#footnotes,#footer{width:100%;margin-left:auto;margin-right:auto;margin-top:0;margin-bottom:0;max-width:45em;*zoom:1;position:relative;padding-left:.6em;padding-right:.6em}
+#header,#content,#footnotes,#footer{
+  width:100%;margin-left:auto;margin-right:auto;margin-top:0;margin-bottom:0;*zoom:1;position:relative;padding-left:.6em;padding-right:.6em;
+  max-width:45em; /* Document width */
+}
 #header:before,#header:after,#content:before,#content:after,#footnotes:before,#footnotes:after,#footer:before,#footer:after{content:" ";display:table}
 #header:after,#content:after,#footnotes:after,#footer:after{clear:both}
 #content{margin-top:1.25em}
@@ -330,8 +346,9 @@ table.tableblock #preamble>.sectionbody>.paragraph:first-of-type p{font-size:inh
 .sidebarblock .literalblock pre,.sidebarblock .listingblock pre:not(.highlight),.sidebarblock .listingblock pre[class="highlight"],.sidebarblock .listingblock pre[class^="highlight "],.sidebarblock .listingblock pre.CodeRay,.sidebarblock .listingblock pre.prettyprint{background:#f2f1f1}
 .literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{-webkit-border-radius:4px;border-radius:4px;word-wrap:break-word;padding:1em;font-size:.9em}
 .literalblock pre.nowrap,.literalblock pre[class].nowrap,.listingblock pre.nowrap,.listingblock pre[class].nowrap{overflow-x:auto;white-space:pre;word-wrap:normal}
-@media only screen and (min-width:768px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:.90625em}}
-@media only screen and (min-width:1280px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:1em}}
+@media only screen and (min-width:350px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:.80em}}
+@media only screen and (min-width:768px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:.85em}}
+@media only screen and (min-width:1280px){.literalblock pre,.literalblock pre[class],.listingblock pre,.listingblock pre[class]{font-size:.90em}}
 .literalblock.output pre{color:#f7f7f7;background-color:rgba(0,0,0,.9)}
 .listingblock pre.highlightjs{padding:0}
 .listingblock pre.highlightjs>code{padding:1em;-webkit-border-radius:4px;border-radius:4px}
@@ -574,5 +591,20 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
   line-height: 270%;
   color: #404040;
   padding-left: 6px;
+}
+
+#full-bar {
+  z-index: 9998;
+  width: 100%;
+  background-color: #63b132;
+}
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  z-index: 9999;
+  width: 0%;
+  background-color: #de1a5c;
 }
 

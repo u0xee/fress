@@ -1,0 +1,24 @@
+= Persistent Data Structures, what are they good for
+
+
+* Zach *Allaun* (2013) _Functional Vectors, Maps and Sets in Julia._
+  [.provenance]#Strange Loop#
+  https://youtu.be/ZFiAPUkDb-o[watch^]
+
+
+* Michael J. *Steindorfer* (2016) _Immutable Collections._
+  [.provenance]#JVM Language Summit#
+  https://youtu.be/pUXeNAeyY34[watch^]
+
+
+// Ullrich Counting Immutable Beans: Reference Counting Optimized for
+//   Purely Functional Programming
+// jahej.com Ideal Hash Tries by Alex Evans
+// github.com philsquared hash_trie (see holy grail videos)
+// eonil persistent data structure, github eonil swift hamt
+// popcount.org introduction to hamt
+// attaswift btree github
+// augustl.com you have to know about persistent data structures
+// arpitbhayani.me fully persistent arrays
+
+

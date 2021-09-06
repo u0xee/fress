@@ -1,3 +1,4 @@
+[glossary]
 == Glossary
 [glossary]
 aggregate:: a group (flock, herd). Information that is logically a grouping of other information, like a _list_ of telephone numbers.

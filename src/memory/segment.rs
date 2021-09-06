@@ -36,7 +36,7 @@ impl Segment {
             unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
             unanchored
         };
-        //log!("New segment, capacity {}, @ 0x{:016X}", cap, anchored.line().unit().u());
+        println!("New segment({:?}) capacity {}", anchored.line().unit(), cap);
         #[cfg(any(test, feature = "segment_clear"))]
             {
                 let mut anchored = anchored;
@@ -48,7 +48,7 @@ impl Segment {
     }
 
     pub fn free(s: Segment) {
-        //log!("Free segment, capacity {}, @ 0x{:016X}", s.capacity(), s.line().unit().u());
+        println!("Free segment({:?}), capacity {}", s.line().unit(), s.capacity());
         let a = Anchor::from(s.anchor_line[0]);
         #[cfg(any(test, feature = "segment_free"))]
             assert_eq!(a.aliases(), 0,
@@ -225,10 +225,12 @@ pub fn alloc(raw_cap: u32) -> Line {
     let v: Vec<Unit> = Vec::with_capacity(raw_cap as usize);
     let ptr = v.as_ptr();
     mem::forget(v);
+    println!("alloc({}) -> {:?}", raw_cap, Unit::from(ptr));
     Unit::from(ptr).into()
 }
 
 pub fn dealloc(line: Line, raw_cap: u32) {
+    println!("dealloc({:?}, {})", line, raw_cap);
     count_free(raw_cap);
     #[cfg(any(test, feature = "segment_erase"))]
         {
@@ -245,8 +247,8 @@ pub fn dealloc(line: Line, raw_cap: u32) {
 }
 pub fn recycle(line: Line, raw_cap: u32) {
     unsafe {
-        let v: Vec<Unit> = Vec::from_raw_parts(line.line as *mut Unit,
-                                               0, raw_cap as usize);
+        let v: Vec<Unit> =
+            Vec::from_raw_parts(line.line as *mut Unit, 0, raw_cap as usize);
         mem::drop(v);
     }
 }
@@ -256,8 +258,10 @@ impl Index<u32> for Segment {
     fn index(&self, index: u32) -> &Self::Output {
         #[cfg(any(test, feature = "segment_bounds"))]
         assert!(index < self.capacity(),
-                "segment_bounds: accessing index = {}, segment capacity = {}.",
-                index, self.capacity());
+                "segment_bounds ({:?}): accessing index = {}, segment capacity = {}.",
+                self.anchor_line.unit(), index, self.capacity());
+        println!("Segment Index({:?}:{})[{}]",
+                 self.anchor_line.unit(), self.capacity(), index);
         &self.anchor_line[1 + index]
     }
 }
@@ -265,12 +269,14 @@ impl IndexMut<u32> for Segment {
     fn index_mut(&mut self, index: u32) -> &mut Self::Output {
         #[cfg(any(test, feature = "segment_bounds"))]
         assert!(index < self.capacity(),
-                "segment_bounds: accessing index = {}, segment capacity = {}.",
+                "segment_bounds: writing index = {}, segment capacity = {}.",
                 index, self.capacity());
         #[cfg(any(test, feature = "segment_mut"))]
         assert_eq!(self.anchor().aliases(), 1,
                 "segment_mut: writing index = {}, segment aliases = {}.",
                 index, self.anchor().aliases());
+        println!("Segment IndexMut({:?}:{})[{}]",
+                 self.anchor_line.unit(), self.capacity(), index);
         &mut self.anchor_line[1 + index]
     }
 }

@@ -1,0 +1,20 @@
+= image:logo/shield.svg[fress,47,link="./"] Coming to Clojure
+Cole Frederick
+:revdate: July 24, 2021
+
+I was deeply skeptical.
+
+I was very confident that the Common Lisp committee had
+included each of the myriad features because any less wouldn't do;
+and here was this upstart so-called Lisp that was missing, frankly,
+three quarters of the exquisite affordances of CL.
+It didn't even have symbol macros, what crude primitivism.
+
+I came to Clojure thinking the Lisp part was im
+In the end, the sliding tile drove logic that deleted the wrong tile.
+3 different board representations, mostly out of sync with each other
+Trace on a board the tangled web of initialization activity,
+bouncing around static code changing global variables.
+
+Slide up and slide down.
+

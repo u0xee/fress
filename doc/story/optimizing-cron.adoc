@@ -1,0 +1,4 @@
+Time spent optimizing set operations
+
+Sets with only dozens of elements, in a Sunday night cron job.
+

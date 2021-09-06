@@ -164,17 +164,23 @@ pub fn last_day(month: u8, year: u32) -> u8 {
         28 + if is_leap(year) { 1 } else { 0 }
     } else {
         let last = [31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-        last[month as usize]
+        last[month as usize - 1]
     }
 }
 
 pub fn is_good(p: &Point) -> bool {
-    if p.year >= 10_000 || p.month < 1 || p.month > 12 || p.day < 1 || p.day > last_day(p.month, p.year) {
+    if p.year >= 10_000 ||
+       p.month < 1 || p.month > 12 ||
+       p.day < 1 || p.day > last_day(p.month, p.year) {
+        // Bad year, month, day
         return false
     }
-    if p.hour > 23 || p.min > 59 || p.sec > 60 || p.nano >= 1_000_000_000 || p.off_hour > 23 || p.off_min > 59 {
+    if p.hour > 23 || p.min > 59 || p.sec > 60 || p.nano >= 1_000_000_000 ||
+       p.off_hour > 23 || p.off_min > 59 {
+        // Bad hour, min, sec, nano
         return false
     }
+    // Bad leap second (not at the end of the hour)
     if p.sec == 60 && p.min != 59 { return false }
     true
 }

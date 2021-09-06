@@ -5,8 +5,17 @@
 ;; By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 ;; You must not remove this notice, or any other, from this software.
 
-(require '[clojure.spec.alpha :as s])
-(require '[clojure.spec.gen.alpha :as gen])
+(ns fress.specs
+  (:require [clojure.spec.alpha :as s]
+            [clojure.spec.gen.alpha :as gen]
+            [clojure.spec.test.alpha :as stest]
+            [clojure.pprint :refer [pprint]]
+            [clojure.java.shell :refer [sh]])
+  (:import (java.lang ProcessBuilder Process)))
+
+(def {})
+(println "Hello there you")
+(def x 7)
 
 (gen/sample (s/gen int?))
 (gen/sample (s/gen (s/every int? :into #{})))
@@ -14,6 +23,19 @@
 (s/def :code/blue (s/every int? :into #{}))
 (s/explain :code/blue #{1, 2, 3.})
 
+(defn say-hello []
+      (println "Say-hello there!"))
+(defn -main []
+  (println "Hello from -main"))
+
+;(stest/check `plus-one {:clojure.spec.test.check/opts {:num-tests 5000}})
+
+;; Idea
+; Rust binary with echo endpoint
+; Drive fn stub that defers to Rust binary
+; Drive fn checks
+
+"
 Spec
 Specize
 abbrev
@@ -147,5 +169,5 @@ symbol-ns
 tuple
 uuid
 vector
-vector-distinct
+vector-distinct"
 

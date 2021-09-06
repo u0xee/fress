@@ -1,0 +1,26 @@
+= image:logo/shield.svg[fress,47,link="./"] Bumblebee Graphics
+Cole Frederick
+:revdate: July 23, 2021
+
+Once I spent two weeks without proper graphics on my
+day-to-day machine. I wasn't trying to run anything
+exotic, believe it or not, I was running Debian.
+
+Now the laptop I was using had a particular graphics setup.
+When demand was low, it could use the on-chip Intel graphics
+hardware, which was low power. When demand was high,
+it could switch to using the dedicated NVIDIA graphics card,
+off cpu.
+
+Debugging the driver support for this graphics setup was
+gnarly. I spent no less than two weeks running without an
+X server, trying to make things work.
+
+I finally got the system working the way I wanted,
+but much to my disappointment when months later I
+was installing Ubuntu, the automatic driver installation
+got my graphics hardware working the very first time.
+
+I felt pretty silly having spent so much time and
+energy on it the first time. C'est la vie.
+

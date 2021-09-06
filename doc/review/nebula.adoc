@@ -1,0 +1,8 @@
+= image:logo/shield.svg[fress,47,link="./"] Nebula: The Fall of a Company
+
+Matthew Saucedo, Robert Siegel, and Mark Leslie.
+
+The Stanford Graduade School of Business
+https://www.gsb.stanford.edu/faculty-research/case-studies/nebula-fall-company[description page^].
+And the Harvard Publishing purchase https://hbsp.harvard.edu/product/E574-PDF-ENG[page^]
+

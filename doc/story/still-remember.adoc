@@ -1,0 +1,6 @@
+I can still remember
+
+Not knowing how the stack is different from the heap
+where I was when I learned about tab completion in the shell
+How Python types are represented in C code
+

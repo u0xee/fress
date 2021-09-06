@@ -24,20 +24,30 @@ fn n() {
         if v == stop_cmd {
             return;
         }
-        //let result = eval::eval(v);
-        //let result = v;
-        //println!("■■  {}   ", result);
+        // let result = eval::eval(v);
+        let result = format!("■■ {}", v);
+        println!("{}", result);
     }
 }
 
 fn read_one_stdin(reader: &mut EdnRdr) -> Value {
+    //if let Some(v) = reader.read_bytes(b"some\n").unwrap() { return v }
     loop {
-        match reader.read_again().unwrap() {
+        let res = match reader.read_again() {
+            Err(m) => {
+                println!("{}", m);
+                reader.clear_buffer();
+                println!("Ready!");
+                continue;
+            },
+            Ok(res) => { res }
+        };
+        match res {
             Some(v) => { return v },
             None => {
                 use std::io::{self, Read};
                 let n = io::stdin().read(reader.buffer_wilderness()).unwrap();
-                if n == 0 { panic!("End of input reached."); }
+                if n == 0 { return fress::read(":repl/quit ").unwrap() }
                 reader.buffer_consume(n);
                 /*use std::str;
                 let x = str::from_utf8(reader.buf.as_slice()).unwrap();

@@ -7,9 +7,7 @@ import subprocess
 src_dir = 'src'
 doc_dir = 'doc'
 target_dir = 'target/doc'
-
 subprocess.run(['mkdir', '--parents', target_dir])
-
 
 def find_files(d, find_args=None):
     if not find_args:
@@ -18,80 +16,75 @@ def find_files(d, find_args=None):
     ret = subprocess.run(command, stdout=subprocess.PIPE).stdout.splitlines()
     return [str(f, 'utf-8') for f in ret]
 
-
 asciidoc_base = ['asciidoctor',
                  '-a', 'doctype=article',
                  '-a', 'sectanchors',
-                 '-a', 'imagesdir=images',
-                 '-a', 'stylesheet=style.css',
-                 '-a', 'docinfo=shared',
                  '-a', 'idprefix=+',
                  '-a', 'idseparator=-',
-                 '-a', 'toc=left']
+                 '-a', 'nofooter',
+                 '-a', 'figure-caption!',
 
+                 '-a', 'linkcss',
+                 '-a', 'stylesheet=/style.css',
+                 '-a', 'imagesdir=/images@',
+                 '-a', 'docinfo=shared,private',
+                 '-a', 'docinfodir=includes',
+
+                 '-a', 'source-highlighter=highlight.js',
+                 '-a', 'highlightjsdir=/hl',
+                 '-a', 'highlightjs-theme=darcula@']
 
 reset, bold, underline, invert = '\u001b[0m', '\u001b[1m', '\u001b[4m', '\u001b[7m'
-
-
 def is_byte(i):
     return 0 <= i <= 256
-
-
 def color(byte):
     assert(is_byte(byte))
     # f'\u001b[48;5;{byte}m' background
     return f'\u001b[38;5;{byte}m'
-
-
 def rgb(r, g, b):
     assert(is_byte(r) and is_byte(g) and is_byte(b))
     return f'\u001b[38;2;{r};{g};{b}m'
-
-
 def run(command, env=None):
     program = f'⬛ {bold}{color(208)}{command[0]}{reset} '
     print(program + ' '.join(command[1:]))
     subprocess.run(command, env=env)
 
-
 def generate_html_from_asciidoc(dir, out_dir):
-    command = asciidoc_base + ['--destination-dir', out_dir]
-    adocs = find_files(dir, ['-maxdepth', '1', '-name', '*.adoc'])
+    command = asciidoc_base + ['--destination-dir', out_dir, '--source-dir', dir]
+    adocs = find_files(dir, ['-maxdepth', '2', '-name', '*.adoc'])
     full_command = command + adocs
     run(full_command)
-    thesis_html = find_files(out_dir, ['-name', 'thesis.html'])
-    subprocess.run(['sed', '-i', 's/100%px/100%/g'] + thesis_html)
-
-    home = find_files(dir, ['-name', 'home.adoc'])
-    subprocess.run(command + home)
-
+    paper_html = find_files(out_dir, ['-name', 'paper.html'])
+    subprocess.run(['sed', '-i', 's/100%px/100%/g'] + paper_html)
+    # home = find_files(dir, ['-name', 'home.adoc'])
+    # subprocess.run(command + home)
 
 def copy_images():
     run(['rsync', '-r', doc_dir + '/images', target_dir])
-
-
+def copy_highlight():
+    run(['rsync', '-r', doc_dir + '/hl', target_dir])
 def copy_favicons():
     run(['rsync', '-r', doc_dir + '/images/favicon/', target_dir])
-
+def copy_style():
+    run(['rsync', doc_dir + '/includes/style.css', target_dir])
+    run(['rsync', doc_dir + '/includes/base.js', target_dir])
 
 def build_adoc(args):
     generate_html_from_asciidoc(doc_dir, target_dir)
     copy_images()
+    copy_highlight()
     copy_favicons()
-
+    copy_style()
 
 def after_cargo():
     print(f'{invert}{bold}                        cargo done                     {reset}')
-
 
 def build_project(args):
     subprocess.run(["cargo", "doc"])
     after_cargo()
     build_adoc(args)
 
-
 wasm_triple = 'wasm32-unknown-unknown'
-
 
 def build_wasm_repl(args):
     e = os.environ.copy()
@@ -103,7 +96,6 @@ def build_wasm_repl(args):
     js = find_files(src_dir, ['-name', '*.js'])
     run(['rsync'] + js + [target_dir])
     build_adoc(args)
-
 
 def http_server(args):
     import http.server
@@ -120,12 +112,12 @@ def http_server(args):
                               '.js': 'application/x-javascript',
                               '.wasm': 'application/wasm',
                               '': 'application/octet-stream'}
-    httpd = socketserver.TCPServer(("", args.port), handler)
-    location = 'http://localhost:' + str(args.port) + '/thesis.html'
-    print("Serving directory {} at port {}".format(target_dir, args.port))
+    httpd = socketserver.TCPServer(("", 0), handler)
+    port = httpd.server_address[1]
+    print("Serving directory {} at port {}".format(target_dir, port))
+    location = 'http://localhost:' + str(port) + '/paper.html'
     webbrowser.open(location)
     httpd.serve_forever()
-
 
 # Main parser
 parser = argparse.ArgumentParser(description='Builds AsciiDoc and rustdoc web pages.')
@@ -139,7 +131,7 @@ build_parser.set_defaults(func=build_project)
 
 # AsciiDoc subparser
 adoc_parser = subparsers.add_parser('adoc', description='Build project asciidocs',
-                                     help='Build AsciiDoc web pages (-h for options)')
+                                    help='Build AsciiDoc web pages (-h for options)')
 adoc_parser.set_defaults(func=build_adoc)
 
 # WASM REPL subparser
@@ -149,7 +141,7 @@ wasm_parser.set_defaults(func=build_wasm_repl)
 
 # Local server
 server_parser = subparsers.add_parser('http', description='Start local file server.',
-                                    help='Starts an http server, on port')
+                                      help='Starts an http server, on port')
 server_parser.set_defaults(func=http_server)
 server_parser.add_argument('--port', default=8888, type=int)
 
@@ -157,6 +149,7 @@ server_parser.add_argument('--port', default=8888, type=int)
 args = parser.parse_args()
 args.func(args)
 
+# rsync -r target/doc/ cole@fress.io:www
 # top priority todos
 #homepage
 #https://doc.rust-lang.org/rustdoc/command-line-arguments.html#--html-in-header-include-more-html-in-head

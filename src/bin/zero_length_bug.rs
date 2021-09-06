@@ -5,30 +5,15 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-#![feature(test)]
-extern crate test;
-use test::Bencher;
-
 extern crate fress;
 use fress::*;
+use fress::memory::*;
 
-#[bench]
-fn vector_grow_to_30(b: &mut Bencher) {
-    b.iter(|| {
-        let mut v = vector();
-        for i in 0..30 {
-            v = v.conj(i.into());
-        }
-    });
+fn main() {
+    let s = Segment::new(7);
+    dbg!(s[0]);
+    dbg!(s.unalias());
+    Segment::free(s);
+    //let mut v = vector();
+    //println!("v.count() is {}", v.count());
 }
-
-fn x() {
-    let mut v = vec![];
-    let mut ct = 10_000;
-    for i in 0..ct {
-        v.push(Value::from(i))
-    }
-}
-#[bench]
-fn vector_something(b: &mut Bencher) { b.iter(|| { x() }); }
-

@@ -1,0 +1,7 @@
+= Tuning for perf
+
+I learned my lesson.
+
+Optimizing main.
+Always measure first.
+

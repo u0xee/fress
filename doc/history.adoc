@@ -1,8 +1,10 @@
 == History
+:imagesdir: images
 Computing is still dawning on humankind; yet I see precursors to my work in the endeavours of so many others.
 Let this map be your guide on a tour of related work:
 
 image::island.svg[Map,width=100%,align=center,opts=inline]
+
 
 Click on the map to jump to sections like:
 

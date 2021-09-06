@@ -14,7 +14,7 @@
    viewBox="0 0 165 297"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.4 (f8dce91, 2019-08-02)"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="tree-split2.svg">
   <defs
      id="defs2">
@@ -2332,19 +2332,19 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="31.678384"
-     inkscape:cx="416.22009"
-     inkscape:cy="1002.8856"
+     inkscape:zoom="1.4"
+     inkscape:cx="433.96149"
+     inkscape:cy="591.42857"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g8707-7"
      showgrid="false"
      inkscape:snap-bbox="true"
      inkscape:snap-bbox-edge-midpoints="true"
      inkscape:snap-midpoints="false"
      inkscape:window-width="3840"
-     inkscape:window-height="2049"
+     inkscape:window-height="2032"
      inkscape:window-x="0"
-     inkscape:window-y="55"
+     inkscape:window-y="54"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
@@ -4634,7 +4634,7 @@
          height="9.2835083"
          width="9.2835083"
          id="rect1372-2-6-9-4-8-0-9-7"
-         style="opacity:1;fill:#e8e8e8;fill-opacity:1;stroke:#000000;stroke-width:0.38780031;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:1;fill:#5a69b7;fill-opacity:1;stroke:#000000;stroke-width:0.38780031;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <rect
          ry="1.8462163"
          y="-1.6382402"
@@ -12159,7 +12159,7 @@
          height="9.2835083"
          width="9.2835083"
          id="rect1372-03-5"
-         style="opacity:1;fill:#e8e8e8;fill-opacity:1;stroke:#000000;stroke-width:0.38780031;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+         style="opacity:1;fill:#5a69b7;fill-opacity:1;stroke:#000000;stroke-width:0.38780031;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <circle
          r="4.6531935"
          cy="420.22025"

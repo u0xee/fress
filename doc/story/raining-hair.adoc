@@ -1,0 +1,41 @@
+= image:logo/shield.svg[fress,47,link="./"] Raining Hair
+Cole Frederick
+:revdate: Aug 11, 2021
+
+Outside a coffee shop I took a seat at a table snugged up to the side
+of the building, which holds a series of little shops including
+a small cardio gym and a salon, on either side of the coffee shop.
+
+I am working on my computer, struggling to understand why git can't
+automatically merge the upstream changes for a file:
+as far as I can tell, there are no conflicting changes.
+This really should have been a fast forward.
+
+I've been staring at both sides, trying to find anything in conflict..
+People come and go, walking by, carrying coffee and snacks.
+A long hair floats down, landing on my typing fingers.
+Annoyed, I shake it off to the ground at my feet and refocus on my task..
+
+Time passes. I've copied both "competing" versions into pristine files and
+performed a regular `diff` as a sanity check. Sure enough, only one side,
+the side I'm merging in, has any changes. I still can't figure out why
+the automatic fast forward strategy failed.. Oh well.
+A few short hairs are sitting on my keyboard; huh, are those mine?
+I brush them off.
+
+I commit the merge and push back to github. Task complete!
+I take a deep breath and sit back slightly, after having been hunched over
+my laptop for the last hour. I look over at my phone, and there are about
+a dozen short bits of hair, clearly from a hair cut, that have gathered
+on my screen.
+
+In disbelief and horror, I look to my papers: covered in bits of hair.
+My laptop: tiny hairs all over! My slacks: hairy.
+My COFFEE: thankfully lid covered, phew.
+Even as I watch, more bits of hair float slowly down onto my table.
+I look up; there is an exhaust vent about eight feet above my head on the
+exterior wall. I suddenly realize why I've been smelling shampoo and
+conditioner so strongly; the salon's air flows outside directly above my table.
+
+Perhaps I won't sit here tomorrow.
+

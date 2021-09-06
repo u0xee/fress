@@ -45,6 +45,14 @@ impl From<usize> for Value { fn from(x: usize) -> Self { Value::from(x as i64) }
 impl From<f64> for Value { fn from(x: f64) -> Self { float_point::new(x).handle().value() } }
 impl From<f32> for Value { fn from(x: f32) -> Self { Value::from(x as f64) } }
 impl From<&str> for Value { fn from(s: &str) -> Self { string::new_value_from_str(s) } }
+/// Parse a value from a string of edn data.
+///
+/// # Examples
+///
+/// ```
+/// let x: Value = "[1 2 3 4]".parse().unwrap();
+/// assert_eq!(x.count(), 4);
+/// ```
 impl FromStr for Value {
     type Err = String;
     fn from_str(s: &str) -> Result<Self, Self::Err> {

@@ -100,6 +100,7 @@ pub fn parse_numeric(s: &[u8]) -> Result<Handle, String> {
                     use float_point;
                     return Ok(float_point::parse_exp(negate, whole, part, exp_negate, exp, promote))
                 }
+                // TODO
                 return Err(format!("Bad fractional part in floating point number ({}).",
                                    from_utf8(s).unwrap()))
             } else {

@@ -1,0 +1,16 @@
+= image:logo/shield.svg[fress,47,link="../"] Reviews
+
+* link:nebula[Nebula: The Fall of a Company]
+
+// Bluespec, RISC-V book
+// AWK, MDB, DTrace books
+// Dingle Bacon Ownership You Can Count On
+// Leijen Xie icfp Programming with Effect Handlers and FBIP in Koka
+//   Perceus Garbage Free Reference Counting with Reuse
+// Rodeh B-trees, Shadowing and Clones
+// Castro-Karney A Crash-Safe Key-Value Store Using Chained COW B-trees
+// Twigg Stratified B-trees and versioning dictionaries
+// Rodeh BTRFS The Linux B-tree Filesystem
+// Graefe Modern B-Tree techniques
+// Colyer Hashed and Hierarchical Timing Wheels
+

@@ -6,7 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 
-WebAssembly.compileStreaming(fetch("fress.wasm"))
+WebAssembly.compileStreaming(fetch("/fress.wasm"))
 .then(function (mod) {
   console.log("Done compiling fress.wasm module!");
   document.fress_module = mod;
@@ -61,7 +61,7 @@ function first_focus(ev) {
   content.addEventListener("keydown", key_down);
   content.addEventListener("paste", on_paste);
 
-  var w = new Worker('repl_worker.js');
+  var w = new Worker('/repl_worker.js');
   w.postMessage(document.fress_module);
   live.worker = w;
   add_button(live);

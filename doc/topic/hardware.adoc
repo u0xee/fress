@@ -24,7 +24,7 @@ image::book.svg[book pic,50]
 puts "Hello, World!"
 ----
 
-:sourcedir: ../src
+:sourcedir: ../../src
 
 .Included external file
 [source,rust]

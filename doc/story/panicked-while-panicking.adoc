@@ -1,0 +1,52 @@
+= image:logo/shield.svg[fress,47,link="./"] Panicked while Panicking! [.subtitle]##_Tracking down a derailment_##
+Cole Frederick
+:revdate: August 8, 2021
+
+I had so many questions..
+Panicking is nothing out of the ordinary for my Rust project,
+but today I saw something new:
+
+[source]
+----
+panicked while panicking. aborting.
+illegal hardware instruction (core dumped)
+----
+
+New and interesting is not something you want in error messages.
+
+.Reduced down to merely `panic`
+[source,subs=+quotes]
+----
+23:05 cole@csf-spectre % RUST_BACKTRACE=1 ./target/release/conj_bug
+thread 'main' *panicked* at 'segment_bounds: accessing index = 0, segment capacity = 0.', src/dispatch/mechanism.rs:40:13
+stack backtrace:
+   0: rust_begin_unwind
+             at /rustc/1f0a591b3a5963a0ab11a35dc525ad9d46f612e4/library/std/src/panicking.rs:516:5
+   1: std::panicking::begin_panic_fmt
+             at /rustc/1f0a591b3a5963a0ab11a35dc525ad9d46f612e4/library/std/src/panicking.rs:458:5
+   2: <fress::memory::segment::Segment as core::ops::index::Index<u32>>::index
+             at ./src/memory/segment.rs:258:9
+   3: <fress::memory::anchored_line::AnchoredLine as core::ops::index::Index<i32>>::index
+             at ./src/memory/anchored_line.rs:51:9
+   4: fress::dispatch::mechanism::tear_down
+             at ./src/dispatch/mechanism.rs:40:13
+   5: fress::handle::Handle::_tear_down
+             at ./src/handle/mod.rs:94:9
+   6: fress::handle::Handle::retire
+             at ./src/handle/mod.rs:87:13
+   7: <fress::value::Value as core::ops::drop::Drop>::drop
+             at ./src/value/mod.rs:138:26
+   8: core::ptr::drop_in_place<fress::value::Value>
+             at /rustc/1f0a591b3a5963a0ab11a35dc525ad9d46f612e4/library/core/src/ptr/mod.rs:192:1
+   9: conj_bug::main
+             at ./src/bin/conj_bug.rs:19:1
+  10: core::ops::function::FnOnce::call_once
+             at /rustc/1f0a591b3a5963a0ab11a35dc525ad9d46f612e4/library/core/src/ops/function.rs:227:5
+note: Some details are omitted, run with 'RUST_BACKTRACE=full' for a verbose backtrace.
+----
+
+Obviously something unexpected is happening here.
+
+The SIGILL cause https://github.com/rust-lang/rust/issues/81895#issuecomment-775489478[ub2]
+Panick within panick https://github.com/rust-lang/rust/issues/53814[GH issue]
+

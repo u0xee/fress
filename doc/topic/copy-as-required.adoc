@@ -1,0 +1,24 @@
+= Copy as Required 
+
+Reference counting gives us something in return for explicitly 
+tracking the number of incoming references,
+a thread of control can now determine when a chunk of memory
+is shared, and when it is not.
+
+
+
+Copy on Write basically assumes memory might be shared,
+so it always copies before a write/edit operation.
+
+Copy as Required checks to see if the memory is shared,
+and if not then it performs the writes/edits directly to the memory,
+since no other operation is relying on its state.
+Only if it finds the memory is shared will it fall back to Copy on Write
+behavior, making a copy of memory before performing write operations.
+
+Copy as Required Down a Tree
+
+In fact, if you don't ever call split, operations on the
+trees will never be required to copy because of sharing.
+Sharing of memory is explicit when the programmer asks to split
+one value into two. 

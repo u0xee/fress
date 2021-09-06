@@ -57,6 +57,17 @@ pub mod wasm;
 #[doc(inline)]
 pub use value::Value;
 
+/// Canonical nil value.
+///
+/// # Examples
+/// ```
+/// let x = nil();
+/// assert!(x.is_nil());
+/// ```
+///
+/// ```should_panic
+/// assert!(nil().is_true());
+/// ```
 pub fn nil()  -> Value { Value::nil() }
 pub fn tru()  -> Value { Value::tru() }
 pub fn fals() -> Value { Value::fals() }

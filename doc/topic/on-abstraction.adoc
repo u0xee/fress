@@ -1,0 +1,17 @@
+= Transparent Abstractions
+
+Often we hear "it's an implementation detail" or
+"that's the abstraction, you don't need to know how the
+compiler/runtime/VM/OS does it.
+
+And often I want to lean in, lower my voice and ask,
+"Sure, but really, how does it work?"
+
+Because often I actually need to know what's behind the curtain,
+in order to make a determination on whether this works for my
+use case or not.
+How things are actually going to happen, at runtime in silicon,
+(at least the gist or the rough plan) is central in deciding
+what it is practical for.
+
+

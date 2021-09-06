@@ -1,4 +1,56 @@
-= Vector
+= image:logo/shield.svg[fress,47,link="./"] The Vector Tree
+
+Recall that memory is one long array of storage units.
+We chunk it up into smallish blocks of contiguous storage units.
+When you see a diagram of a tree, such as on the right in the
+picture below, remember that the tree will be embedded into linear
+memory as shown on the left. And arrows pointing to tree parts,
+are in fact merely addresses of those memory chunks.
+
+image::tree-in-memory.svg[tree memory,width=100%,align="center"]
+
+In the diagram below, we can see a vector data structure growing
+as more items are added to it. The lighter shaded boxes indicate
+storage units that are not currently occupied.
+You can see that as items are added, the vector will need to resize
+to larger and larger memory chunks.
+
+image::vector-grow.svg[vector,width=90%,align="center"]
+
+image::vector-grow2.svg[vector,width=90%,align="center"]
+
+image::vector-grow3.svg[vector,width=90%,align="center"]
+
+image::vector-grow-1k.svg[vector,width=90%,align="center"]
+
+.4k vector
+image::vector-4k.svg[vector,width=100%,align="center"]
+
+This vector has grown quite large. It has over 4096 elements.
+You can see here each grouping of 256 elements is drawn together
+in a block. The arrows leaving the root each
+conceptually connect to one block.
+
+image::vector-grow-4k.png[vector,width=100%,align="center"]
+
+image::vector-grow-4k-plus.png[vector,width=100%,align="center"]
+
+.Map tree growing
+image::map-grow.svg[vector,width=100%,align="center"]
+
+.Set tree growing
+image::set-grow.svg[vector,width=100%,align="center"]
+
+== Splitting
+image::tree-split-small.svg[tree split,width=100%]
+
+image::tree-split-small2.svg[tree split,width=100%]
+
+image::tree-split.svg[tree split,width=75%,align="center"]
+
+image::tree-split2.svg[tree split,width=75%,align="center"]
+
+image::tree-split3.svg[tree split,width=100%]
 
 == Layout
 
@@ -57,3 +109,4 @@ Keys is the number of keys in the root and height of the tree.
 K K K K | N N N N N | V V V V
 
 ```
+

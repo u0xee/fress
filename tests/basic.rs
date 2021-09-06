@@ -13,3 +13,11 @@ fn test_a() {
     assert_eq!(vector().conj(7.into()), vec![7].into());
 }
 
+//#[test]
+fn test_b() {
+    let mut v = vector();
+    for i in 0..30 {
+        v = v.conj(i.into());
+    }
+}
+

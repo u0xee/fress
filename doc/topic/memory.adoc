@@ -1,17 +1,278 @@
-= Memory in fress
+= image:logo/shield.svg[fress,47,link="/"] Memory in fress
+:toc!:
 
-The smallest unit of memory is called a Unit.
-A Unit is the size of a machine word. A machine word
+link:/fress/fressian/struct.Code.html#associatedconstant.NEG_ONE[Negative one fressian bytecode.]
+And here is the link:/src/fress/fressian/mod.rs.html#15[line in source.]
+The smallest unit of memory is called a `Unit`.
+A `Unit` is the size of a machine word. A machine word
 is the size of an address in the hardware memory system,
 commonly 32 or 64 bits. A machine word is also the size
 of the registers, the fundamental computational unit.
 
 To store information, we borrow a segment of memory from
-the pool of memory. A Segment is a contiguous group of
-Units, and is identified by the address of its first Unit.
-The first unit in a Segment serves as its anchor. An Anchor
+the pool of memory. A `Segment` is a contiguous group of
+`Units`, and is identified by the address of its first `Unit`.
+The first unit in a `Segment` serves as its anchor. An `Anchor`
 records the size of a segment and facilitates sharing.
-The other Units of the segment will store information.
+The other `Units` of the segment will store information.
 
-== Sharing
+== Code snippets
+Here we see a code snippet:
+
+.Some shell interactive session
+[source,shell]
+----
+$ echo $TERM
+xterm-256color
+$ git status
+fatal: not a git repository (or any parent up to mount point /)
+----
+
+.assembly for Symbol_ eq
+[source,x86asm]
+----
+.section ".text._ZN71_$LT$fress..symbol..Symbol_$u20$as$u20$fress..dispatch..Distinguish$GT$2eq17heb3954f6f633f085E"
+         ,"ax",@progbits
+.globl  _ZN71_$LT$fress..symbol..Symbol_$u20$as$u20$fress..dispatch..Distinguish$GT$2eq17heb3954f6f633f085E
+.p2align        4, 0x90
+.type   _ZN71_$LT$fress..symbol..Symbol_$u20$as$u20$fress..dispatch..Distinguish$GT$2eq17heb3954f6f633f085E,@function
+        _ZN71_$LT$fress..symbol..Symbol_$u20$as$u20$fress..dispatch..Distinguish$GT$2eq17heb3954f6f633f085E:
+.cfi_startproc
+subq    $104, %rsp
+.cfi_def_cfa_offset 112
+movq    %rdi, (%rsp)
+leaq    .L__unnamed_1027(%rip), %rax
+movq    %rax, 8(%rsp)
+movq    %rsp, %rax
+movq    %rax, 16(%rsp)
+leaq    8(%rsp), %rax
+movq    %rax, 24(%rsp)
+leaq    _ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17h4fe07cec5c3f1898E(%rip), %rax
+movq    %rax, 32(%rsp)
+leaq    16(%rsp), %rcx
+movq    %rcx, 40(%rsp)
+movq    %rax, 48(%rsp)
+leaq    .L__unnamed_105(%rip), %rax
+movq    %rax, 56(%rsp)
+movq    $3, 64(%rsp)
+movq    $0, 72(%rsp)
+leaq    24(%rsp), %rax
+movq    %rax, 88(%rsp)
+movq    $2, 96(%rsp)
+leaq    .L__unnamed_1028(%rip), %rsi
+leaq    56(%rsp), %rdi
+callq   *_ZN4core9panicking9panic_fmt17hcd56f7f635f62c74E@GOTPCREL(%rip)
+ud2
+----
+
+.cargo asm for Symbol_ eq
+[source,x86asm]
+----
+ sub     rsp, 104
+ mov     qword, ptr, [rsp], rdi
+ lea     rax, [rip, +, .L__unnamed_1027]
+ mov     qword, ptr, [rsp, +, 8], rax
+ mov     rax, rsp
+ mov     qword, ptr, [rsp, +, 16], rax
+ lea     rax, [rsp, +, 8]
+ mov     qword, ptr, [rsp, +, 24], rax
+ lea     rax, [rip, +, _ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17h4fe07cec5c3f1898E]
+ mov     qword, ptr, [rsp, +, 32], rax
+ lea     rcx, [rsp, +, 16]
+ mov     qword, ptr, [rsp, +, 40], rcx
+ mov     qword, ptr, [rsp, +, 48], rax
+ lea     rax, [rip, +, .L__unnamed_105]
+ mov     qword, ptr, [rsp, +, 56], rax
+ mov     qword, ptr, [rsp, +, 64], 3
+ mov     qword, ptr, [rsp, +, 72], 0
+ lea     rax, [rsp, +, 24]
+ mov     qword, ptr, [rsp, +, 88], rax
+ mov     qword, ptr, [rsp, +, 96], 2
+ lea     rsi, [rip, +, .L__unnamed_1028]
+ lea     rdi, [rsp, +, 56]
+ call    qword, ptr, [rip, +, _ZN4core9panicking9panic_fmt17hcd56f7f635f62c74E@GOTPCREL]
+ ud2
+----
+
+.LLVM IR human readable
+[source,llvm]
+----
+; <fress::symbol::Symbol_ as fress::dispatch::Distinguish>::eq
+; Function Attrs: nonlazybind uwtable
+define zeroext i1 @"_ZN71_$LT$fress..symbol..Symbol_$u20$as$u20$fress..dispatch..Distinguish$GT$2eq17heb3954f6f633f085E"
+  (%"symbol::Symbol_"* noalias nonnull readonly align 1 %self,
+   i64* %prism.0, i32 %prism.1, i64 %other) unnamed_addr #7 {
+start:
+  %_23.i = alloca i64*, align 8
+  %_21.i = alloca i64*, align 8
+  %_18.i = alloca [2 x { i8*, i64* }], align 8
+  %_11.i = alloca %"std::fmt::Arguments", align 8
+  %self_usize.i = alloca i64, align 8
+  %self_usize = ptrtoint %"symbol::Symbol_"* %self to i64
+  %0 = bitcast i64* %self_usize.i to i8*
+  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %0)
+  store i64 %self_usize, i64* %self_usize.i, align 8
+  %1 = bitcast %"std::fmt::Arguments"* %_11.i to i8*
+  call void @llvm.lifetime.start.p0i8(i64 48, i8* nonnull %1)
+  %2 = bitcast [2 x { i8*, i64* }]* %_18.i to i8*
+  call void @llvm.lifetime.start.p0i8(i64 32, i8* nonnull %2)
+  %3 = bitcast i64** %_21.i to i8*
+  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %3)
+  store i64* bitcast (<{ [8 x i8] }>* @alloc2182 to i64*), i64** %_21.i, align 8
+  %4 = bitcast i64** %_23.i to i8*
+  call void @llvm.lifetime.start.p0i8(i64 8, i8* nonnull %4)
+  store i64* %self_usize.i, i64** %_23.i, align 8
+  %5 = bitcast [2 x { i8*, i64* }]* %_18.i to i64***
+  store i64** %_21.i, i64*** %5, align 8
+  %6 = getelementptr inbounds [2 x { i8*, i64* }], [2 x { i8*, i64* }]* %_18.i, i64 0, i64 0, i32 1
+  store i64* bitcast (i1 (i64**, %"std::fmt::Formatter"*)*
+        @"_ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17h4fe07cec5c3f1898E" to i64*), i64** %6, align 8
+  %7 = getelementptr inbounds [2 x { i8*, i64* }], [2 x { i8*, i64* }]* %_18.i, i64 0, i64 1, i32 0
+  %8 = bitcast i8** %7 to i64***
+  store i64** %_23.i, i64*** %8, align 8
+  %9 = getelementptr inbounds [2 x { i8*, i64* }], [2 x { i8*, i64* }]* %_18.i, i64 0, i64 1, i32 1
+  store i64* bitcast (i1 (i64**, %"std::fmt::Formatter"*)*
+        @"_ZN42_$LT$$RF$T$u20$as$u20$core..fmt..Debug$GT$3fmt17h4fe07cec5c3f1898E" to i64*), i64** %9, align 8
+  %10 = bitcast %"std::fmt::Arguments"* %_11.i to [0 x { [0 x i8]*, i64 }]**
+  store [0 x { [0 x i8]*, i64 }]* bitcast (<{ i8*, [8 x i8], i8*, [8 x i8], i8*, [8 x i8] }>*
+        @alloc5703 to [0 x { [0 x i8]*, i64 }]*),
+        [0 x { [0 x i8]*, i64 }]** %10, align 8, !alias.scope !21826, !noalias !21829
+  %11 = getelementptr inbounds %"std::fmt::Arguments", %"std::fmt::Arguments"* %_11.i, i64 0, i32 1, i32 1
+  store i64 3, i64* %11, align 8, !alias.scope !21826, !noalias !21829
+  %12 = getelementptr inbounds %"std::fmt::Arguments", %"std::fmt::Arguments"* %_11.i, i64 0, i32 3, i32 0
+  store i64* null, i64** %12, align 8, !alias.scope !21826, !noalias !21829
+  %13 = getelementptr inbounds %"std::fmt::Arguments", %"std::fmt::Arguments"* %_11.i, i64 0, i32 5, i32 0
+  %14 = bitcast [0 x { i8*, i64* }]** %13 to [2 x { i8*, i64* }]**
+  store [2 x { i8*, i64* }]* %_18.i, [2 x { i8*, i64* }]** %14, align 8, !alias.scope !21826, !noalias !21829
+  %15 = getelementptr inbounds %"std::fmt::Arguments", %"std::fmt::Arguments"* %_11.i, i64 0, i32 5, i32 1
+  store i64 2, i64* %15, align 8, !alias.scope !21826, !noalias !21829
+; call core::panicking::panic_fmt
+  call void @_ZN4core9panicking9panic_fmt17hcd56f7f635f62c74E
+   (%"std::fmt::Arguments"* noalias nocapture nonnull dereferenceable(48) %_11.i,
+    %"std::panic::Location"* noalias readonly align 8 dereferenceable(24)
+     bitcast (<{ i8*, [16 x i8] }>* @alloc9130 to %"std::panic::Location"*))
+  unreachable
+}
+----
+
+.Rust function, the bedrock of allocation...
+[source,rust]
+----
+pub fn alloc(raw_cap: u32) -> Line {
+    count_new(raw_cap);
+    let v: Vec<Unit> = Vec::with_capacity(raw_cap as usize);
+    let ptr = v.as_ptr();
+    mem::forget(v);
+    Unit::from(ptr).into()
+}
+----
+
+[source,rust]
+----
+pub fn unanchored_new(cap: u32) -> Segment {
+    if cfg!(any(test, feature = "segment_magic")) {
+        let mut line = alloc(cap + 2);
+        line[0] = 0xCAFEBABEu32.into(); // nod to java
+        Segment { anchor_line: line.offset(1 as isize) }
+    } else {
+        Segment { anchor_line: alloc(cap + 1) }
+    }
+}
+----
+
+The smallest unit of memory is called a `Unit`.
+A `Unit` is the size of a machine word. A machine word
+is the size of an address in the hardware memory system,
+commonly 32 or 64 bits. A machine word is also the size
+of the registers, the fundamental computational unit.
+
+To store information, we borrow a segment of memory from
+the pool of memory. A `Segment` is a contiguous group of
+`Units`, and is identified by the address of its first `Unit`.
+The first unit in a `Segment` serves as its anchor. An `Anchor`
+records the size of a segment and facilitates sharing.
+The other `Units` of the segment will store information.
+
+[source,rust]
+----
+impl Distinguish for Symbol_ {
+    fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
+        let self_usize = self as *const Symbol_ as usize;
+        take_my_args(self_usize); // surely won't propagate
+        let o = other.handle();
+        if let Some(o_sym) = find_prism(o) {
+            log!("Symbol eq: {} {}", prism.segment().unit().handle(), o);
+            let g = Guide::hydrate(prism);
+            let h = Guide::hydrate(o_sym);
+            return g.byte_slice() == h.byte_slice()
+        } else {
+            false
+        }
+    }
+----
+
+The smallest unit of memory is called a `Unit`.
+A `Unit` is the size of a machine word. A machine word
+is the size of an address in the hardware memory system,
+commonly 32 or 64 bits. A machine word is also the size
+of the registers, the fundamental computational unit.
+
+To store information, we borrow a segment of memory from
+the pool of memory. A `Segment` is a contiguous group of
+`Units`, and is identified by the address of its first `Unit`.
+The first unit in a `Segment` serves as its anchor. An `Anchor`
+records the size of a segment and facilitates sharing.
+The other `Units` of the segment will store information.
+
+.Some Clojure code
+[source,clojure]
+----
+(defn hello
+  [name]
+  (let [x (str "Jello, " name)]
+    (println x)))
+----
+
+.Some Clojure REPL session
+[source,clojure-repl]
+----
+user=> (defn f [x y]
+  #_=>   (+ x y))
+#'user/f
+user=> (f 5 7)
+12
+user=> nil
+nil
+----
+
+.Python repl
+[source,python-repl]
+----
+>>> def something():
+...     print("Have fun buddy!")
+...
+>>> something()
+Have fun buddy!
+----
+
+.Python repl for real
+[source,python-repl]
+----
+>>> v = "foo = 42"
+>>> v
+"foo = 42"
+>>> print(v)
+foo = 42
+>>> print(repr(v).rstrip('"'))
+"foo = 42
+>>> print(repr(v).lstrip('"'))
+foo = 42"
+
+>>> """
+... abc
+... """
+>>> def test():
+...     pass
+----
+
 

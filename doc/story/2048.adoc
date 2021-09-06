@@ -1,0 +1,11 @@
+= image:logo/shield.svg[fress,47,link="./"] 2048 Debugging
+Cole Frederick
+:revdate: July 23, 2021
+
+In the end, the sliding tile drove logic that deleted the wrong tile.
+3 different board representations, mostly out of sync with each other
+Trace on a board the tangled web of initialization activity,
+bouncing around static code changing global variables.
+
+Slide up and slide down.
+

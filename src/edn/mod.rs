@@ -199,12 +199,12 @@ pub fn read(reader: &mut EdnReader, bytes: &[u8]) -> ReadResult {
                 // if reader.quotes
                 // push on reader stack, quote form in progress
                 // read one. on ready, create list (quote x) and reready
-                return err(reader, format!("Can't parse ' (single quote)"))
+                return err(reader, format!("Cannot parse ' (single quote)"))
             }
             if c == b'`' {
                 // if reader.quotes
                 // supports unquote, auto gensym: foo# -> foo__5__auto__
-                return err(reader, format!("Can't parse ` (backtick)"))
+                return err(reader, format!("Cannot parse ` (backtick)"))
             }
             if c == b'~' {
                 // ~  unquote

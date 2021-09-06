@@ -1,0 +1,15 @@
+= Two papers by George Marsaglia, nearly forty years apart
+
+
+:scholar: https://scholar.google.com/scholar_lookup?author=
+
+
+* [[[Marsaglia-Normal]]] George *Marsaglia* and Thomas *Bray* (1964)
+  _A convenient method for generating normal variables._ [.provenance]#SIAM Review 6.3#
+  {scholar}marsaglia&title=a+convenient+method+for+generating+normal+variables[¤^]
+
+* [[[Xorshift]]] George *Marsaglia* (2003) _Xorshift RNGs._
+  [.provenance]#Journal of Statistical Software 8.14#
+  {scholar}marsaglia&title=xorshift+rngs[¤^]
+
+

@@ -11,7 +11,7 @@ image:cycle.svg[cycle,50] [small]#whole information# [big]#lifecycle#
 
 [cols="3*^",frame=topbot,grid=none]
 |===
-| link:thesis[image:book.svg[thesis,60] +++<br>+++ My thesis]
+| link:paper[image:book.svg[thesis,60] +++<br>+++ My paper]
 | https://www.fress.in[image:notes.svg[notation,60] +++<br>+++ fress.in]
 | https://www.fress.dev[image:dev.svg[virtual terminal,60] +++<br>+++ fress.dev]
 | White paper | Notation for Information | Programming with fress
@@ -36,7 +36,7 @@ These recipes together form a system for processing information.
 
 == Navigation
 * https://www.fress.io[fress.io] -- home page
-** https://www.fress.io/thesis[fress.io/thesis] -- my thesis
+** https://www.fress.io/paper[fress.io/paper] -- my paper
 ** https://www.fress.io/fress[fress.io/fress] -- code docs
 * https://www.fress.in[fress.in] -- edn fressian home page
 * https://www.fress.dev[fress.dev] -- developer home page

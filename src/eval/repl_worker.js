@@ -68,6 +68,7 @@ function mark(byte_address, byte_count) {
 function compile_init(byte_address, byte_count, mem_base, tab_base) {
   console.log('compile_init: wasm module compiling');
   var module = new Uint8Array(fress.memory.buffer, byte_address, byte_count);
+  history.push(module);
   var im = {'fress': fress.instance.exports,
             'sys': {'memory': fress.memory,
                     'table': fress.table,
@@ -82,13 +83,15 @@ function compile_init(byte_address, byte_count, mem_base, tab_base) {
     group_('Module main');
     var res = mod_inst.instance.exports.main();
     group_end();
-    fress.instance.exports.console_log(res)
+    fress.instance.exports.post_output(res)
+    fress.instance.exports.drop(res)
   })
 }
 
 function post_output(byte_address, byte_count) {
   var slice = fress.memory.buffer.slice(byte_address, byte_address + byte_count);
   var msg = from_utf8_bytes(slice);
+  console.trace(msg);
   postMessage({'output': msg});
 }
 function post_error(byte_address, byte_count) {

@@ -33,6 +33,12 @@ pub struct Point {
     pub off_min: u8,
 }
 
+impl Point {
+    pub fn day_of_the_week(&self) -> &'static str {
+        super::day_of_the_week(self.year, self.month as u32, self.day as u32)
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub struct Guide {
     pub hash: u32,
@@ -67,7 +73,7 @@ impl Guide {
         }
     }
     pub fn hydrate_chunks(prism: AnchoredLine, hash: u32, nano: u32, date: u32, time: u32) -> Guide {
-        let year    =  (date >>  9) & field(14);
+        let year    =  ( date >>  9) & field(14);
         let month    = ((date >>  5) & field(4)) as u8;
         let day      = ( date        & field(5)) as u8;
         let hour     = ((time >> 24) & field(5)) as u8;

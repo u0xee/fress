@@ -65,6 +65,8 @@ pub trait Sequential {
     fn is_sequential(&self, prism: AnchoredLine) -> bool { false }
     // TODO return AnchoredLine instead
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit { unimplemented!() }
+    fn nth_set(&self, prism: AnchoredLine, idx: u32, v: Unit) -> Unit { unimplemented!() }
+    fn swap_idx(&self, prism: AnchoredLine, i: u32, j: u32) -> Unit { unimplemented!() }
 }
 pub trait Associative {
     fn is_map(&self, prism: AnchoredLine) -> bool { false }

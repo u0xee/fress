@@ -9,9 +9,6 @@ extern crate fress;
 use fress::hash::*;
 
 fn main() {
-    use fress::hash::keccak::hash_zero_message;
-    hash_zero_message();
-
     /*
     let count = 1000;
     for i in 50..55 {

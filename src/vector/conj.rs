@@ -7,6 +7,8 @@
 
 use super::*;
 
+// Push a new item into the tree.
+// Splits out the case of a small vector (hasn't grown a tail yet)
 pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
     let guide = Guide::hydrate(unaliased(prism));
     if guide.count <= TAIL_CAP {
@@ -16,8 +18,11 @@ pub fn conj(prism: AnchoredLine, x: Unit) -> Unit {
     }
 }
 
+// For an untailed vector, all items live in one chunk of memory.
+// It may be time to grow a tail, or add to the existing array
+// which may need resizing if full.
 pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
-    if guide.count == TAIL_CAP { // complete
+    if guide.count == TAIL_CAP { // complete, grow a tail
         let tail = {
             let tail = Segment::new(TAIL_CAP);
             tail.set(0, x);
@@ -26,10 +31,10 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
         guide.root.set(-1, tail.unit());
         guide.inc_count().store().segment().unit()
     } else { // incomplete
-        if guide.root.has_index(guide.count as i32) {
+        if guide.root.has_index(guide.count as i32) { // has room
             guide.root.set(guide.count as i32, x);
             guide.inc_count().store().segment().unit()
-        } else {
+        } else { // resize (doubling the array)
             let width = size(guide.count);
             let grew_tail_bit = guide.is_compact_bit & is_arity_bit(width);
             let g = {
@@ -49,6 +54,8 @@ pub fn conj_untailed(guide: Guide, x: Unit) -> Unit {
     }
 }
 
+// General case of a vector with a tail.
+// Commonly, just append to tail, otherwise call tailed_complete
 pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
     let tail_count = tail_count(guide.count);
     if tail_count != TAIL_CAP {
@@ -59,7 +66,6 @@ pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
             tails.to(t);
             tails.split();
             if tail.unalias() == 0 {
-                //panic!("Race condition releasing tail!");
                 tails.retire();
                 Segment::free(tail);
             }
@@ -75,6 +81,9 @@ pub fn conj_tailed(guide: Guide, x: Unit) -> Unit {
     }
 }
 
+// Using logic similar to an odometer rolling over,
+// decide if the tree will grow in height, expand the root,
+// or (commonly) expand a child segment below the root.
 pub fn conj_tailed_complete(guide: Guide, x: Unit) -> Unit {
     let tailoff = guide.count - TAIL_CAP;
     let last_index = tailoff - 1;
@@ -95,6 +104,8 @@ pub fn path_of_height(height: u32, mut end: Unit) -> Unit {
     end
 }
 
+// When the tree grows in height, the root contents
+// are moved out into their own array below the root
 pub fn growing_height(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     let g = {
         let s = {
@@ -125,6 +136,8 @@ pub fn growing_height(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     g.inc_count().store().segment().unit()
 }
 
+// A new path is appended to the root contents, and the full
+// tail is stored at the end of the path.
 pub fn growing_root(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     let root_count = root_content_count(tailoff);
     let g = if guide.root.has_index(root_count as i32) {
@@ -195,7 +208,6 @@ pub fn unalias_edge_path(mut curr: AnchoredLine, d: &mut Digits) -> AnchoredLine
                 range.to(t);
                 range.alias();
                 if s.unalias() == 0 {
-                    //panic!("Race condition unalias_edge_path");
                     range.unalias();
                     Segment::free(s);
                 }
@@ -236,6 +248,8 @@ pub fn unalias_grown_index(curr: AnchoredLine, grown_digit: u32) -> AnchoredLine
     }
 }
 
+// An existing chiled below the root will have the full tail
+// appended to its contents
 pub fn growing_child(guide: Guide, x: Unit, tailoff: u32) -> Unit {
     let zero_count = trailing_zero_digit_count(tailoff >> BITS);
     let digit_count = digit_count(tailoff);

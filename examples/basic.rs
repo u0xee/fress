@@ -9,7 +9,7 @@ extern crate fress;
 use fress::*;
 
 fn main() {
-    let x = read("[1, 2, 3]").unwrap();
+    let x = read("[1, 2, 3]");
     println!("x is {}", x);
 }
 

@@ -50,6 +50,7 @@ impl From<&str> for Value { fn from(s: &str) -> Self { string::new_value_from_st
 /// # Examples
 ///
 /// ```
+/// # use fress::*;
 /// let x: Value = "[1 2 3 4]".parse().unwrap();
 /// assert_eq!(x.count(), 4);
 /// ```

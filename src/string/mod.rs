@@ -141,7 +141,7 @@ impl Distinguish for String_ {
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(o_str) = find_prism(o) {
-            log!("String eq: {} {}", prism.segment().unit().handle(), o);
+            //log!("String eq: {} {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o_str);
             return g.str() == h.str()

@@ -149,6 +149,8 @@ pub fn parse(s: &[u8]) -> Result<Point, String> {
     let (off_neg, off_hour, off_min) = (off_neg as u8, off_hour as u8, off_min as u8);
     let p = Point { year, month, day, hour, min, sec, nano, off_neg, off_hour, off_min };
     // TODO errors should show original inst text
+    // let pz = subtract_offset(&p);
+    // TODO fn to validate fields in range, return zeroed subtract_offset
     if is_good(&p) { Ok(p) } else { Err(format!("Bad inst, values outside acceptable range.")) }
 }
 
@@ -180,10 +182,39 @@ pub fn is_good(p: &Point) -> bool {
         // Bad hour, min, sec, nano
         return false
     }
+    // TODO if leap second, validate and return zeroed point
     // Bad leap second (not at the end of the hour)
     if p.sec == 60 && p.min != 59 { return false }
     true
 }
+// Leap seconds so far
+// 1972-06-30
+// 1972-12-31
+// 1973-12-31
+// 1974-12-31
+// 1975-12-31
+// 1976-12-31
+// 1977-12-31
+// 1978-12-31
+// 1979-12-31
+// 1981-06-30
+// 1982-06-30
+// 1983-06-30
+// 1985-06-30
+// 1987-12-31
+// 1989-12-31
+// 1990-12-31
+// 1992-06-30
+// 1993-06-30
+// 1994-06-30
+// 1995-12-31
+// 1997-06-30
+// 1998-12-31
+// 2005-12-31
+// 2008-12-31
+// 2012-06-30
+// 2015-06-30
+// 2016-12-31
 
 pub fn next_day(p: &Point) -> Point {
     let mut n = *p;
@@ -264,6 +295,18 @@ pub fn add_offset(p: &Point) -> Point {
     if p.off_neg == 0 { offset_forward(p) } else { offset_backward(p) }
 }
 
+pub fn day_of_the_week(year: u32, month: u32, day: u32) -> &'static str {
+    let days = ["Sunday", "Monday", "Tuesday", "Wednesday",
+                "Thursday", "Friday", "Saturday"];
+    let (m, y) = if month < 3 { (month + 10, year - 1) } else { (month - 2, year) };
+    let (cent, y) = (y / 100, y % 100);
+    let i = day +
+            (26 * m - 2) / 10 +
+            y + y / 4 +
+            5 * cent + cent / 4;
+    days[i as usize % 7]
+}
+
 pub fn new_parsed(source: &[u8]) -> Result<Handle, String> {
     let point = match parse(source) {
         Err(msg) => { return Err(msg) },
@@ -311,7 +354,20 @@ impl Distinguish for Inst_ {
         }
     }
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
-        unimplemented!()
+        let o = other.handle();
+        if let Some(o_inst) = find_prism(o) {
+            let p = Guide::hydrate(prism).point;
+            let q = Guide::hydrate(o_inst).point;
+            let (pd, pt) = as_u64s(&p);
+            let (qd, qt) = as_u64s(&q);
+            return Some(pd.cmp(&qd).then(pt.cmp(&qt)))
+        }
+        if o.is_ref() {
+            let o_prism_unit = o.logical_value()[0];
+            Some(prism_unit().cmp(&o_prism_unit))
+        } else {
+            Some(Ordering::Greater)
+        }
     }
 }
 
@@ -351,5 +407,14 @@ impl Callable for Inst_ {}
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    #[test]
+    fn day_of_the_week_ex() {
+        assert_eq!("Wednesday", day_of_the_week(2021, 9, 15));
+        assert_eq!("Thursday", day_of_the_week(1863, 1, 1)); // Emancipation Proclamation
+        assert_eq!("Friday", day_of_the_week(1620, 12, 18)); // Plymouth Rock
+        assert_eq!("Wednesday", day_of_the_week(1869, 11, 17)); // Suez Canal
+        assert_eq!("Tuesday", day_of_the_week(1966, 9, 6)); // Star Trek
+        assert_eq!("Friday", day_of_the_week(1844, 5, 24)); // Morse Telegraph
+        assert_eq!("Sunday", day_of_the_week(1989, 3, 12)); // WWW
+    }
 }

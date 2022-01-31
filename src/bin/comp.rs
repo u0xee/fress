@@ -18,7 +18,7 @@ fn n() {
                           (conj x a))\
                          ([y & z]\
                           (conj a a))))";
-    let form = fress::read(s).unwrap();
+    let form = fress::read(s);
     eval::init();
     let structured = eval::structure::structure(&form).unwrap();
 

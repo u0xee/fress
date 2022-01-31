@@ -297,6 +297,7 @@ assert_eq!( 0, x.reverse_bits());
 assert_eq!(64, x.leading_zeros());
 ----
 
+.A brief digression
 The `leading_zeros` assertion does not eliminate the test,
 but _does_ use the assumption of a non-zero `x` to compile a
 specialized calculation that gives nondeterministic results
@@ -384,9 +385,15 @@ it served its purpose.
 Now verifying an _unused_ and _arbitrary_ number just isn't useful,
 so I will delete the assertion.
 
-Thus concludes the bug hunt!
+This is one of those rare times when fixing a bug involves
+only deleting code! Thus concludes the bug hunt!
+
+(*Necessary follow up*: link:panicked-while-panicking[I was so wrong].
+Receiving a zero is a problem,
+and after a compiler update in March, so is passing a zero)
 
 == TL;DR
-I passed a zero to code that didn't expect zero,
-leading to unexpected behavior. Ultimately,
-I didn't need that code, so I deleted it.
+I passed a zero to code that expected a reference,
+leading to unexpected behavior in the generated program.
+Ultimately, I didn't need that code at all, so I deleted it.
+

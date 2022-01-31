@@ -8,6 +8,9 @@
 use std::fmt;
 use memory::unit::Unit;
 
+pub const ALIAS_BITS: u32 = if cfg!(target_pointer_width = "32") { 20 } else { 30 };
+pub const ALIAS_MASK: u32 = (1 << ALIAS_BITS) - 1;
+
 #[derive(Copy, Clone)]
 pub struct Anchor {
     pub unit: Unit,
@@ -21,24 +24,42 @@ impl fmt::Debug for Anchor {
 }
 
 impl Anchor {
+    pub fn max_capacity() -> u32 {
+        let cap_width = Unit::width() - ALIAS_BITS;
+        use std::cmp::min;
+        min((1u64 << cap_width) - 1, u32::MAX as u64) as u32
+    }
     pub fn for_capacity(capacity: u32) -> Anchor {
-        let bit_fields = (capacity << 16) | 1u32;
-        Unit::from(bit_fields ).into()
+        if capacity > Anchor::max_capacity() {
+            panic!("Anchor capacity not representable: {}",
+                   capacity);
+        }
+        let bit_fields = ((capacity as usize) << ALIAS_BITS) | 1;
+        Unit::from(bit_fields).into()
     }
     pub fn capacity(&self) -> u32 {
-        let c: u32 = self.unit.into();
-        c >> 16
+        let c = self.unit.u() >> ALIAS_BITS;
+        c as u32
     }
     pub fn aliases(&self) -> u32 {
-        let c: u16 = self.unit.into();
+        let c = self.unit.u() & ALIAS_MASK as usize;
         c as u32
     }
     pub fn is_aliased(&self) -> bool { self.aliases() != 1 }
+    pub fn is_max_aliased(&self) -> bool {
+        self.aliases() == ALIAS_MASK
+    }
     pub fn aliased(&self) -> Anchor {
+        if self.is_max_aliased() {
+            panic!("Overflow of alias count!");
+        }
         let x: usize = self.unit.into();
         Anchor { unit: Unit::from(x + 1) }
     }
     pub fn unaliased(&self) -> Anchor {
+        if self.aliases() == 0 {
+            panic!("Underflow of alias count!");
+        }
         let x: usize = self.unit.into();
         Anchor { unit: Unit::from(x - 1) }
     }

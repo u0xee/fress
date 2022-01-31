@@ -1,5 +1,51 @@
 = The Problem
 
+The fundamental problem is this.
+
+----
+fn A(x, ...) {
+    // ...
+    call B(x, ...)
+    // ...
+    call C(x, ...)
+    // ...
+}
+
+fn B(x, ...) {
+    call D(x, ...)
+    call E(x, ...)
+    // ...
+}
+
+fn C(x, ...) {
+    // ...
+}
+----
+
+I've walked up to thousands of problems. Problems that people are having with code.
+I need to figure out what the code is doing, and what the person wants it to do.
+Next, why isn't it working as expected?
+
+When you debug a program, you imagine what the code is doing;
+you play computer, following the logic and predicting what you think will happen.
+Then you test those predictions, running the code to see if it does what you think.
+If it doesn't, you learn something valuable:
+you misunderstand some aspect of what's happening.
+You iterate, rethinking what the code is doing and why.
+And you come up with other theories and new predictions to check.
+Eventually, you narrow down and find a bit of code that doesn't behave as it should
+or as you expect; you now understand why things don't work.
+
+Code can be quite intricate machinery. Following the logic, predicting what will happen,
+playing computer: this can be burdensome.
+
+Consider the scenario: a piece of code ("A") takes some inputs, and performs some logic
+including calling other pieces of code ("B" and "C"). I am debugging a problem,
+and I am studying "A" as I play computer, trying to understand what will happen.
+The inputs are places, storage space, that use bits to represent something.
+Structs, objects, arrays, the program stack: all places to store bits representing things.
+An input could represent a person, a financial record, 
 
 
-ZFS, process fork, 
+// Analogies with ZFS, process fork
+

@@ -7,7 +7,7 @@
 
 use memory::unit::Unit;
 use value::Value;
-use ::{read, vector};
+use ::{read, read_or_err, vector};
 
 pub mod structure;
 pub mod compile;
@@ -60,30 +60,30 @@ thread_local! {
 }
 pub fn load_statics() {
     let x = Box::new(Statics {
-        sym_do: read("do").unwrap(),
-        sym_if: read("if").unwrap(),
-        sym_fn: read("fn").unwrap(),
-        sym_def: read("def").unwrap(),
-        sym_let: read("let").unwrap(),
-        sym_loop: read("loop").unwrap(),
-        sym_recur: read("recur").unwrap(),
-        local_use: read(":local-use").unwrap(),
-        forms_using: read(":forms-using").unwrap(),
-        refers_to: read(":refers-to").unwrap(),
-        resolved_from: read(":resolved-from").unwrap(),
-        arity_bitmap: read(":arity-bitmap").unwrap(),
-        arity_to_idx: read(":arity-to-idx").unwrap(),
-        vararg: read(":vararg").unwrap(),
-        captures: read(":captures").unwrap(),
-        sym_value: read("value").unwrap(),
-        sym_value_ref: read("&value").unwrap(),
-        key_name: read(":name").unwrap(),
-        key_args: read(":args").unwrap(),
-        key_ret: read(":ret").unwrap(),
-        key_mapped: read(":mapped").unwrap(),
-        key_alias: read(":alias").unwrap(),
-        sym_fress: read("fress").unwrap(),
-        sym_amp: read("&").unwrap(),
+        sym_do: read("do"),
+        sym_if: read("if"),
+        sym_fn: read("fn"),
+        sym_def: read("def"),
+        sym_let: read("let"),
+        sym_loop: read("loop"),
+        sym_recur: read("recur"),
+        local_use: read(":local-use"),
+        forms_using: read(":forms-using"),
+        refers_to: read(":refers-to"),
+        resolved_from: read(":resolved-from"),
+        arity_bitmap: read(":arity-bitmap"),
+        arity_to_idx: read(":arity-to-idx"),
+        vararg: read(":vararg"),
+        captures: read(":captures"),
+        sym_value: read("value"),
+        sym_value_ref: read("&value"),
+        key_name: read(":name"),
+        key_args: read(":args"),
+        key_ret: read(":ret"),
+        key_mapped: read(":mapped"),
+        key_alias: read(":alias"),
+        sym_fress: read("fress"),
+        sym_amp: read("&"),
     });
     let y = Box::into_raw(x) as usize;
     STATICS.with(|c| c.set(y));
@@ -147,7 +147,7 @@ pub fn _read_structure_compile_assemble(byte_address: u32, byte_count: u32) -> V
         };
         use std::str;
         let s = str::from_utf8(bytes).unwrap();
-        let res = read(s);
+        let res = read_or_err(s);
         match res {
             Ok(v) => v,
             Err(msg) => {
@@ -174,6 +174,7 @@ pub fn _read_structure_compile_assemble(byte_address: u32, byte_count: u32) -> V
             }
         }
     };
+    /*
     unsafe {
         use meta;
         meta::do_print_meta();
@@ -181,6 +182,7 @@ pub fn _read_structure_compile_assemble(byte_address: u32, byte_count: u32) -> V
         meta::end_print_meta();
         post_output(print.as_ptr() as u32, print.len() as u32)
     }
+    */
     group_end!();
     group!("Compiling");
     let ctx = compile::compile_top_level(&structured);

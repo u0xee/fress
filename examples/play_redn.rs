@@ -27,8 +27,8 @@ fn parse_diagnostics(s: String) {
     }
     let x: Value = 45.into();
     let y: Value = 43.into();
-    let w = fress::read(":name").unwrap();
-    let z = fress::read("{:name 4 :drive 5}").unwrap();
+    let w = fress::read(":name");
+    let z = fress::read("{:name 4 :drive 5}");
     println!("XXX {}", z.contains(&w));
     println!("XXX {}", x < y);
 }

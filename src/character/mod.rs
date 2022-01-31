@@ -123,7 +123,7 @@ impl Distinguish for Character_ {
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(o_char) = find_prism(o) {
-            log!("Character eq");
+            //log!("Character eq");
             let (_, c) = hydrate(prism);
             let (_, d) = hydrate(o_char);
             return c == d

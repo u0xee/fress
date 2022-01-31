@@ -171,6 +171,7 @@ impl Associative for Map_ {
     // TODO assoc-in (recursive assoc)
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
         let h = k.handle().hash();
+        //eprintln!("hash({:>2}) => {:08X}", k.handle(), h);
         //group!("map assoc");
         let (g, key_slot) = assoc::assoc(prism, k, h, 1);
         //group_end!();

@@ -127,13 +127,13 @@ impl Distinguish for FloatPoint_ {
             use memory::unit::f64_into_u64;
             hash_64(f64_into_u64(x), 8)
         };
-        log!("Hash float point {} {:#08X}", prism.segment().unit().handle(), h);
+        //log!("Hash float point {} {:#08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(o_float) = find_prism(o) {
-            log!("FloatPoint eq");
+            //log!("FloatPoint eq");
             let guide = Guide::hydrate(prism);
             let guide2 = Guide::hydrate(o_float);
             let x = hydrate(guide.root);
@@ -145,7 +145,7 @@ impl Distinguish for FloatPoint_ {
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if let Some(o_float) = find_prism(o) {
-            log!("FloatPoint cmp");
+            //log!("FloatPoint cmp");
             let guide = Guide::hydrate(prism);
             let guide2 = Guide::hydrate(o_float);
             let x = hydrate(guide.root);

@@ -16,8 +16,14 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]
 
+[dev-dependencies]
+ahash = "0.7.6"
+rustc-hash = "1.1.0"
+jemallocator = "0.3.0"
+rand = "0.8.0"
+
 [features]
-default = ["segment", "eval", "trace"]
+default = ["eval", "trace", "anchor_non_atomic", "segment"]
 
 anchor_non_atomic = []
 eval = []
@@ -31,12 +37,15 @@ segment_free = []
 segment_magic = []
 segment_null = []
 segment_unaligned = []
+segment_counts = []
 segment_fallow = []
-segment = ["segment_clear", "segment_erase", "segment_bounds", "segment_mut",
-           "segment_free", "segment_magic", "segment_null", "segment_unaligned", "segment_fallow"]
-
+segment = ["segment_clear", "segment_erase",
+           "segment_bounds", "segment_mut", "segment_free",
+           "segment_magic", "segment_null", "segment_unaligned",
+           "segment_counts",
+           ]#"segment_fallow"]
 
 fuzz_segment_spurious_aliased = []
 fuzz_segment = ["fuzz_segment_spurious_aliased"]
-
 fuzz = ["fuzz_segment"]
+

@@ -7,28 +7,39 @@
 
 use super::*;
 
+// Sets a given index
 pub fn assoc(prism: AnchoredLine, idx: u32, x: Unit) -> (Unit, Unit) {
     let guide = Guide::hydrate(unaliased(prism));
     match idx.cmp(&guide.count) {
         Ordering::Less => {
-            if guide.count <= TAIL_CAP {
-                assoc_untailed(guide, idx, x)
-            } else {
-                assoc_tailed(guide, idx, x)
-            }
+            let c = locate(guide, idx);
+            let popped = c[0];
+            c.set(0, x);
+            (guide.clear_hash().store().segment().unit(), popped)
         },
         Ordering::Equal   => { (super::conj::conj(prism, x), Handle::nil().unit()) },
         Ordering::Greater => { panic!("Index out of bounds: {} in vector of count {}", idx, guide.count); }
     }
 }
 
-pub fn assoc_untailed(guide: Guide, idx: u32, x: Unit) -> (Unit, Unit) {
-    let popped = guide.root[idx as i32];
-    guide.root.set(idx as i32, x);
-    (guide.clear_hash().store().segment().unit(), popped)
+pub fn swap(prism: AnchoredLine, i: u32, j: u32) -> Unit {
+    let guide = Guide::hydrate(unaliased(prism));
+    if i >= guide.count || j >= guide.count {
+        panic!("Index out of bounds: {}, {} in vector of count {}", i, j, guide.count);
+    }
+    if i == j { return guide.segment().unit() }
+    let ci = locate(guide, i);
+    let cj = locate(guide, j);
+    let x = ci[0];
+    ci.set(0, cj[0]);
+    cj.set(0, x);
+    guide.clear_hash().store().segment().unit()
 }
 
-pub fn assoc_tailed(guide: Guide, idx: u32, x: Unit) -> (Unit, Unit) {
+pub fn locate(guide: Guide, idx: u32) -> AnchoredLine {
+    if guide.count <= TAIL_CAP {
+        return guide.root.offset(idx as i32)
+    }
     let tailoff = tailoff(guide.count);
     if idx >= tailoff {
         let tail_count = tail_count(guide.count);
@@ -50,11 +61,12 @@ pub fn assoc_tailed(guide: Guide, idx: u32, x: Unit) -> (Unit, Unit) {
             }
         };
         let tail_idx = idx - tailoff;
-        let popped = tail[tail_idx];
-        tail.set(tail_idx, x);
-        (guide.clear_hash().store().segment().unit(), popped)
+        tail.line_at(tail_idx)
     } else {
-        assoc_tailed_tree(guide, idx, x, tailoff)
+        let last_index = tailoff - 1;
+        let digit_count = digit_count(last_index);
+        let path_widths = path_widths(tailoff, idx);
+        create_path_width(guide.root, idx, path_widths, digit_count)
     }
 }
 
@@ -92,12 +104,3 @@ pub fn create_path_width(root: AnchoredLine, path: u32, path_widths: u32, height
     curr
 }
 
-pub fn assoc_tailed_tree(guide: Guide, idx: u32, x: Unit, tailoff: u32) -> (Unit, Unit) {
-    let last_index = tailoff - 1;
-    let digit_count = digit_count(last_index);
-    let path_widths = path_widths(tailoff, idx);
-    let c = create_path_width(guide.root, idx, path_widths, digit_count);
-    let popped = c[0];
-    c.set(0, x);
-    (guide.clear_hash().store().segment().unit(), popped)
-}

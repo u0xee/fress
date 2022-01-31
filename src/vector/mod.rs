@@ -208,13 +208,21 @@ impl Sequential for Vector_ {
     fn nth(&self, prism: AnchoredLine, idx: u32) -> *const Unit {
         nth::nth(prism, idx).line().star()
     }
+    fn nth_set(&self, prism: AnchoredLine, idx: u32, v: Unit) -> Unit {
+        let (c, displaced) = assoc::assoc(prism, idx, v);
+        displaced.handle().retire();
+        c
+    }
+    fn swap_idx(&self, prism: AnchoredLine, i: u32, j: u32) -> Unit {
+        assoc::swap(prism, i, j)
+    }
 }
+
 impl Associative for Vector_ {
     fn assoc(&self, prism: AnchoredLine, k: Unit, v: Unit) -> (Unit, Unit) {
-        let guide = Guide::hydrate(prism);
         let idx = k.handle().as_i64();
-        if idx < 0 || (idx as u32) > guide.count {
-            panic!("Index out of bounds: {} in vector of count {}", idx, guide.count);
+        if idx < 0 || idx > u32::MAX as i64 {
+            panic!("Bad index: {} in vector", idx);
         }
         k.handle().retire();
         assoc::assoc(prism, idx as u32, v)
@@ -262,5 +270,13 @@ impl Callable for Vector_ {}
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn index() {
+        let v: Value = "[1 2 3 4]".parse().unwrap();
+        assert_eq!(v[2], 3.into());
+        assert_eq!(v[6], 3.into());
+        assert_eq!(v[-2], 3.into());
+        assert_eq!(v[-6], 3.into());
+    }
 }
 

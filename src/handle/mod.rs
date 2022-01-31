@@ -273,7 +273,6 @@ impl Handle {
     }
 
     pub fn conj(self, x: Handle) -> Handle {
-        //log!("handle conj");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -297,7 +296,6 @@ impl Handle {
     }
 
     pub fn assoc_out(self, k: Handle, v: Handle) -> (Handle, Handle) {
-        //log!("handle assoc on {}", self);
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -318,7 +316,6 @@ impl Handle {
     }
 
     pub fn get(self, k: Handle) -> *const Handle {
-        //log!("handle get");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -334,7 +331,6 @@ impl Handle {
     }
 
     pub fn nth(self, idx: u32) -> *const Handle {
-        //log!("handle nth");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];
@@ -342,9 +338,24 @@ impl Handle {
             elem as *const Handle
         } else { unimplemented!() }
     }
+    pub fn nth_set(self, idx: u32, v: Handle) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let res = mechanism::as_dispatch(&p).nth_set(prism, idx, v.unit);
+            res.handle()
+        } else { unimplemented!() }
+    }
+    pub fn swap_idx(self, i: u32, j: u32) -> Handle {
+        if self.is_ref() {
+            let prism = self.prism();
+            let p = prism[0];
+            let res = mechanism::as_dispatch(&p).swap_idx(prism, i, j);
+            res.handle()
+        } else { unimplemented!() }
+    }
 
     pub fn reduce(self, stack: &mut [Box<dyn Process>]) -> Value {
-        //log!("handle reduce");
         if self.is_ref() {
             let prism = self.prism();
             let p = prism[0];

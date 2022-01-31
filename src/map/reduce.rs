@@ -9,23 +9,9 @@ use super::*;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
 use transduce::{inges, inges_kv, last_call, Process};
 
-pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut [Box<dyn Process>],
-                   has_vals: u32) -> Option<Value> {
-    for i in 0..key_count {
-        let key = first_key.offset((i << has_vals) as i32);
-        let x = key.line().star() as *const Value;
-        let y = unsafe { &* x };
-        if let Some(ret) = if has_vals == 0 { inges(process_stack, y) } else {
-            let w = key.offset(1).line().star() as *const Value;
-            let z = unsafe { &* w };
-            inges_kv(process_stack, y, z)
-        } {
-            return Some(ret);
-        }
-    }
-    None
-}
-
+// Traverse all key-value entries in the tree, feeding them into
+// a stateful aggregation process one by one.
+// Uses an explicit stack of records (not recursion).
 pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<dyn Process>], has_vals: u32) -> Value {
     let guide = Guide::hydrate(prism);
     let (child_count, key_count) = {
@@ -51,6 +37,23 @@ pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<dyn Process>], has_v
         }
     }
     last_call(process_stack)
+}
+
+pub fn ingest_keys(first_key: AnchoredLine, key_count: u32, process_stack: &mut [Box<dyn Process>],
+                   has_vals: u32) -> Option<Value> {
+    for i in 0..key_count {
+        let key = first_key.offset((i << has_vals) as i32);
+        let x = key.line().star() as *const Value;
+        let y = unsafe { &* x };
+        if let Some(ret) = if has_vals == 0 { inges(process_stack, y) } else {
+            let w = key.offset(1).line().star() as *const Value;
+            let z = unsafe { &* w };
+            inges_kv(process_stack, y, z)
+        } {
+            return Some(ret);
+        }
+    }
+    None
 }
 
 pub fn step(stack: &mut NodeRecordStack, process_stack: &mut [Box<dyn Process>],

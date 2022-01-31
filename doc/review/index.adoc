@@ -14,3 +14,6 @@
 // Graefe Modern B-Tree techniques
 // Colyer Hashed and Hierarchical Timing Wheels
 
+// https://web.archive.org/web/20161109134034/http://www.cs.utexas.edu/users/hunt/research/hash-cons/hash-cons-papers/
+// ^ Source of Goto's Hash consing paper etc
+

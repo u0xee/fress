@@ -1,0 +1,12 @@
+// Bodil Stokke
+// Phil Nash
+//  - game dev c version mentioned
+// Juan Pedro Bolivar Puente
+// Hickey
+// ClojureScript
+// Facebook Persistent collections
+// Zach Tellman Java library
+// Scala
+// Julia - Zach Allaun
+// Python Pyrsistent
+

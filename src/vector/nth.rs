@@ -7,6 +7,7 @@
 
 use super::*;
 
+// Accesses an item based on index
 pub fn nth(prism: AnchoredLine, idx: u32) -> AnchoredLine {
     let guide = Guide::hydrate(prism);
     if idx >= guide.count {
@@ -19,6 +20,7 @@ pub fn nth(prism: AnchoredLine, idx: u32) -> AnchoredLine {
     }
 }
 
+// Traverses down the tree using the index, digit by digit
 fn nth_tailed(guide: Guide, idx: u32) -> AnchoredLine {
     let tailoff = tailoff(guide.count);
     if idx >= tailoff {

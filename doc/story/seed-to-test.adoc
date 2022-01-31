@@ -1,0 +1,176 @@
+= image:logo/shield.svg[fress,47,link="./"] Seed to Test
+Cole Frederick
+:revdate: Oct 6, 2021
+
+The goal is to test priority queue implementations against a reference implementation.
+The strategy I used is to generate test cases mechanically. And when a failing test
+case is found, it shrinks to a small reproduction case.
+The code is https://github.com/u0xee/gen-test-queue/blob/trunk/src/QueueTestProgram.java[here^].
+
+From a seed random number, it first decides on the number of operations and
+their frequencies. Then it creates a list of operations (like push and pop),
+and evaluates the operations on both implementations. If they ever return
+different responses, or an exception occurs in one but not the other,
+that's a failed case.
+
+.From a seed number, create a plan and test script, execute it and gather results
+[source, java]
+----
+Map<String, Object> runTest(long seed, referenceSupplier, testSubjectSupplier) {
+    Map<String, Object>  thePlan = Plan.plan(seed, queue_max_size);
+    List<List<Object>> theScript = Script.script(thePlan);
+    Map<String, Object>   result = Eval.eval(theScript,
+            referenceSupplier.apply(queue_max_size),
+            testSubjectSupplier.apply(queue_max_size));
+
+    thePlan.putAll(result);
+    thePlan.put("script", theScript);
+    return thePlan;
+}
+----
+
+== Introducing bugs
+To run the program:
+
+----
+$ javac *.java
+$ java Heap
+----
+
+I can introduce bugs in the priority queue,
+https://github.com/u0xee/gen-test-queue/blob/trunk/src/Heap.java[here^].
+Off-by-one, reversed conditionals, and other common errors are
+quickly caught.
+
+.Failing case after reversing the children comparison
+----
+Method calls that expose bug: [add(0), add(0), add(1), add(1),
+                               poll(), poll()]
+PriorityQueue.poll() => 0, but..
+Heap.poll()          => 1
+----
+
+This sequence of six operations is minimal in the sense that leaving out
+any one operation or reducing the numbers would result in a passing test case.
+So for instance, adding `0` three times and then a `1` isn't enough to
+expose the buggy behavior: you need two ones. The first `poll` operation
+returns the right answer, but encounters the buggy comparison, and swaps
+in the wrong element. The second `poll` exposes this corrupt state.
+The original sequence that failed had over 600 operations before shrinking:
+
+----
+[fill-to, 0], [add, 25], [add, 3], [peek], [peek], [peek], [remove],
+[element], [add, 3], [offer, 4], [add, 14], [poll], [peek], [peek],
+[remove], [peek], [offer, 22], [isEmpty], [add, 16], [poll]
+...
+----
+
+A bit more subtle, and less realistic, we can introduce a bug
+in `swapDown`:
+
+[source, java, subs=+quotes]
+----
+void swapDown(int i) {
+    while (!isLeaf(i)) {
+        int c = priorityChild(i);
+        *if (i == 17 && c != lchild(i)) {
+            trigger += 1;
+            if (trigger == 5)
+                break;
+        }*
+        if (tree.get(i).compareTo(tree.get(c)) <= 0)
+            break;
+        Collections.swap(tree, i, c);
+        i = c;
+    }
+}
+----
+
+This artificial bug (the first `if`) is only triggered on
+the fifth time that position `17` in the array is considered for
+swapping down _and_ its right child is higher priority than its left.
+When triggered, it ends the down-swapping loop (potentially) prematurely.
+A script of over 200 operations failed on the 127th, and was shrunk
+down to these 14 operations:
+
+----
+PriorityQueue.poll() => 35, but..
+Heap.poll()          => 36
+Method calls that expose bug: [fill-to(77), remove(), poll(),
+  poll(), remove(), poll(), poll(), remove(), add(0), remove(),
+  remove(), poll(), fill-to(79), fill-to(0)]
+----
+
+The `fill-to` operations mean "add or remove elements as required
+to get the queue to the desired size".
+
+== Treasure hunt
+We can set up a little "treasure hunt" of conspiring bugs for
+the test runner to find. First, the private method `isLeaf`
+should be called on position 12 to advance a trigger to state `1`.
+Then it should `offer` the number `7`. Then `peek` at an empty state.
+Then call `size` when the queue has 42 elements.
+Finally, the bug is triggered and a call to `poll` will
+erroneously return `null`. A test case that
+exposes this bug must hit these events in order.
+
+[source, java]
+----
+boolean isLeaf(int i) {
+    if (trigger == 0 && i == 12)
+        trigger = 1;
+    ...
+}
+boolean offer(E e) {
+    if (trigger == 1 && (Integer) e == 7)
+        trigger = 2;
+    ...
+}
+E peek() {
+    if (trigger == 2 && tree.isEmpty()) {
+        trigger = 3;
+    ....
+}
+int size() {
+    if (trigger == 3 && tree.size() == 42)
+        trigger = 4;
+    ...
+}
+E poll() {
+    if (trigger == 4)
+        return null;
+    ....
+}
+----
+
+After a few seconds it found a test case with over
+6000 operations that failed on the 2145th, and shrunk it
+down to these twelve operations:
+
+----
+PriorityQueue.poll() => 0, but..
+Heap.poll()          => null
+Method calls that expose bug:
+  [fill-to(19), poll(), poll(), poll(), poll(), poll(), poll(),
+   offer(7),
+   clear(), peek(),
+   fill-to(42),
+   poll()]
+----
+
+The `fill-to(42)` command calls `size` internally.
+
+This "treasure hunt" bug is entirely synthetic, but sometimes real bugs
+_will_ involve the unanticipated interactions of different components
+under specific conditions. Such bugs can be very easily missed by unit testing.
+A bit of automation and domain modeling can shine light into quite a few
+dark corners.
+
+And domain modeling is the trick here. It finds these bugs because
+they manifest in the tiny fraction of the possible search space I chose
+to concentrace on: small numbers. If instead of triggering with `7`
+I had used 7 million, it would take an _extremely_ long time to stumble
+upon a triggering script. But this coverage is ample to catch actual
+mistakes in code; there just isn't that much logic to get wrong
+in a priority queue implementation.
+

@@ -74,19 +74,6 @@ impl Dispatch for Symbol_ { /*default tear_down, alias_components*/ }
 impl Identification for Symbol_ {
     fn type_name(&self) -> &'static str { "Symbol" }
 }
-//#[inline(never)]
-fn assert_zero(x: usize) -> u32 {
-    //println!("x is {}", x);
-    //assert_eq!(!0, x ^ !0);
-    //assert_eq!(!0, !x);
-    //assert_eq!(0, x * 2);
-    //assert_eq!(64, x.count_zeros());
-    //assert_eq!(0, x.rotate_left(0));
-    //println!("x {}", x);
-    //assert_eq!(!0, x ^ !0);
-    //println!("x leading_zeros {}", x.leading_zeros());
-    x.rotate_left(17).leading_zeros()
-}
 impl Distinguish for Symbol_ {
     fn hash(&self, prism: AnchoredLine) -> u32 {
         let guide = Guide::hydrate(prism);
@@ -101,33 +88,14 @@ impl Distinguish for Symbol_ {
             let (x, _y) = end(a.0, a.1, a.2, a.3);
             x as u32
         };
-        //take_my_args(0);
-        //log!("Symbol hash: {} {:#08X}", prism.segment().unit().handle(), h);
+        //println!("Symbol {}.hash() => {:08X}", prism.segment().unit().handle(), h);
         guide.set_hash(h).store_hash().hash
     }
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let self_usize = self as *const Symbol_ as usize;
-        //let x = self_usize ^ 4;
-        //assert_eq!(64, x.leading_zeros());
-        let z = assert_zero(self_usize);
-        println!("z = {}", z);
-        //assert_eq!(!0, self_usize ^ !0);
-        //assert_zero(self_usize);
-
-        //let self_lead = self_usize.leading_zeros();
-        //println!("self_lead {}", self_lead);
-
-        //let x: usize = "1".parse().unwrap();
-        //let x_lead = x.leading_zeros();
-        //println!("x_lead {}", x_lead);
-        //unimplemented!();
-        //let f: f64 = Unit::from(self_usize).into();
-        //let u: usize = Unit::from(f).into();
-        //assert_eq!(0, self_usize.reverse_bits());
-        //assert_eq!(0, self as *const Symbol_ as usize);
         let o = other.handle();
         if let Some(o_sym) = find_prism(o) {
-            //log!("Symbol eq: {} {}", prism.segment().unit().handle(), o);
+            //println!("Symbol {} == {}", prism.segment().unit().handle(), o);
             let g = Guide::hydrate(prism);
             let h = Guide::hydrate(o_sym);
             return g.byte_slice() == h.byte_slice()

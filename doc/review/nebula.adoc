@@ -1,8 +1,111 @@
 = image:logo/shield.svg[fress,47,link="./"] Nebula: The Fall of a Company
 
-Matthew Saucedo, Robert Siegel, and Mark Leslie.
+A 2015 report by Matthew *Saucedo*, Robert *Siegel*, and Mark *Leslie*.
+See the Stanford Graduade School of Business
+https://www.gsb.stanford.edu/faculty-research/case-studies/nebula-fall-company[description page^],
+and the Harvard Publishing purchase https://hbsp.harvard.edu/product/E574-PDF-ENG[page^] ~$8.
 
-The Stanford Graduade School of Business
-https://www.gsb.stanford.edu/faculty-research/case-studies/nebula-fall-company[description page^].
-And the Harvard Publishing purchase https://hbsp.harvard.edu/product/E574-PDF-ENG[page^]
+Bryan Cantrill mentioned this as the "best eight bucks he's ever spent," so I was keen to
+take a peek inside.
+https://en.wikipedia.org/wiki/Nebula_(company)[Nebula^], the company in question,
+was aimed at similar goals to Oxide's (Bryan's company). Despite raising funds and having
+a promising start, Nebula ultimately shuttered. This report interviews some of the major players,
+and speculates on what went wrong.
+
+They start with a scintillating pull-quote:
+
+[quote, Ted Schlein, Kleiner Perkins Caufield & Byers (VC firm)]
+I thought we were going to take down VMWare. I thought we were going to be the
+main fabric of private clouds built around the world.
+
+The company had successfully found funding, did $1 million in first quarter revenue,
+then slowly but surely sank. The report describes, at a high level, cloud computing,
+and names other companies trying to make hybrid cloud solutions:
+https://en.wikipedia.org/wiki/Nimbula[Nimbula^],
+https://en.wikipedia.org/wiki/Eucalyptus_(software)[Eucalyptus^],
+and https://en.wikipedia.org/wiki/Mirantis[Mirantis^].
+
+https://en.wikipedia.org/wiki/Chris_Kemp[Chris Kemp^] at NASA lead a team creating
+https://en.wikipedia.org/wiki/OpenStack[OpenStack^], software for organizing
+heterogeneous computing hardware into a cloud. He then started Nebula, building on
+OpenStack and selling special hardware that would orchestrate a data center's
+existing machines. The goal was a "plug and play" appliance.
+
+A theme in the report, the authors mention customers not understanding how to utilize
+the product after they bought it. Potential customers often didn't understand
+what OpenStack could and couldn't do, and weren't ready to commit to moving parts
+of their system off public cloud or VMWare.
+The authors also mention valuable resources being
+unwisely spent on glamorous user facing displays, juxtaposed with subpar software
+quality and stability.
+And according to one source, security was overemphasized at great expense.
+
+== Open Source
+But the authors, on page ten, finally come around to pinning the lionshare of the
+blame on... "open source dudes"?
+The last three pages of the paper are a hilarious condemnation of apparently lazy, unreliable
+programmers with emphasis on "open source culture".
+Keep in mind the context of the authors: they are business school lecturers, one of whom
+was on the board and presumably lost big on this bet.
+
+In a sort of guilt by association, they characterize the "open source community" as
+unconcerned with deadlines, unwilling to find or fix bugs, and uppity about having input
+into decision-making. The authors note that having multiple locations (Mountain View and Seattle)
+was bad for cohesion. Many of the programmers were web developers, even though the product
+largely needed other kinds of expertise. Investors and managers
+characterized the programmers as undisciplined, "We ship things when we ship them--they
+don't have to be high quality because quality doesn't really matter." 
+Apparently the programmers were "like government workers" and didn't show the
+"level of intensity that [one] would expect in an early stage start-up."
+There was high turnover, 40 percent of the company over its lifespan.
+Kemp's initial hiring strategy was to "bring a great team together, and then if we make
+mistakes, I'm just going to let those people go." 
+
+The report wraps up saying investors did all they could, and that some problems were out of
+management's hands. They conclude, asking "even if management had succeeded in doing
+everything right within their control, would the company still have failed?"
+This feels like a leading question by this point in the report, sort of the opposite of
+https://en.wikipedia.org/wiki/Betteridge%27s_law_of_headlines[Betteridge's law of headlines^].
+The conclusion is plainly "investors and management did what they could,
+but the company was scuttled by those darn hippie programmers!"
+
+I take umbrage at the apparent willingness of the authors to characterize management
+missteps as endemic employee problems, and further to attribute those problems to
+"open source values." Who signed off on that ornamental display? Who prioritized
+non-essential security features? Who hired a bunch of web devs instead of people with
+directly pertinent experience? Who hired these programmers that lacked attention to detail
+and commitment to quality? And if you expected programmers to work 8 to 8, and through the
+weekends (specifically mentioned in quotes), perhaps that should have been communicated
+up front while vetting candidates.
+
+If I were to hazard a guess, they probably offered low salaries, and took what they could get.
+Namely, apparently underqualified and undercommitted candidates (for the task at hand).
+The results should not be taken as reflecting open source culture. Many open source projects
+_do in fact_ lack sufficient documentation, contain findable bugs,
+and spawn collective decision-making processes. They are _also_ frequently unfunded and work
+on them is a programmer's free-time pleasure activity. If _you_ hire people who have lax
+standards for their _professional_ work, that's really on you,
+your compensation policies, and your vetting processes.
+
+Overall the report was informative (if not deeply technical), communicated primary sources
+faithfully in a nice story arc, and was a good fit for the intended audience: business students.
+
+== Lessons for Oxide
+Nebula struggled to support arbitrary existing hardware.
+Oxide is selling matching sets of compute, storage, and network hardware,
+packaged together as a rack-scale "plug and play" appliance.
+Nebula's customers struggled to understand the product, and "many customers found
+solace in the simplicity of Amazon's straightforward public cloud offering."
+Oxide's product supports Amazon-style virtual-machine deployment via a hypervisor,
+https://en.wikipedia.org/wiki/Bhyve[bhyve^], in addition to the finer-grained building blocks.
+
+Nebula's separate locations resulted in poor communications, and in particular
+the manufacturing team was "out of sight, out of mind."
+Oxide _is_ distributed, and _will_ have to consciously maintain regular communications
+to avoid fragmenting the team (a tough but attainable goal).
+Nebula's shotgun approach to hiring contrasts with Oxide's seemingly more targeted search
+for people with relevant expertise.
+
+Although Nebula was certainly targeting a similar market, Oxide seems to be taking
+a different approach to both technical solutions and team building.
 

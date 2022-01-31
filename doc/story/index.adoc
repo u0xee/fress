@@ -2,6 +2,7 @@
 
 * They Sure link:look-the-same[Look the Same!]
 * Uh oh, link:panicked-while-panicking[Panicked while Panicking]
+* link:gen-test-queue[Generative Testing of Priority Queues]
 * link:bumblebee-graphics[Bumblebee Graphics]
 * link:fly-in-my-coffee[Fly in my Coffee]
 * It's link:raining-hair[Raining Hair]

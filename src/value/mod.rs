@@ -9,6 +9,7 @@ use std::cmp;
 use std::fmt;
 use std::default;
 use std::ops;
+use std::hash::{Hash, Hasher};
 use handle::*;
 use transduce::{Transducers, Process};
 
@@ -46,6 +47,9 @@ impl Value {
         v.split();
         v.value()
     }
+    pub fn value(&self) -> Value {
+        self.split_out()
+    }
 
     pub fn type_name(&self) -> &'static str { self.handle().type_name() }
     pub fn conj(self, x: Value) -> Value { self.consume().conj(x.consume()).value() }
@@ -68,6 +72,7 @@ impl Value {
     pub fn is_integral(&self) -> bool { self.handle().is_integral() }
 
     pub fn count(&self) -> u32 { self.handle().count() }
+    pub fn len(&self) -> usize { self.count() as usize }
     pub fn is_empty(&self) -> bool { self.count() == 0 }
     pub fn hash(&self) -> u32 { self.handle().hash() }
     pub fn empty(&self) -> Value { self.handle().empty().value() }
@@ -92,6 +97,18 @@ impl Value {
     pub fn nth(&self, idx: u32) -> &Value {
         let v = self.handle().nth(idx) as *const Value;
         unsafe { &*v }
+    }
+    pub fn nth_set(self, idx: u32, v: Value) -> Value {
+        self.consume().nth_set(idx, v.consume()).value()
+    }
+    pub fn swap_idx(self, i: u32, j: u32) -> Value {
+        self.consume().swap_idx(i, j).value()
+    }
+    pub fn mth(&self, idx: i32) -> &Value {
+        let ct = self.count() as i32;
+        let rm = idx % ct;
+        let i = if rm < 0 { rm + ct } else { rm };
+        self.nth(i as u32)
     }
 
     pub fn meta(&self) -> &Value {
@@ -143,6 +160,11 @@ impl fmt::Display for Value {
 impl fmt::Debug for Value {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { self.handle().fmt(f) }
 }
+// LowerHex, UpperHex, Pointer, Binary, LowerExp, UpperExp
+// f: &mut fmt::Formatter
+// if f.alternate() { } else { }
+// f.sign_aware_zero_pad()
+// f.fill(), f.pad(&str), f.precision(), f.width(), f.align()
 impl default::Default for Value {
     fn default() -> Self { Value::nil() }
 }
@@ -152,6 +174,15 @@ impl Clone for Value {
 impl PartialEq for Value {
     fn eq(&self, other: &Value) -> bool { self.handle().eq(other.handle()) }
 }
+impl Eq for Value {}
+impl Hash for Value {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write_u32(self.hash());
+    }
+}
+//impl PartialEq<i64> for Value {
+//    fn eq(&self, other: &i64) -> bool { self.as_i64() == *other }
+//}
 impl PartialOrd for Value {
     fn partial_cmp(&self, other: &Value) -> Option<cmp::Ordering> {
         self.handle().cmp(other.handle())
@@ -164,6 +195,16 @@ impl<'a> ops::Index<&'a Value> for Value {
 impl<'a> ops::Index<Value> for Value {
     type Output = Value;
     fn index(&self, index: Value) -> &Value { self.index(&index) }
+}
+/*
+impl<'a> ops::Index<u32> for Value {
+    type Output = Value;
+    fn index(&self, index: u32) -> &Value { self.nth(index) }
+}
+*/
+impl<'a> ops::Index<i32> for Value {
+    type Output = Value;
+    fn index(&self, index: i32) -> &Value { self.mth(index) }
 }
 
 #[cfg(test)]
@@ -185,7 +226,52 @@ mod test {
 // unsafe impl Sync for Value {}
 // index with i32, Value, &str ?
 // partialEq with i32, &str
-// iterator, intoiterator
+// FromIterator, Extend, IntoIterator<Value>, IntoIterator<&Value>
+use std::iter::{FromIterator, IntoIterator};
+impl<T: Into<Value>> FromIterator<T> for Value {
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut v = ::vector();
+        for t in iter {
+            v = v.conj(t.into());
+        }
+        v
+    }
+}
+impl<K: Into<Value>, V: Into<Value>> FromIterator<(K, V)> for Value {
+    fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self {
+        let mut m = ::hash_map();
+        for (k, v) in iter {
+            m = m.assoc(k.into(), v.into());
+        }
+        m
+    }
+}
+pub struct ValueIter { }
+impl Iterator for ValueIter {
+    type Item = Value;
+    fn next(&mut self) -> Option<Value> {
+        todo!()
+    }
+}
+impl IntoIterator for Value {
+    type Item = Value;
+    type IntoIter = ValueIter;
+    fn into_iter(self) -> Self::IntoIter {
+        todo!()
+    }
+}
+/*
+ * Value.iter()
+ * Value.keys(), Value.values(), into_keys, into_values
+ * Value.iter_kv()
+impl<'a> IntoIterator for &'a Value {
+    type Item = &'a Value;
+    type IntoIter = Iter<'a>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+*/
 
 //struct MapValue {}
 //struct SetValue {}

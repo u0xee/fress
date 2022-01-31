@@ -14,7 +14,7 @@ use fress::edn::reader::EdnRdr;
 
 fn n() {
     let mut reader = EdnRdr::with_buffer_capacity(1 << 10);
-    let stop_cmd = fress::read(":repl/quit ").unwrap();
+    let stop_cmd = fress::read(":repl/quit ");
     println!("Ready!");
     //println!("Ready! stop_cmd 0x{:016X}", stop_cmd._handle().unit().u());
     //println!("Here is stop_cmd {}", stop_cmd);
@@ -47,7 +47,7 @@ fn read_one_stdin(reader: &mut EdnRdr) -> Value {
             None => {
                 use std::io::{self, Read};
                 let n = io::stdin().read(reader.buffer_wilderness()).unwrap();
-                if n == 0 { return fress::read(":repl/quit ").unwrap() }
+                if n == 0 { return fress::read(":repl/quit ") }
                 reader.buffer_consume(n);
                 /*use std::str;
                 let x = str::from_utf8(reader.buf.as_slice()).unwrap();
@@ -72,4 +72,9 @@ fn main() {
         println!("New diff: {}, free diff: {}, new - free: {}", new_diff, free_diff, new_diff - free_diff);
     }
 }
+
+// https://doc.rust-lang.org/std/fs/index.html
+// https://doc.rust-lang.org/std/process/index.html
+// https://doc.rust-lang.org/std/env/index.html
+// https://doc.rust-lang.org/std/path/index.html
 

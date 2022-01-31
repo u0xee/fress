@@ -36,7 +36,7 @@ impl Segment {
             unanchored.anchor_line[0] = Anchor::for_capacity(cap).into();
             unanchored
         };
-        println!("New segment({:?}) capacity {}", anchored.line().unit(), cap);
+        //println!("New segment({:?}) capacity {}", anchored.line().unit(), cap);
         #[cfg(any(test, feature = "segment_clear"))]
             {
                 let mut anchored = anchored;
@@ -48,7 +48,7 @@ impl Segment {
     }
 
     pub fn free(s: Segment) {
-        println!("Free segment({:?}), capacity {}", s.line().unit(), s.capacity());
+        //println!("Free segment({:?}), capacity {}", s.line().unit(), s.capacity());
         let a = Anchor::from(s.anchor_line[0]);
         #[cfg(any(test, feature = "segment_free"))]
             assert_eq!(a.aliases(), 0,
@@ -72,8 +72,8 @@ impl Segment {
             let curr = unsafe { (&*ptr).load(Ordering::SeqCst) };
             let real_ret = Unit::from(curr).anchor().is_aliased();
             if real_ret {
-                use memory::schedule;
-                schedule::step();
+                //use memory::schedule;
+                //schedule::step();
             }
             real_ret
         }
@@ -96,6 +96,7 @@ impl Segment {
             use std::sync::atomic::{AtomicUsize, Ordering};
             let ptr = self.anchor_line.star() as *const usize as *const AtomicUsize;
             let prev = unsafe { (&*ptr).fetch_add(1, Ordering::SeqCst) };
+            let _ = Unit::from(prev).anchor().aliased(); // Alerts on overflow
         }
     }
     pub fn unalias(&self) -> u32 {
@@ -109,23 +110,17 @@ impl Segment {
             use std::sync::atomic::{AtomicUsize, Ordering};
             let ptr = self.anchor_line.star() as *const usize as *const AtomicUsize;
             let prev = unsafe { (&*ptr).fetch_sub(1, Ordering::SeqCst) };
-            let new_anchor = Unit::from(prev - 1).anchor();
-            if new_anchor.aliases() == 0 {
-                use memory::schedule;
-                schedule::step();
-            }
+            let new_anchor = Unit::from(prev).anchor().unaliased();
             new_anchor.aliases()
         }
     }
-    // TODO atomic inc/dec
-    //      unalias_void (no check)
-    //      prefer set to index assignment operator
     pub fn unalias_expect_nonzero(&self) {
-        // unalias expecting > 0
-        // don't instrument as decision point
-        unimplemented!()
+        if self.unalias() == 0 {
+            panic!("Blind unalias op inappropriately used as final unalias")
+        }
     }
 
+    // TODO  prefer set to index assignment operator
     pub fn get(&self, index: u32) -> Unit { self[index] }
     pub fn set(&self, index: u32, x: Unit) {
         let mut m = *self;
@@ -204,8 +199,8 @@ impl From<Line> for Segment {
                 line.unit().u());
         #[cfg(any(test, feature = "segment_magic"))]
         assert!(has_magic(line),
-                "segment_magic: casting to Segment failed, magic not found @ 0x{:016X}",
-                line.unit().u());
+                "segment_magic: casting to Segment failed, magic not found @ 0x{:016X} (found {})",
+                line.unit().u(), line.offset(-1)[0].u());
         Segment { anchor_line: line }
     }
 }
@@ -225,12 +220,12 @@ pub fn alloc(raw_cap: u32) -> Line {
     let v: Vec<Unit> = Vec::with_capacity(raw_cap as usize);
     let ptr = v.as_ptr();
     mem::forget(v);
-    println!("alloc({}) -> {:?}", raw_cap, Unit::from(ptr));
+    //println!("alloc({}) -> {:?}", raw_cap, Unit::from(ptr));
     Unit::from(ptr).into()
 }
 
 pub fn dealloc(line: Line, raw_cap: u32) {
-    println!("dealloc({:?}, {})", line, raw_cap);
+    //println!("dealloc({:?}, {})", line, raw_cap);
     count_free(raw_cap);
     #[cfg(any(test, feature = "segment_erase"))]
         {
@@ -260,8 +255,7 @@ impl Index<u32> for Segment {
         assert!(index < self.capacity(),
                 "segment_bounds ({:?}): accessing index = {}, segment capacity = {}.",
                 self.anchor_line.unit(), index, self.capacity());
-        println!("Segment Index({:?}:{})[{}]",
-                 self.anchor_line.unit(), self.capacity(), index);
+        //println!("Segment Index({:?}:{})[{}]", self.anchor_line.unit(), self.capacity(), index);
         &self.anchor_line[1 + index]
     }
 }
@@ -275,8 +269,7 @@ impl IndexMut<u32> for Segment {
         assert_eq!(self.anchor().aliases(), 1,
                 "segment_mut: writing index = {}, segment aliases = {}.",
                 index, self.anchor().aliases());
-        println!("Segment IndexMut({:?}:{})[{}]",
-                 self.anchor_line.unit(), self.capacity(), index);
+        //println!("Segment IndexMut({:?}:{})[{}]", self.anchor_line.unit(), self.capacity(), index);
         &mut self.anchor_line[1 + index]
     }
 }
@@ -310,16 +303,20 @@ thread_local! {
 pub fn usage() -> Usage { USAGE.with(|c| c.get()) }
 pub fn set_usage(u: Usage) { USAGE.with(|c| c.set(u)) }
 pub fn count_new(capacity: u32) {
-    let mut u = usage();
-    u.new_count += 1;
-    u.new_units += capacity as u64;
-    set_usage(u);
+    if cfg!(any(test, feature = "segment_counts")) {
+        let mut u = usage();
+        u.new_count += 1;
+        u.new_units += capacity as u64;
+        set_usage(u);
+    }
 }
 pub fn count_free(capacity: u32) {
-    let mut u = usage();
-    u.free_count += 1;
-    u.free_units += capacity as u64;
-    set_usage(u);
+    if cfg!(any(test, feature = "segment_counts")) {
+        let mut u = usage();
+        u.free_count += 1;
+        u.free_units += capacity as u64;
+        set_usage(u);
+    }
 }
 pub fn new_free_counts() -> (u64, u64) {
     let u = usage();

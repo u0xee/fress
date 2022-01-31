@@ -109,6 +109,7 @@ impl ops::Not for Value {
 impl<'a> ops::Not for &'a Value {
     type Output = Value;
     fn not(self) -> Value {
+        // TODO should be bitwise not
         if self.handle().is_not() {
             Handle::tru().value()
         } else {

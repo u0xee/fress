@@ -68,7 +68,7 @@ fn m() {
 }
 
 fn n() {
-    let x = read("[1, 2, 3]").unwrap();
+    let x = read("[1, 2, 3]");
     println!("x is {}", x);
 }
 

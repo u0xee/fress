@@ -7,6 +7,7 @@
 
 use super::*;
 
+// Frees any unused memory in the tree by a depth first traversal
 pub fn tear_down(prism: AnchoredLine) {
     assert_eq!(0, prism.segment().anchor().aliases());
     let guide = Guide::hydrate(prism);

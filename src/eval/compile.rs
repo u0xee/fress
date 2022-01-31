@@ -85,7 +85,7 @@ pub fn compile_top_level(form: &Value) -> Box<Context> {
         let v = vector();
         comp(&mut ctx, form, &m, &s, &s, &v, 0)
     };
-    let value_sym = read("value ").unwrap();
+    let value_sym = read("value ");
     if res != value_sym {
         unimplemented!();
     }
@@ -99,7 +99,7 @@ pub fn compile_top_level(form: &Value) -> Box<Context> {
 }
 
 pub fn register_import(ctx: &mut Context, description: &Value) -> u32 {
-    let name_k = read(":name ").unwrap();
+    let name_k = read(":name ");
     let name = description.get(&name_k);
     let idx = ctx.imports.get(name).split_out();
     if idx.is_integral() {
@@ -220,7 +220,7 @@ pub fn comp_fn(ctx: &mut Context, form: &Value,
     let c = "{:name [\"fress\" \"add_capture\"]\
                     :args [i32 i32]\
                     :ret  nil}";
-    let new_int = read(b).unwrap();
+    let new_int = read(b);
     let idx = register_import(ctx, &new_int);
     /*
     let body_ct = z();
@@ -330,7 +330,7 @@ pub fn comp_call(ctx: &mut Context, form: &Value,
     let b = "{fress/conj {:name [\"fress\" \"conj\"]\
                                 :args [value value]\
                                 :ret  value}}";
-    let base = read(b).unwrap();
+    let base = read(b);
     let first = form.peek();
     if first.is_symbol() && first.has_namespace() && base.contains(&first) {
         // (fress/conj [] 7)
@@ -345,7 +345,7 @@ pub fn comp_call(ctx: &mut Context, form: &Value,
         let f: &mut Func = ctx.funcs.get_mut(ctx.curr_func).unwrap();
         f.code_bytes.push(wasm::Op::CALL);
         wasm::uleb128(&mut f.code_bytes, idx as u64);
-        return read("value").unwrap();
+        return read("value");
     } else {
         // (x 2) (:kw m) (some/f 7) var reference
         unimplemented!()
@@ -358,12 +358,12 @@ pub fn comp_vector(ctx: &mut Context, form: &Value,
                     :args []\
                     :ret  value}";
     if form.is_empty() {
-        let new_v = read(b).unwrap();
+        let new_v = read(b);
         let idx = register_import(ctx, &new_v);
         let f: &mut Func = ctx.funcs.get_mut(ctx.curr_func).unwrap();
         f.code_bytes.push(wasm::Op::CALL);
         wasm::uleb128(&mut f.code_bytes, idx as u64);
-        return read("value").unwrap();
+        return read("value");
     }
     unimplemented!()
 }
@@ -375,14 +375,14 @@ pub fn comp_integral(ctx: &mut Context, form: &Value,
     let b = "{:name [\"fress\" \"from_signed_i64\"]\
                     :args [i64]\
                     :ret  value}";
-    let new_int = read(b).unwrap();
+    let new_int = read(b);
     let idx = register_import(ctx, &new_int);
     let f: &mut Func = ctx.funcs.get_mut(ctx.curr_func).unwrap();
     f.code_bytes.push(wasm::Op::I64_CONST);
     wasm::sleb128(&mut f.code_bytes, form.as_i64());
     f.code_bytes.push(wasm::Op::CALL);
     wasm::uleb128(&mut f.code_bytes, idx as u64);
-    return read("value").unwrap();
+    return read("value");
 }
 
 
@@ -391,7 +391,7 @@ thread_local! {
     pub static PRIMITIVES: Cell<Unit> = Cell::new(Unit { word: 0});
 }
 pub fn init_primitives() {
-    let x = read(PRIMITIVE_INIT).unwrap()._consume().unit();
+    let x = read(PRIMITIVE_INIT)._consume().unit();
     PRIMITIVES.with(|c| c.set(x));
 }
 pub fn get_primitives() -> &'static Value {
@@ -414,7 +414,20 @@ pub extern fn new_vector() -> u32 {
     x._consume().unit().u32()
 }
 
-// TODO instead, value into js string
+#[no_mangle]
+pub extern fn post_output(v: u32) {
+    let val = Unit::from(v).handle();
+    let p = val.to_string();
+    unsafe {
+        super::post_output(p.as_ptr() as u32, p.len() as u32);
+    }
+}
+
+#[no_mangle]
+pub extern fn drop(v: u32) {
+    let _ = Unit::from(v).handle().value();
+}
+
 #[no_mangle]
 pub extern fn console_log(v: u32) {
     let val = Unit::from(v).handle();

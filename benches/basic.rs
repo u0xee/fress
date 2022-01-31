@@ -12,23 +12,45 @@ use test::Bencher;
 extern crate fress;
 use fress::*;
 
+const CT: u32 = 100_000;
+
+/*
 #[bench]
-fn vector_grow_to_30(b: &mut Bencher) {
+fn vector_grow(b: &mut Bencher) {
     b.iter(|| {
         let mut v = vector();
-        for i in 0..30 {
-            v = v.conj(i.into());
+        for i in 0..CT {
+            v = v.conj(Value::from(i));
         }
     });
 }
-
-fn x() {
-    let mut v = vec![];
-    let mut ct = 10_000;
-    for i in 0..ct {
-        v.push(Value::from(i))
-    }
+*/
+#[bench]
+fn vec_grow(b: &mut Bencher) {
+    b.iter(|| {
+        let mut v = vec![];
+        for i in 0..CT {
+            v.push(Value::from(i));
+        }
+    });
+}
+/*
+#[bench]
+fn create_destroy(b: &mut Bencher) {
+    b.iter(|| {
+        for i in 0..CT {
+            let x = Value::from(i);
+        }
+    });
 }
 #[bench]
-fn vector_something(b: &mut Bencher) { b.iter(|| { x() }); }
+fn vec_grow_with_cap(b: &mut Bencher) {
+    b.iter(|| {
+        let mut v = Vec::with_capacity(CT as usize);
+        for i in 0..CT {
+            v.push(Value::from(i));
+        }
+    });
+}
+*/
 

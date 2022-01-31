@@ -8,6 +8,8 @@
 use super::*;
 use super::conj::*;
 
+// Pop is the inverse operation of conj,
+// and naturally contains similar logic around the shape of the tree
 pub fn pop(prism: AnchoredLine) -> (Unit, Unit) {
     let guide = Guide::hydrate(unaliased(prism));
     if guide.count <= TAIL_CAP {

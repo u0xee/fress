@@ -5,11 +5,14 @@
 // By using this software in any fashion, you are agreeing to be bound by the terms of this license.
 // You must not remove this notice, or any other, from this software.
 
-
 //! A cohesive fressian library for rust
 #![doc(html_logo_url = "/images/logo/shield.svg")]
 #![doc(html_favicon_url = "/favicon.ico")]
 #![allow(unused_variables)]
+#![allow(unused_imports)]
+#![allow(dead_code)]
+#![allow(unused_parens)]
+#![allow(unused_macros)]
 
 #[macro_use]
 pub mod trace;
@@ -61,11 +64,13 @@ pub use value::Value;
 ///
 /// # Examples
 /// ```
+/// # use fress::*;
 /// let x = nil();
 /// assert!(x.is_nil());
 /// ```
 ///
 /// ```should_panic
+/// # use fress::*;
 /// assert!(nil().is_true());
 /// ```
 pub fn nil()  -> Value { Value::nil() }
@@ -94,7 +99,9 @@ pub fn conj(c: Value, v: Value) -> Value { c.conj(v) }
 pub fn pop(c: Value) -> (Value, Value) { c.pop() }
 pub fn peek(c: &Value) -> &Value { c.peek() }
 pub fn nth(c: &Value, idx: u32) -> &Value { c.nth(idx) }
-pub fn mth(c: &Value, idx: i32) -> &Value { unimplemented!() } // modular nth
+pub fn nth_set(c: Value, idx: u32, v: Value) -> Value { c.nth_set(idx, v) }
+pub fn swap_idx(c: Value, i: u32, j: u32) -> Value { c.swap_idx(i, j) }
+pub fn mth(c: &Value, idx: i32) -> &Value { c.mth(idx) } // modular nth
 pub fn assoc(c: Value, k: Value, v: Value) -> Value { c.assoc(k, v) }
 pub fn dissoc(c: Value, k: &Value) -> Value { c.dissoc(k) }
 pub fn contains(c: &Value, k: &Value) -> bool { c.contains(k) }
@@ -120,7 +127,8 @@ pub fn modulus(x: Value, y: Value) -> Value { x.modulus(y) }
 pub fn shl(x: Value, shift: u32) -> Value { x << shift }
 pub fn shr(x: Value, shift: u32) -> Value { x >> shift }
 
-pub fn read(source: &str) -> Result<Value, String> { source.parse() }
+pub fn read(source: &str) -> Value { source.parse().unwrap() }
+pub fn read_or_err(source: &str) -> Result<Value, String> { source.parse() }
 
 pub fn vector()   -> Value { vector::new_value() }
 pub fn list()     -> Value { list::new_value() }
@@ -153,10 +161,10 @@ pub fn is_symbol(v: &Value) -> bool { unimplemented!() }
 pub fn is_string(v: &Value) -> bool { unimplemented!() }
 pub fn is_boolean(v: &Value) -> bool { unimplemented!() }
 pub fn is_char(v: &Value) -> bool { unimplemented!() }
-pub fn is_vector(v: &Value) -> bool { unimplemented!() }
-pub fn is_list(v: &Value) -> bool { unimplemented!() }
-pub fn is_map(v: &Value) -> bool { unimplemented!() }
-pub fn is_set(v: &Value) -> bool { unimplemented!() }
+pub fn is_vector(v: &Value) -> bool { v.is_vector() }
+pub fn is_list(v: &Value) -> bool { v.is_list() }
+pub fn is_map(v: &Value) -> bool { v.is_map() }
+pub fn is_set(v: &Value) -> bool { v.is_set() }
 pub fn is_hash_map(v: &Value) -> bool { unimplemented!() }
 pub fn is_hash_set(v: &Value) -> bool { unimplemented!() }
 pub fn is_sort_map(v: &Value) -> bool { unimplemented!() }
@@ -221,4 +229,5 @@ pub fn alts() { unimplemented!() }
 pub fn promise_chan() -> u64 { unimplemented!() }
 pub fn offer(c: u64, v: Value) { unimplemented!() }
 pub fn poll(c: u64) -> Value { unimplemented!() }
+
 

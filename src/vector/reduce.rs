@@ -9,23 +9,9 @@ use super::*;
 use super::tear_down::{NodeRecord, NodeRecordStack, BLANK};
 use transduce::{inges, last_call, Process};
 
-pub struct Conjer {
-    pub acc: Value,
-}
-impl Process for Conjer {
-    fn inges(&mut self, _stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
-        use std::mem;
-        let x = mem::replace(&mut self.acc, Handle::nil().value());
-        let y = x.conj(v.split_out());
-        mem::replace(&mut self.acc, y);
-        None
-    }
-    fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value {
-        use std::mem;
-        mem::replace(&mut self.acc, Handle::nil().value())
-    }
-}
-
+// Traverse all elements in the tree (in order), feeding them into
+// a stateful aggregation process one by one.
+// Uses an explicit stack of records (not recursion).
 pub fn reduce(prism: AnchoredLine, process_stack: &mut [Box<dyn Process>]) -> Value {
     let guide = Guide::hydrate(prism);
     let count = guide.count;
@@ -148,4 +134,20 @@ pub fn child_record(top: &mut NodeRecord, last_tree_index: u32, s: Segment, last
     r
 }
 
+pub struct Conjer {
+    pub acc: Value,
+}
+impl Process for Conjer {
+    fn inges(&mut self, _stack: &mut [Box<dyn Process>], v: &Value) -> Option<Value> {
+        use std::mem;
+        let x = mem::replace(&mut self.acc, Handle::nil().value());
+        let y = x.conj(v.split_out());
+        mem::replace(&mut self.acc, y);
+        None
+    }
+    fn last_call(&mut self, _stack: &mut [Box<dyn Process>]) -> Value {
+        use std::mem;
+        mem::replace(&mut self.acc, Handle::nil().value())
+    }
+}
 

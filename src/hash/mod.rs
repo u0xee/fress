@@ -11,13 +11,13 @@ use memory::AnchoredRange;
 
 pub fn hash_64(x: u64, byte_count: u32) -> u32 {
     let y = x << 8 | (byte_count as u64);
-    let (a, b) = hash_raw_256(x, x, x, y);
+    let (a, b) = hash_raw_256(x, 0, 0, y);
     a as u32
 }
 
 pub fn hash_128(x: u64, y: u64, byte_count: u32) -> u32 {
     let z = y << 8 | (byte_count as u64);
-    let (a, b) = hash_raw_256(x, y, x, z);
+    let (a, b) = hash_raw_256(x, y, 0, z);
     a as u32
 }
 
@@ -37,6 +37,7 @@ pub fn hash_raw_256(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64
     a = a.wrapping_add(PI[0]); b = b.wrapping_add(PI[1]);
     c = c.wrapping_add(PI[2]); d = d.wrapping_add(PI[3]);
     let (e, f, g, h) = mix(a, b, c, d);
+    //let (e, f, g, h) = mix(e, f, g, h);
     end(e, f, g, h)
 }
 
@@ -60,14 +61,13 @@ pub fn mix(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64, u64, u6
 
 // ShortEnd from Bob Jenkins' SpookyHash.
 pub fn end(mut a: u64, mut b: u64, mut c: u64, mut d: u64) -> (u64, u64) {
-    /*
     d ^= c;  c = c.rotate_left(15);  d = d.wrapping_add(c);
     a ^= d;  d = d.rotate_left(52);  a = a.wrapping_add(d);
     b ^= a;  a = a.rotate_left(26);  b = b.wrapping_add(a);
     c ^= b;  b = b.rotate_left(51);  c = c.wrapping_add(b);
     d ^= c;  c = c.rotate_left(28);  d = d.wrapping_add(c);
     a ^= d;  d = d.rotate_left(9);   a = a.wrapping_add(d);
-    */
+
     b ^= a;  a = a.rotate_left(47);  b = b.wrapping_add(a);
     c ^= b;  b = b.rotate_left(54);  c = c.wrapping_add(b);
     d ^= c;  c = c.rotate_left(32);  d = d.wrapping_add(c);

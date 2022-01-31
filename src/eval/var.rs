@@ -65,7 +65,7 @@ use eval::get_statics;
 
 pub fn init() {
     let fress_ns = {
-        let m = read(MAPPED).unwrap();
+        let m = read(MAPPED);
         hash_map().assoc(get_statics().key_mapped.split_out(), m)
             .assoc(get_statics().key_alias.split_out(), hash_map())
     };
@@ -73,7 +73,7 @@ pub fn init() {
     let curr_ns = get_statics().sym_fress.split_out();
     CURR_NS.with(|c| c.set(curr_ns._consume().unit()));
     NAMES.with(|c| c.set(names._consume().unit()));
-    VARS.with(|c| c.set(read(INIT_VARS).unwrap()._consume().unit()));
+    VARS.with(|c| c.set(read(INIT_VARS)._consume().unit()));
 }
 
 pub fn get_curr_ns() -> &'static Value {

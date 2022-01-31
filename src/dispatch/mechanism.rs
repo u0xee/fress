@@ -20,7 +20,7 @@ pub fn prism<T: Dispatch>() -> Unit {
 }
 
 pub fn as_dispatch<'a>(prism: &'a Unit) -> &'a dyn Dispatch {
-    let ptr_and_table: [Unit; 2] = [Unit::from(0), *prism];
+    let ptr_and_table: [Unit; 2] = [Unit::from(1), *prism]; // TODO
     unsafe {
         transmute::<[Unit; 2], &dyn Dispatch>(ptr_and_table)
     }
@@ -36,6 +36,7 @@ pub fn logical_value(prism: AnchoredLine) -> AnchoredLine {
     mechanism::as_dispatch(&p).logical_value(prism)
 }
 
+#[inline(never)]
 pub fn tear_down(prism: AnchoredLine) {
     let p = prism[0];
     mechanism::as_dispatch(&p).tear_down(prism);

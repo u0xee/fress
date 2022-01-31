@@ -66,6 +66,7 @@ pub fn cycle_n(mut y: u64, n: u32) -> u64 {
 
 // From Allen B. Downey's "Generating Pseudo-random Floating-Point Values", 2007
 // http://allendowney.com/research/rand/downey07randfloat.pdf
+// See also https://en.wikipedia.org/wiki/Random_number_generation#Uniform_distributions
 pub fn uniform_f64(exp_seed: u64, mantissa_seed: u64) -> f64 {
     let o = exponent_offset(exp_seed) as u64;
     let exp = 0x3FEu64 /*exponent for 1/2*/ - o;
@@ -301,4 +302,138 @@ pub const PI: [u64; 512] = [
 ];
 
 
-// rand int
+
+// unbiased method, bitmask resampling
+// get bits for range, if x < range done. else try again
+
+// From Numerical Recipes by William H. Press, Chapter 7
+// High quality Ran = (A1(C3) + A3) ^ B1
+#[derive(Debug)]
+pub struct Rng {
+    u: u64,
+    v: u64,
+    w: u64
+}
+impl Rng {
+    pub fn new(seed: u64) -> Self {
+        let v = 4101842887655102017;
+        let mut r = Rng { u: seed ^ v, v, w: 1 };
+        r.next_u64();
+        r.v = r.u;
+        r.next_u64();
+        r.w = r.v;
+        r.next_u64();
+        r
+    }
+    fn cycle_u(u: u64) -> u64 {
+        u.wrapping_mul(2862933555777941757).wrapping_add(7046029254386353087)
+    }
+    fn cycle_v(mut v: u64) -> u64 {
+        v ^= v >> 17;
+        v ^= v << 31;
+        v ^= v >> 8;
+        v
+    }
+    fn output_u(mut u: u64) -> u64 {
+        u ^= u << 21;
+        u ^= u >> 35;
+        u ^= u << 4;
+        u
+    }
+    fn cycle_w(w: u64) -> u64 {
+        (w & 0xffff_ffff).wrapping_mul(4294957665).wrapping_add(w >> 32)
+    }
+    pub fn next_u64(&mut self) -> u64 {
+        self.u = Self::cycle_u(self.u);
+        self.v = Self::cycle_v(self.v);
+        self.w = Self::cycle_w(self.w);
+        Self::output_u(self.u).wrapping_add(self.v) ^ self.w
+    }
+    pub fn next_f64(&mut self) -> f64 { uniform_u64_to_f64(self.next_u64()) }
+}
+
+#[derive(Debug)]
+pub struct RngQuick {
+    x: u64
+}
+impl RngQuick {
+    pub fn new(seed: u64) -> Self {
+        let mut r = RngQuick { x: seed ^ 4101842887655102017 };
+        RngQuick { x: r.next_u64() }
+    }
+    fn cycle(mut x: u64) -> u64 {
+        x ^= x >> 11;
+        x ^= x << 29;
+        x ^= x >> 14;
+        x
+    }
+    pub fn next_u64(&mut self) -> u64 {
+        self.x = Self::cycle(self.x);
+        self.x.wrapping_mul(2685821657736338717)
+    }
+    pub fn next_f64(&mut self) -> f64 { uniform_u64_to_f64(self.next_u64()) }
+    pub fn iter(&mut self) -> impl Iterator<Item=u64> + '_ {
+        RngQuickIter { r: self }
+    }
+    pub fn iter_u8s(&mut self) -> impl Iterator<Item=u8> + '_ {
+        self.iter().flat_map(|x| x.to_le_bytes())
+    }
+    pub fn fill_u8s(&mut self, buf: &mut [u8]) {
+        for (i, b) in self.iter_u8s().take(buf.len()).enumerate() {
+            buf[i] = b;
+        }
+    }
+    pub fn next_between(&mut self, start: u32, end: u32) -> u32 {
+        assert!(start < end);
+        let range = end - start;
+        let n = self.next_u64() as u32;
+        let m = (n as u64 * range as u64) >> 32;
+        let ret = m as u32 + start;
+        assert!(start <= ret && ret < end);
+        ret
+    }
+    pub fn shuffle<T>(&mut self, s: &mut [T]) {
+        for i in 0..s.len() {
+            let target = self.next_between(i as u32, s.len() as u32) as usize;
+            s.swap(i, target);
+        }
+    }
+}
+pub struct RngQuickIter<'a> { r: &'a mut RngQuick }
+impl<'a> Iterator for RngQuickIter<'a> {
+    type Item = u64;
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(self.r.next_u64())
+    }
+}
+pub fn uniform_u64_to_f64(x: u64) -> f64 {
+    5.42101086242752217e-20f64 * x as f64
+}
+
+// Indexed Random Hash = A2(D3(A7(C1(i))))
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn check1() {
+        let mut rng = RngQuick::new(42);
+        let mut r: Vec<u32> = (0..20).collect();
+        rng.shuffle(&mut r);
+        dbg!(&r);
+        let mut cnts = [0u64; 17];
+        for x in rng.iter().map(|x| ((x as u32) as u64 * 17u64) >> 32).take(20000) {
+            cnts[x as usize] += 1;
+        }
+        dbg!(cnts);
+        let q: Vec<u8> = rng.iter().take(7).flat_map(|x| x.to_le_bytes()).collect();
+        dbg!(&q);
+        let y: Vec<u64> = rng.iter().take(7).collect();
+        let z: Vec<u64> = rng.iter().take(7).collect();
+        dbg!(&y);
+        dbg!(&z);
+        let dummy: [u64; 7] = [0, 0, 0, 0, 0, 0, 0];
+        //assert_eq!((&y[..], &z[..]), (&dummy[..], &dummy[..]));
+    }
+}
+

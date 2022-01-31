@@ -8,6 +8,7 @@
 use super::*;
 use vector::tear_down::{NodeRecord, NodeRecordStack, BLANK};
 
+// Frees any unused memory in the tree by a depth first traversal
 pub fn tear_down(prism: AnchoredLine, has_vals: u32) {
     assert_eq!(0, prism.segment().anchor().aliases());
     let guide = Guide::hydrate(prism);

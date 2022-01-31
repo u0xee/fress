@@ -5,7 +5,6 @@ Let this map be your guide on a tour of related work:
 
 image::island.svg[Map,width=100%,align=center,opts=inline]
 
-
 Click on the map to jump to sections like:
 
 * <<Programming Languages>> & <<Complexity>>
@@ -130,7 +129,7 @@ Click on the map to jump to sections like:
 * 1996 <<Treap>>
 
 .Disk
-* 1972 <<B-tree>>
+* 1970 <<B-tree>>
 * 1979 <<Comer>>
 * 1981 <<Maier>>
 * 1981 <<Culik>>

@@ -55,9 +55,9 @@ pub fn append_section(buf: &mut Vec<u8>, sec_id: u8, sec: &[u8]) {
 }
 
 pub fn signatures(ctx: &Context) -> (Value, Vec<u32>, Vec<u32>) {
-    let args_key = read(":args ").unwrap();
-    let ret_key = read(":ret ").unwrap();
-    let type_map = read("{value i32, i32 i32, i64 i64}").unwrap();
+    let args_key = read(":args ");
+    let ret_key = read(":ret ");
+    let type_map = read("{value i32, i32 i32, i64 i64}");
     let mut sigs = vector();
     let mut sig_map = hash_map();
 
@@ -118,7 +118,7 @@ pub fn wasm_signature(type_map: &Value, args: &Value, ret: &Value) -> Value {
 }
 
 pub fn argc_to_wasm_signature(argc: u32) -> Value {
-    let sym_i32 = read("i32 ").unwrap();
+    let sym_i32 = read("i32 ");
     let mut arg_v = vector();
     for i in 0..argc {
         arg_v = arg_v.conj(sym_i32.split_out());
@@ -129,7 +129,7 @@ pub fn argc_to_wasm_signature(argc: u32) -> Value {
 }
 
 pub fn signature_section(sigs: &Value) -> Vec<u8> {
-    let type_map = read("{i32 0x7F, i64 0x7E, f32 0x7D, f64 0x7C}").unwrap();
+    let type_map = read("{i32 0x7F, i64 0x7E, f32 0x7D, f64 0x7C}");
     let mut buf: Vec<u8> = vec![];
     let sig_ct = sigs.count();
     wasm::uleb128(&mut buf, sig_ct as u64);
@@ -163,34 +163,34 @@ pub fn import_section(ctx: &Context, sigs: Vec<u32>) -> Vec<u8> {
     let total_ct = 4 /*memory, table, bases*/ + ctx.import_v.count();
     wasm::uleb128(&mut buf, total_ct as u64);
     {
-        let mem = read("[\"sys\" \"memory\"]").unwrap();
+        let mem = read("[\"sys\" \"memory\"]");
         name_pair_to_buf(&mut buf, &mem);
         buf.push(2u8); // memory
         buf.push(wasm::Type::MIN);
         buf.push(0u8);
 
-        let mem_base = read("[\"sys\" \"memory_base\"]").unwrap();
+        let mem_base = read("[\"sys\" \"memory_base\"]");
         name_pair_to_buf(&mut buf, &mem_base);
         buf.push(3u8); // global
         buf.push(wasm::Type::I32);
         buf.push(wasm::Type::GLOBAL_CONST);
     }
     {
-        let tab = read("[\"sys\" \"table\"]").unwrap();
+        let tab = read("[\"sys\" \"table\"]");
         name_pair_to_buf(&mut buf, &tab);
         buf.push(1u8); // table
         buf.push(wasm::Type::FN_REF);
         buf.push(wasm::Type::MIN);
         buf.push(0u8);
 
-        let tab_base = read("[\"sys\" \"table_base\"]").unwrap();
+        let tab_base = read("[\"sys\" \"table_base\"]");
         name_pair_to_buf(&mut buf, &tab_base);
         buf.push(3u8); // global
         buf.push(wasm::Type::I32);
         buf.push(wasm::Type::GLOBAL_CONST);
     }
     {
-        let name_key = read(":name ").unwrap();
+        let name_key = read(":name ");
         let import_ct = ctx.import_v.count();
         for i in 0..import_ct {
             let name = ctx.import_v.nth(i).get(&name_key);

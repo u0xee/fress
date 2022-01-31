@@ -8,6 +8,9 @@
 extern crate fress;
 use fress::*;
 
+// let repl: &'static str = env!("CARGO_BIN_EXE_repl");
+// repl => .../fress/target/release/repl
+
 #[test]
 fn test_a() {
     assert_eq!(vector().conj(7.into()), vec![7].into());

@@ -150,7 +150,6 @@ impl Distinguish for Integral_ {
     fn eq(&self, prism: AnchoredLine, other: Unit) -> bool {
         let o = other.handle();
         if let Some(o_int) = find_prism(o) {
-            //log!("Integral eq");
             let guide = Guide::hydrate(prism);
             let guide2 = Guide::hydrate(o_int);
             let x = hydrate(guide.root);
@@ -162,7 +161,6 @@ impl Distinguish for Integral_ {
     fn cmp(&self, prism: AnchoredLine, other: Unit) -> Option<Ordering> {
         let o = other.handle();
         if let Some(o_int) = find_prism(o) {
-            //log!("Integral cmp");
             let guide = Guide::hydrate(prism);
             let guide2 = Guide::hydrate(o_int);
             let x = hydrate(guide.root);
@@ -193,7 +191,6 @@ impl Numeral for Integral_ {
     fn inc(&self, prism: AnchoredLine) -> Unit {
         let guide = Guide::hydrate(prism);
         let x = hydrate(guide.root);
-        //log!("integral inc, {}", x);
         let s = guide.segment();
         if s.is_aliased() {
             if s.unalias() == 0 {
@@ -209,6 +206,20 @@ impl Numeral for Integral_ {
         unimplemented!()
     }
     fn add(&self, prism: AnchoredLine, other: Unit) -> Unit {
+        let o = other.handle();
+        if let Some(o_int) = find_prism(o) {
+            let guide = Guide::hydrate(prism);
+            let guide2 = Guide::hydrate(o_int);
+            let x = hydrate(guide.root);
+            let y = hydrate(guide2.root);
+            guide.segment().unit().handle().retire();
+            guide2.segment().unit().handle().retire();
+            if let Some(sum) = x.checked_add(y) {
+                return new(sum)
+            } else {
+                panic!("Overflowing add of {} + {}", x, y);
+            }
+        }
         unimplemented!()
     }
     fn subtract(&self, prism: AnchoredLine, other: Unit) -> Unit {
@@ -251,5 +262,21 @@ pub fn big_int(negate: bool, m: &[u8]) -> Handle {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    #[test]
+    fn read() {
+        assert_eq!("0xFF".parse::<Value>(), Ok(255.into()));
+        assert_eq!("2r101".parse::<Value>(), Ok(5.into()));
+    }
+    #[test]
+    fn increment() {
+        let v: Value = 5.into();
+        assert_eq!(v.inc(), 6.into());
+    }
+    #[test]
+    fn add() {
+        let v: Value = 1.into();
+        let w: Value = 2.into();
+        //assert_eq!(v + w, 3.into());
+    }
 }
+

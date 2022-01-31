@@ -8,6 +8,31 @@
 use super::*;
 use super::assoc::{address, chunk_at};
 
+// Look up a key based on the hash, traverses down the tree
+// using the digits of the hash and the bitfields at each node
+// to guide the search
+pub fn get(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Option<AnchoredLine> {
+    let guide = Guide::hydrate(prism);
+    let p = Pop::from(guide.root[-1]);
+    let chunk = hash & MASK;
+    if p.has_child(chunk) {
+        let idx = p.children_below(chunk) << 1;
+        get_child(guide.root.offset(idx as i32), k, hash, has_vals)
+    } else if p.has_key(chunk) {
+        let child_count = p.child_count();
+        let idx = p.keys_below(chunk);
+        let root_idx = address(child_count, idx, has_vals);
+        let k2 = guide.root.get(root_idx as i32);
+        if k.handle().eq(k2.handle()) {
+            Some(guide.root.offset(root_idx as i32))
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
 pub fn get_child(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
                  -> Option<AnchoredLine> {
     for chunk_idx in 1..MAX_LEVELS {
@@ -39,27 +64,5 @@ pub fn get_child(mut child_pop: AnchoredLine, k: Unit, hash: u32, has_vals: u32)
         }
     }
     None
-}
-
-pub fn get(prism: AnchoredLine, k: Unit, hash: u32, has_vals: u32) -> Option<AnchoredLine> {
-    let guide = Guide::hydrate(prism);
-    let p = Pop::from(guide.root[-1]);
-    let chunk = hash & MASK;
-    if p.has_child(chunk) {
-        let idx = p.children_below(chunk) << 1;
-        get_child(guide.root.offset(idx as i32), k, hash, has_vals)
-    } else if p.has_key(chunk) {
-        let child_count = p.child_count();
-        let idx = p.keys_below(chunk);
-        let root_idx = address(child_count, idx, has_vals);
-        let k2 = guide.root.get(root_idx as i32);
-        if k.handle().eq(k2.handle()) {
-            Some(guide.root.offset(root_idx as i32))
-        } else {
-            None
-        }
-    } else {
-        None
-    }
 }
 

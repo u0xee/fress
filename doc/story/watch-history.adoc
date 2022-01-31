@@ -3,6 +3,12 @@
 :yt: https://youtu.be/
 // « » … † ¶ ↑ → ∞
 
+[.big]
+|===
+| <<2021>> | <<2020>> | <<2019>>
+|===
+
+[#2021]
 == 2021
 
 * Steve *Jobs* (1992) _Speaking to MIT School of Management students._
@@ -209,9 +215,9 @@
   [.provenance]#Joyent#
   https://youtu.be/ieGWbo94geE[watch^]
 
-* Peter *Alvaro* (2019)
+* Peter *Alvaro* (2018)
   _Three Things I Wish I Knew When I Started Designing Languages._
-  [.provenance]#QCon San Francisco 2018#
+  [.provenance]#QCon San Francisco#
   https://youtu.be/oa0qq75i9oc[watch^]
 
 * Irene *Zhang* (2021)
@@ -1833,6 +1839,7 @@
   [.provenance]#lambda days#
   https://youtu.be/f3rP3JRq7Mw[watch^]
 
+[#2020]
 == 2020
 
 * Rui *Ueyama* (2017) _lld: A Fast, Simple and Portable Linker._
@@ -2222,6 +2229,7 @@
 * Rich *Hickey* (2012) _The Database as a Value._
   [.provenance]#GOTO Chicago#
   https://youtu.be/V6DKjEbdYos[watch^]
+//https://youtu.be/EKdV1IgAaFc alternate
 
 * Markus *Völter* (2018) _Build your own Language: Why and How?_
   [.provenance]#GOTO Amsterdam#
@@ -2770,8 +2778,10 @@
   [.provenance]#PLISS#
   https://youtu.be/sDD1R36-4po[watch^]
 
-* Ben *Titzer* (2019) _A Little on V8 and WebAssembly._
-  [.provenance]#PLISS#
+* Ben *Titzer* (2016) _A Little on V8 and WebAssembly._
+  [.provenance]#VMSS#
+  https://youtu.be/BRNxM8szTPA[watch^]
+  [.provenance]#PLISS# (2019)
   https://youtu.be/-JmB9MuTc38[watch^]
 
 * Tony *Hosking* (2019) _In Search of Verified On-The-Fly
@@ -3096,9 +3106,11 @@
   [.provenance]#ICFP#
   https://youtu.be/V7IxiMjKWZM[watch^]
 
-* Colin *Eberhardt* (2020) _Build your own WebAssembly Compiler._
+* Colin *Eberhardt* (2019) _Build your own WebAssembly Compiler._
   [.provenance]#QCon San Francisco#
   https://youtu.be/OsGnMm59wb4[watch^]
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/awe7swqFOOw[watch^]
 
 * Ahmon *Dancy* (2015)
   _Escape from the Heap: Low-Level Programming in Common Lisp._
@@ -4007,9 +4019,1187 @@
   [.provenance]#WebAssembly SF#
   https://youtu.be/2EDH-TxSo6U[watch^]
 
-// Feb 7
 * Rafał *Pocztarski* (2020) _JS, Node, Deno -- WebAssembly WASM WASI._
   [.provenance]#WarsawJS#
   https://youtu.be/kuscscuKTa8[watch^]
 
+* Charles *Nutter* (2010) _Expressive Languages for the JVM._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/WlsD2FiBIbg[watch^]
+
+* Andy *Wingo* (2019) _Guile 3: Faster programs via just-in-time compilation._
+  [.provenance]#FOSDEM#
+  https://youtu.be/fWv4AlVbJZ8[watch^]
+
+* Andrew *Bennett* (2014) _Creating, Coding and Compiling a Compiler with LLVM._
+  [.provenance]#/dev/world/2013#
+  https://youtu.be/L6Gz1hJZECg[watch^]
+
+* Frej *Drejhammar* (2014) _BEAMJIT: A Just-in-Time Compiling Runtime for Erlang._
+  [.provenance]#Erlang User Conf#
+  https://vimeo.com/99714181[vimeo^],
+  https://youtu.be/GoJQD2aqR-g[watch^]
+
+* Paul *Biggar* (2009) _Compiling and Optimizing Scripting Languages._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/kKySEUrP7LA[watch^]
+
+* Dirk *Eddelbuettel* and Romain *Francois* (2010)
+  _Integrating R with C++: Rcpp, RInside, and RProtobuf._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/UZkaZhsOfT4[watch^]
+
+* Conal *Elliott* (2007) _Tangible Functional Programming:
+  A Modern Marriage of Usability and Composability._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/faJ8N0giqzw[watch^]
+
+* Miško *Hevery* (2008) _The Clean Code Talks: Unit Testing._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/wEhu57pih5w[watch^]
+
+* Gilad *Bracha* (2010) _Newspeak: A Principled Dynamic Language._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/Z7dct6QG0cE[watch^]
+
+* Andrei *Alexandrescu* (2010) _Three Cool Things About D._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/RlVpPstLPEc[watch^]
+
+* Charles *Nutter* (2010) _Mirah: an Expressive JVM Language._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/BWM2iVgeQKM[watch^]
+
+* Gabe *Zichermann* (2010) _Fun is the Future: Mastering Gamification._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/6O1gNVeaE4g[watch^]
+
+* Thomas *Wouters* (2007) _Advanced Python (or understanding Python)_
+  [.provenance]#Google TechTalks#
+  https://youtu.be/E_kZDvwofHY[watch^]
+
+* Tom *Faulhaber* (2012) _Lisp, Functional Programming, and the State of Flow._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/i43SU6wGGIc[watch^]
+
+* Irina *Shestak* (2019) _From Electron, to Wasm, to Rust (Aaand Back to Electron)_
+  [.provenance]#RustConf#
+  https://youtu.be/lLzFJenzBng[watch^]
+
+* Erik *Huelsmann* (2013) _Common Lisp Applications on the JVM._
+  [.provenance]#European Common Lisp Meeting#
+  https://youtu.be/G0U1qPvbsHQ[watch^]
+
+* Per *Bothner* (2013) _High-performance Scripting with Kawa._
+  [.provenance]#JavaOne#
+  https://youtu.be/GouDYhrOc2g[watch^]
+
+* Jamie *Brandon* (2018) _Julia as a platform for language development._
+  [.provenance]#JuliaCon#
+  https://youtu.be/BBUrQId0HhQ[watch^]
+
+* Adi *Levin* (2019) _Using WebAssembly with WebGL for interactive 3D apps._
+  [.provenance]#Full Stack Tech Radar Day#
+  https://youtu.be/80WT7gdsX6s[watch^]
+
+* Paul *Tagliamonte* (2013) _Hy: Lisp in Python._
+  [.provenance]#Boston Python#
+  https://youtu.be/ulekCWvDFVI[watch^]
+
+* Herb *Sutter* (2019)
+  _De-fragmenting C++: Making Exceptions and RTTI More Affordable and Usable._
+  [.provenance]#CppCon#
+  https://youtu.be/ARYP83yNAWk[watch^]
+
+* Alan *Kay* (2012) _Rethinking Design, Risk and Software._
+  [.provenance]#COFES#
+  https://youtu.be/QboI_1WJUlM[watch^]
+
+* Shelley *Vohr* (2018) _Asynchrony: Under the Hood._
+  [.provenance]#JSConf EU#
+  https://youtu.be/SrNQS8J67zc[watch^]
+
+* Philip *Roberts* (2014) _What the heck is the event loop anyway?_
+  [.provenance]#JSConf EU#
+  https://youtu.be/8aGhZQkoFbQ[watch^]
+
+* Rob *Pike* (2014) _Opening Keynote._
+  [.provenance]#GopherCon#
+  https://youtu.be/VoS7DsT1rdM[watch^]
+
+* Dan *Rubenstein* (2019)
+  _Time, Clocks and the Ordering of Events in a Distributed System._
+  [.provenance]#Papers We Love#
+  https://youtu.be/hK6m6WBk-d8[watch^]
+
+* Benedek *Gagyi* (2018) _WebAssembly as Cross-Platform Architecture._
+  [.provenance]#YGLF Kyiv#
+  https://youtu.be/B9NinVtHTCM[watch^]
+
+* Milica *Mihajlija* (2019) _WebAssembly: Binary in Plain English._
+  [.provenance]#WebCamp Zagreb#
+  https://youtu.be/9yp3MNfTWio[watch^]
+
+* Noritada *Shimizu* (2017)
+  _WebAssembly: now web is a new compiler target architecture._
+  [.provenance]#FOSS Asia#
+  https://youtu.be/VAcyLP9RdfQ[watch^]
+
+* Ed *Charbeneau* (2019) _WebAssembly: Into the WASM'verse._
+  [.provenance]#Stir Trek#
+  https://youtu.be/P8rSdOXiyEc[watch^]
+
+* Parashuram *Narasimhan* (2012) _IndexedDB._
+  [.provenance]#San Francisco HTML User Group#
+  https://youtu.be/XlSizz7JHBg[watch^]
+
+* Gabbi *Fisher* (2019) _WebAssembly: Bringing Go to the Browser and Beyond!_
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/TzeEgdee3fc[watch^]
+
+* Derek *Slager* (2015) _ClojureScript for Skeptics._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/gsffg5xxFQI[watch^]
+
+* Christian *Johansen* (2018) _ClojureScript -- It's not just the language._
+  [.provenance]#NDC Oslo#
+  https://youtu.be/1YqnaUXcSl8[watch^]
+
+* David *Nolan* (2016) _clojure.spec._
+  [.provenance]#React Vienna#
+  https://youtu.be/Rlu-X5AqWXw[watch^]
+
+* Stuart *Sierra* (2017) _Homoiconicity: It Is What It Is._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/o7zyGMcav3c[watch^]
+
+* Viral B. *Shah* and Shashi *Gowda* (2016)
+  _Julia: A Lisp for Fast Number Crunching._
+  [.provenance]#Functional Conf Bangalore#
+  https://youtu.be/DIDydnUms2c[watch^]
+
+* Axel *Naumann* (2012)
+  _Introducing cling, a C++ Interpreter Based on clang/LLVM._
+  [.provenance]#Google TechTalks#
+  https://youtu.be/f9Xfh8pv3Fs[watch^]
+
+* Ryan *Dahl* (2018) _10 Things I Regret About Node.js._
+  [.provenance]#JSConf EU#
+  https://youtu.be/M3BM9TB-8yA[watch^]
+
+* Jim *Duey* (2018) _Typing a LISP._
+  [.provenance]#LambdaConf#
+  https://youtu.be/D5DsRzijK0k[watch^]
+
+* Ludovic *Courtès* (2016)
+  _GNU Guix: The Functional GNU/Linux Distro That's a Scheme Library._
+  [.provenance]#Scheme Workshop#
+  https://youtu.be/WOolAnW9a6Y[watch^]
+
+* Carl Friedrich *Bolz* (2016)
+  _PyPy's Approach to Implementing Dynamic Languages Using a Tracing JIT Compiler._
+  [.provenance]#Microsoft Research#
+  https://youtu.be/LlyaJYVq-Fo[watch^]
+
+* Stanley *Seibert* (2015) _Accelerating Python with the Numba JIT Compiler._
+  [.provenance]#SciPy#
+  https://youtu.be/eYIPEDnp5C4[watch^]
+
+* Takashi *Kokubun* (2017) _LLVM-based JIT compiler for MRI._
+  [.provenance]#RubyConf New Orleans#
+  https://youtu.be/Ti4a7SXGWig[watch^]
+
+* Arthur *O'Dwyer* (2019) _Back to Basics: Smart Pointers._
+  [.provenance]#CppCon#
+  https://youtu.be/xGDLkt-jBJ4[watch^]
+
+* Matthew *Page* (2019)
+  _How to JIT: Writing a Python JIT from scratch in pure Python._
+  [.provenance]#PyCon Cleveland#
+  https://youtu.be/2BB39q6cqPQ[watch^]
+
+* Antonio *Cuni* (2019) _How to write a JIT compiler in 30 minutes._
+  [.provenance]#EuroPython Basel#
+  https://youtu.be/DKns_rH8rrg[watch^]
+
+* Sven *Sauleau* (2019) _WebAssembly: The Next Big Platform._
+  [.provenance]#WebAssembly Munich Meetup#
+  https://youtu.be/pDwFejqWgH4[watch^]
+
+* Surma *Surma* and Deepti *Gandluri* (2019) _WebAssembly for Web Developers._
+  [.provenance]#Google I/O#
+  https://youtu.be/njt-Qzw0mVY[watch^]
+
+* David *Beazley* (2019) _Lambda Calculus from the Ground Up._
+  [.provenance]#PyCon Cleveland#
+  https://youtu.be/pkCLMl0e_0k[watch^]
+
+* Tom *Greenaway* (2019) _Modern Web Game Development._
+  [.provenance]#Google I/O#
+  https://youtu.be/aVTYxHL45SA[watch^]
+
+* Damien *Buhl* (2018) _C++ Everywhere with WebAssembly._
+  [.provenance]#CppCon#
+  https://youtu.be/QPJPS-Jjb-g[watch^]
+
+* Cédric *Champeau* (2016) _Deep dive into the Groovy compiler._
+  [.provenance]#Greach Conf#
+  https://youtu.be/fVPv-_9rFyM[watch^]
+
+* Mike *Fikes* (2019) _Expeditious Code via Inference._
+  [.provenance]#Clojure/north#
+  https://youtu.be/tPnCtXrwvIw[watch^]
+
+* Ben *Saks* (2019) _Back to Basics: Understanding Value Categories._
+  [.provenance]#CppCon#
+  https://youtu.be/XS2JddPq7GQ[watch^]
+
+* Scott *Wlaschin* (2017) _F# for C# programmers._
+  [.provenance]#NDC Oslo#
+  https://youtu.be/KPa8Yw_Navk[watch^]
+
+* Lin *Clark* (2019) _WebAssembly Interface Types: Interoperate with All the Things!_
+  [.provenance]#Mozilla Hacks#
+  https://youtu.be/Qn_4F3foB3Q[watch^]
+
+* Miro *Cupak* (2017) _Exploring Java 9 with REPL._
+  [.provenance]#JavaOne#
+  https://youtu.be/0RegttLUXeU[watch^]
+
+* Robert *Field* (2015) _JShell: An Interactive Shell for the Java Platform._
+  [.provenance]#Devoxx Belgium#
+  https://youtu.be/jziVaht480w[watch^]
+
+* Stefan *Behnel* (2018) _Cython to speed up your Python code._
+  [.provenance]#EuroPython Edinburgh#
+  https://youtu.be/4xpeJYWvbuU[watch^]
+
+* Caroline *Tice* (2011)
+  _Combining Embedded and Interactive Python in a Debugger: A Case Study._
+  [.provenance]#EuroPython#
+  https://youtu.be/a6oHHGIV3r4[watch^]
+
+* Rich *Hickey* (2012) _The Language of the System._
+  [.provenance]#Clojure Exchange#
+  https://youtu.be/c5p7dEZ73vA[watch^]
+
+* Rich *Hickey* (2012) _Interview._
+  [.provenance]#GOTO Copenhagen#
+  https://youtu.be/sf-lrFERkvs[watch^]
+
+* Michael *Kennedy* and Anna *Herlihy* (2018)
+  _Compiling Python through PyLLVM and MongoDB for Data Scientists._
+  [.provenance]#Talk Python To Me#
+  https://youtu.be/dtyyB3YItK8[watch^]
+
+* Anna *Herlihy* (2015) _PyLLVM: A compiler from Python to LLVM-IR._
+  [.provenance]#PyGotham#
+  https://youtu.be/_HdfEqSqI2M[watch^]
+
+* David *Beazley* (2018) _Reinventing the Parser Generator._
+  [.provenance]#PyCon Cleveland#
+  https://youtu.be/zJ9z6Ge-vXs[watch^]
+
+* Eduardo *Julian* (2017) _The Lux Programming Language._
+  [.provenance]#Strange Loop#
+  https://youtu.be/T-BZvBWiamU[watch^]
+
+* Veit *Heller* (2019) _Carp -- A Language for the 21st Century._
+  [.provenance]#Curry On London#
+  https://youtu.be/Q1BVfGIhwZI[watch^]
+
+* Veit *Heller* (2018) _Carp -- A Language for the 21st Century._
+  [.provenance]#ClojuTRE#
+  https://youtu.be/BQeG6fXMk28[watch^]
+
+* David *Nolan* (2015) _The Front End Architecture Revolution._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/nDNU2pmuJA8[watch^]
+
+* David *Nolan* (2017) _Idée Fixe._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/lzXHMy4ewtM[watch^]
+
+* David *Nolan* (2017) _A Practical Functional Relational Architecture._
+  [.provenance]#Code Mesh London#
+  https://youtu.be/nbMMywfBXic[watch^]
+
+* Alex *Zinenko*, Mehdi *Amini* and Nicolas *Vasilache* (2019)
+  _Building a Compiler with MLIR._
+  [.provenance]#LLVM European Developers Meeting Brussels#
+  https://youtu.be/cyICUIZ56wQ[watch^]
+
+* Almar *Klein* (2018) _Let's embrace WebAssembly._
+  [.provenance]#EuroPython Edinburgh#
+  https://youtu.be/u2kKxmb9BWs[watch^]
+
+* Bryan *Mills* (2018) _Rethinking Classical Concurrency Patterns._
+  [.provenance]#GopherCon#
+  https://youtu.be/5zXAHh5tJqQ[watch^]
+
+* David *Beazley* (2018) _Die Threads._
+  [.provenance]#EuroPython Edinburgh#
+  https://youtu.be/xOyJiN3yGfU[watch^]
+
+* Without *Boats* (2019) _Zero-Cost Async IO._
+  [.provenance]#Rust Latam Montevideo#
+  https://youtu.be/skos4B5x7qE[watch^]
+
+* Mikhail *Smal* (2019) _Write your own domain specific language with F#._
+  [.provenance]#NDC Oslo#
+  https://youtu.be/NoGyFQ99NgY[watch^]
+
+* Guy *Royse* (2019) _An Introduction to WebAssembly._
+  [.provenance]#Devoxx Belgium#
+  https://youtu.be/vChLD1VytOE[watch^]
+
+* Tobi *Ajila* (2019) _Welcome to LWorld: The current state of value types in Java._
+  [.provenance]#Devoxx Belgium#
+  https://youtu.be/Xf22I16jVyE[watch^]
+
+* Ron *Pressler* (2019)
+  _Project Loom: Helping Write Concurrent Applications on the Java Platform._
+  [.provenance]#Devoxx Belgium#
+  https://youtu.be/lIq-x_iI-kc[watch^]
+
+* Steve *Klabnik* (2019) _Rust's Journey to Async/Await._
+  [.provenance]#QCon New York#
+  https://youtu.be/lJ3NC-R3gSI[watch^]
+
+* Scott *Hanselman* (2014) _Virtual Machines, JavaScript and Assembler._
+  [.provenance]#Fluent San Francisco#
+  https://youtu.be/UzyoT4DziQ4[watch^]
+
+* Hans Elias B. *Josephsen* (2019) _Eir: Infrastructure for working with BEAM code._
+  [.provenance]#Code BEAM STO#
+  https://youtu.be/xSWxlLCfF6s[watch^]
+
+* Steve *Sanderson* (2018) _Blazor, a new framework for browser-based .NET apps._
+  [.provenance]#NDC Minnesota#
+  https://youtu.be/JU-6pAxqAa4[watch^]
+
+* Scott *Wlaschin* (2016) _Understanding parser combinators: a deep dive._
+  [.provenance]#NDC Oslo#
+  https://youtu.be/RDalzi7mhdY[watch^]
+
+* Adam *McCullough* (2017) _Greek Classics: Lambda Calculus for Beginners._
+  [.provenance]#LambdaConf#
+  https://youtu.be/-DPlj75YJR4[watch^]
+
+* David *Graunke* (2016)
+  _An Introduction to Combinator Compilers and Graph Reduction Machines._
+  [.provenance]#Strange Loop#
+  https://youtu.be/GawiQQCn3bk[watch^]
+
+* Joshua *Bloch* (2018) _A Brief, Opinionated History of the API._
+  [.provenance]#QCon New York#
+  https://youtu.be/LzMp6uQbmns[watch^]
+
+* Klaus *Iglberger* (2019) _Back to Basics: Move Semantics._
+  [.provenance]#CppCon#
+  https://youtu.be/St0MNEU5b0o[watch^]
+
+* Brianne *Hillmer* (2016) _Just-in-Time Documentation:
+  Employing Agile Methodology to Create Living Documentation._
+  [.provenance]#Write the Docs Portland#
+  https://youtu.be/FYNAqlQB9U4[watch^]
+
+* Brian *Goetz* (2019) _Java Language Futures._
+  [.provenance]#Devoxx Belgium#
+  https://youtu.be/J6fegDQPgps[watch^]
+
+* Chris *Lattner* and Tatiana *Shpeisman* (2019)
+  _MLIR: Multi-Level Intermediate Representation Compiler Infrastructure._
+  [.provenance]#LLVM European Developers Meeting Brussels#
+  https://youtu.be/qzljG6DKgic[watch^]
+
+* Rob *Ashton* (2019) _Purescript on the BEAM: Typed OTP for greatness._
+  [.provenance]#Code Mesh London#
+  https://youtu.be/Lkh8nNwAEHA[watch^]
+
+* Mey *Beisaron* (2019)
+  _Back to the Future: How 80s Arcade Games Taught me Clojure._
+  [.provenance]#Devoxx Belgium#
+  https://youtu.be/UilS1ctYUP4[watch^]
+
+* Jim *Crossley* (2012) _REPL-Based Development with Immutant._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/P9tfxdcpkCc[watch^]
+
+* Robert *Virding* (2015) _Wherefore art thou LFE?_
+  [.provenance]#ClojuTRE#
+  https://youtu.be/BvCBTpnlqs8[watch^]
+
+* Michael *Gottesman* (2019) _Ownership SSA._
+  [.provenance]#LLVM Dev Meeting#
+  https://youtu.be/qy3iZPHZ88o[watch^]
+
+* Oskar *Wickström* (2018) _Finite-state machines? Your compiler wants in!_
+  [.provenance]#lambda days#
+  https://youtu.be/qwaw3sdkbwM[watch^]
+
+* Igor *Kopestenski* (2019) _IoT Edge Computing with bare-metal Erlang._
+  [.provenance]#Code BEAM Amsterdam#
+  https://youtu.be/pyVus3hGIzE[watch^]
+
+* Jacob *Walker* (2019) _Understanding Allocations: the Stack and the Heap._
+  [.provenance]#GopherCon#
+  https://youtu.be/ZMZpH4yT7M0[watch^]
+
+* Kay *Hayen* (2015) _The Python Compiler._
+  [.provenance]#EuroPython Bilbao#
+  https://youtu.be/a8RRbT4BTEw[watch^]
+
+* Daniel *Spiewak* (2016) _Functional Compilers: From CFG to EXE._
+  [.provenance]#Devoxx#
+  https://youtu.be/uVEBikEMuRQ[watch^]
+
+* Gijs *Stuurman* (2017) _CREPL: Write and run ClojureScript code together._
+  [.provenance]#Dutch Clojure Days#
+  https://youtu.be/kzbnk-zmSN0[watch^]
+
+* Heather *Miller* (2015)
+  _Function-Passing Style: Typed, Distributed Functional Programming._
+  [.provenance]#ScalarConf#
+  https://youtu.be/PwKX02d4N4Q[watch^]
+
+* Chaitanya *Koparkar* (2018)
+  _Gibbon: A Compiler for Recursive Functions on mostly Serialized Data._
+  [.provenance]#ICFP St. Louis#
+  https://youtu.be/E-LRy7YJu3o[watch^]
+
+* Adam *Chlipala* (2015)
+  _Ur: An Optimizing Compiler for a Purely Functional Web Application Language._
+  [.provenance]#ICFP#
+  https://youtu.be/McYhbIubeTc[watch^]
+
+* Raúl *Raja* and Simon *Vergauwen* (2019)
+  _Arrow Meta: Enabling Functional Programming in the Kotlin Compiler._
+  [.provenance]#Lambda World#
+  https://youtu.be/WKR384ZeBgk[watch^]
+
+* Roy *Osherove* (2019) _Lies, Damned Lies, and Metrics._
+  [.provenance]#GOTO Copenhagen#
+  https://youtu.be/goihWvyqRow[watch^]
+
+* Adam *Tornhill* (2019) _Prioritizing Technical Debt as if Time and Money Mattered._
+  [.provenance]#GOTO Copenhagen#
+  https://youtu.be/fl4aZ2KXBsQ[watch^]
+
+* Ian Lance *Taylor* (2019) _Generics in Go._
+  [.provenance]#GopherCon#
+  https://youtu.be/WzgLqE-3IhY[watch^]
+
+* Johan *Brandhorst* (2018) _Get Going with WebAssembly._
+  [.provenance]#LondonGophers#
+  https://youtu.be/iTrx0BbUXI4[watch^]
+
+* Amit *Dev* (2019) _Introduction to Functional Programming in Rust._
+  [.provenance]#YOW! Lambda Jam#
+  https://youtu.be/9x7W3_KKKeA[watch^]
+
+* Steve *Klabnik* (2019) _How Rust views tradeoffs._
+  [.provenance]#QCon London#
+  https://youtu.be/2ajos-0OWts[watch^]
+
+* Ashley *Williams* (2019)
+  _Rust, WebAssembly, and JavaScript make three: An FFI Story._
+  [.provenance]#QCon New York#
+  https://youtu.be/nvLw_XKlZaU[watch^]
+
+* Lin *Clark*, Pat *Hickey* et al (2019) _Bytecode Alliance Panel Discussion._
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/wlsimp4P6eE[watch^]
+
+* Alon *Zakai* (2014) _Emscripten and asm.js: C++'s role in the modern web._
+  [.provenance]#CppCon#
+  https://youtu.be/JhMlWj4tCDo[watch^]
+
+* Alon *Zakai* (2019) _Pause and Resume WebAssembly with Asyncify._
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/qQOP6jqZqf8[watch^]
+
+* Nidin *Vinayakan* (2018)
+  _WebAssembly in Typescript: Introduction to AssemblyScript._
+  [.provenance]#WebAssembly Meetup Munich#
+  https://youtu.be/jCRjHMB1oDY[watch^]
+
+* Paul *Bone* (2018) _AST to WebAssembly: Writing a code generator._
+  [.provenance]#Compose Melbourne#
+  https://youtu.be/TsCvQEXwX_o[watch^]
+
+* John *Hume* (2015) _Life of a Clojure Expression._
+  [.provenance]#Clojure/West#
+  https://youtu.be/6DaBmz_6y0s[watch^]
+
+* Lin *Clark* (2019) _WebAssembly nanoprocesses:
+  making WebAssembly outside-the-browser secure by default._
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/TF-tXDRAEmg[watch^]
+
+* Alex *Kehayias* (2019) _Progressive WebAssembly Applications._
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/0ySua0-c4jg[watch^]
+
+* Zach *Bloom* (2019) _WebAssembly on the Server._
+  [.provenance]#WebAssembly SF#
+  https://youtu.be/A9SydP1CcZU[watch^]
+
+* Paul *Schoenfelder* (2019) _Lumen: Bringing the BEAM to WebAssembly and beyond._
+  [.provenance]#Code Mesh London#
+  https://youtu.be/PBY8MQ09D9w[watch^]
+
+* Ben *Titzer* and Andreas *Rossberg* (2018) _WebAssembly: What and What Next?_
+  [.provenance]#GOTO Berlin#
+  https://youtu.be/R9wn99Xheq4[watch^]
+
+* Robert *Virding* (2017) _Lisp Machine Flavors for LFE:
+  implementing objects on Erlang/OTP._
+  [.provenance]#Erlang and Elixir Factory#
+  https://youtu.be/AcehOqbwhPk[watch^]
+
+* Robert *Virding* (2016) _LFE -- a lisp flavour on the Erlang VM._
+  [.provenance]#Lambda Days Kraków#
+  https://youtu.be/Br2KY12LB2w[watch^]
+
+* David *Chisnel* (2012) _Implementing Domain Specific Languages with LLVM._
+  [.provenance]#FOSDEM#
+  https://youtu.be/1Hwnagof1Wo[watch^]
+
+* Kai *Nacke* (2019) _Roll your own compiler with LLVM: Easy IR generation._
+  [.provenance]#FOSDEM#
+  https://youtu.be/6-oLkJQBQhs[watch^]
+
+* Phil *Trelford* (2015) _Write your own compiler in 24 hours._
+  [.provenance]#Bristech Conf#
+  https://youtu.be/iOEHgBL_GmA[watch^]
+
+* Ariel *Ortiz* (2017) _The Dawn of Lisp, or: How to Write Eval and Apply in Clojure._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/2wPS_6oSD6k[watch^]
+
+[#2019]
+== 2019
+
+* Jared *Smith* (2016) _How to Write Secure JavaScript Applications._
+  [.provenance]#Nodevember#
+  https://youtu.be/BeKMbTSm7x8[watch^]
+
+* Zeno *Rocha* (2016) _Web APIs You (Probably) Didn't Know Existed._
+  [.provenance]#NEJS Conf#
+  https://youtu.be/EZpdEljk5dY[watch^]
+
+* Christophe *Grand* (2018) _They'll have to pry the REPL from our cold dead hands!_
+  [.provenance]#clojureD#
+  https://youtu.be/lOCcuy1AUzc[watch^]
+
+* Rich *Hickey*, Werner *Schuster*, Kresten Krab *Thorup*, Simon *Marlow*
+  and Robert *Virding* (2013) _Panel Debate: Runtime Evolution, the Future of VMs._
+  [.provenance]#Code Mesh London#
+  https://youtu.be/k-q3cTa21DQ[watch^]
+
+* Christian *Schafmeister* (2018)
+  _Lessons Learned Implementing Common Lisp with LLVM._
+  [.provenance]#LLVM Dev Meeting#
+  https://youtu.be/mbdXeRBbgDM[watch^]
+
+* Tom *Toor* (2019) _Why Build Solutions with Fulcro._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/PMbGhgVf9Do[watch^]
+
+* Avi *Flax* (2019) _(Architecture) Diagrams as Data._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/HmHOYkTVxIg[watch^]
+
+* Wilker *Silva* (2019) _The Maximal Graph._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/IS3i3DTUnAI[watch^]
+
+* Pier Federico *Gherardini* and Ben *Kamphaus* (2019)
+  _Clojure Where it Counts: Tidying Data Science Workflows._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/ulhr_50bevk[watch^]
+
+* Chris *Oakman* (2019) _Probabilistic Record Linkage of Hospital Patients._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/rGKEOMUtJfE[watch^]
+
+* J.D. *Hollis* (2019) _Datomic with Terraform._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/H3ya6YpeIvw[watch^]
+
+* Alexander *Oloo* (2019) _From Lazy Lisper to Confident Clojurist._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/U99UHYUW63k[watch^]
+
+* Lucas *Cavalcanti* (2019) _Complex Made Bearable._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/ct5aWqhHARs[watch^]
+
+* Gene *Kim* (2019) _My Love Letter to Clojure: And a Datomic Experience Report._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/5mbp3SEha38[watch^]
+
+* David *Nolan* (2019) _Are we there yet? Remix._
+  [.provenance]#ReactiveConf#
+  https://youtu.be/ynhhuVQL3Y0[watch^]
+
+* Ariel *Ortiz* (2019) _The Hitchhikers Guide to Multiparadigm Programming._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/GvJm-eJ5o18[watch^]
+
+* Derek *Troy-West* (2019) _Follow the Data: Product Development in Clojure._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/MnvtPzEH-d8[watch^]
+
+* Dennis *Heihoff* (2019) _The Embodied Runtime._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/0GAdjZQAp4E[watch^]
+
+* Ulrich *Schaechtle* (2019) _Inference QL: AI for data engineers in Clojure._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/h4kwko6mFQs[watch^]
+
+* Alex *Miller* (2019) _Composable Tools._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/7CM7Ef-dPWQ[watch^]
+
+* Thomas *Gebert* and Nick *Misturak* (2019) _Distributed Hash Tables, Video and Fun!_
+  [.provenance]#Clojure Conj#
+  https://youtu.be/A5Y4HcTp-Ks[watch^]
+
+* Eno *Compton* and Tyler *van Hensbergen* (2019)
+  _Goodbye YAML: Infrastructure as Code in Clojure._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/TbDmupZyuXk[watch^]
+
+* Matthew *Flatt* (2019) _A Racket Perspective on Research, Education and Production._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/LN0qG-i1iT0[watch^]
+
+* Alexander *Yakushev* (2019) _A New Age of JVM Garbage Collectors._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/k4vkd0ahWjQ[watch^]
+
+* Chris *Nuernberger* (2019) _Extending Clojure with Python._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/vQPW16_jixs[watch^]
+
+* Michael *Feathers* (2018) _Unconditional Code._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/AnZ0uTOerUI[watch^]
+
+* Stuart *Halloway* (2010) _Simplicity Ain't Easy._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/cidchWg74Y4[watch^]
+
+* Gil *Tene* (2012)
+  _Understanding Java Garbage Collection and what you can do about it._
+  [.provenance]#SpringOne#
+  https://youtu.be/we_enrM7TSY[watch^]
+
+* Alex *Engelberg* and Derek *Slager* (2018) _Every Clojure Talk Ever._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/jlPaby7suOc[watch^]
+
+* Ray *McDermott*, Mike *Fikes* and Mia (2019) _Discussion._
+  [.provenance]#Apropos Clojure Oct 31#
+  https://youtu.be/i57dZBnxaVw[watch^]
+
+* Rick *Houlihan* (2018) _Advanced Design Patterns for DynamoDB._
+  [.provenance]#AWS re:Invent#
+  https://youtu.be/HaEPXoXVf2k[watch^]
+
+* Joe *Armstrong* (2018) _Computer Science -- A Guide for the Perplexed._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/rmueBVrLKcY[watch^]
+
+* Daniel *Stenberg* (2019) _HTTP/3 -- HTTP over QUIC is the next generation._
+  [.provenance]#New Relic#
+  https://youtu.be/idViw4anA6E[watch^]
+
+* Stephen *Magill* (2019)
+  _Disrupting QA -- Emerging Trends in Code Quality Automation._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/c5kuBQcVChY[watch^]
+
+* Andreas *Hallberg* (2016) _Secure Coding Patterns._
+  [.provenance]#GOTO Amsterdam#
+  https://youtu.be/oqd9bxy5Hvc[watch^]
+
+* Stuart *Halloway* (2013) _Narcissistic Design._
+  [.provenance]#Reaktor Dev Day#
+  https://youtu.be/LEZv-kQUSi4[watch^]
+
+* Dan *North* (2017) _Beyond Developer._
+  [.provenance]#GOTO Copenhagen#
+  https://youtu.be/wYEk0y8LYfg[watch^]
+
+* Dan *North* (2017) _Patterns of Effective Teams._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/lvs7VEsQzKY[watch^]
+
+* Dan *North* (2016) _Software, Faster._
+  [.provenance]#GOTO Amsterdam#
+  https://youtu.be/USc-yLHXNUg[watch^]
+
+* Dan *North* (2013) _Simplicity, The Way of the Unusual Architect._
+  [.provenance]#GOTO Aarhus#
+  https://youtu.be/X2F2uIKCeRs[watch^]
+
+* Dan *North* (2012) _The Browser is Dead._
+  [.provenance]#GOTO Aarhus#
+  https://youtu.be/Bw1dgUS27uE[watch^]
+
+* Dan *North* (2017) _How to Break the Rules._
+  [.provenance]#GOTO Amsterdam#
+  https://youtu.be/hZFShSjAhlQ[watch^]
+
+* Dan *North* (2014) _Kicking the Complexity Habit._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/XqgwHXsQA1g[watch^]
+
+* Adam *Butler* (2017) _DocOps: engineering great documentation._
+  [.provenance]#DevRelCon London#
+  https://youtu.be/AnvqMb1VT40[watch^]
+
+* Jack *Rusher* (2019) _Creative Computation._
+  [.provenance]#ClojuTRE#
+  https://youtu.be/TeXCvh5X5w0[watch^]
+
+* Michael *Nygard* (2013) _Whence Complexity?_
+  [.provenance]#Clojure Conj#
+  https://youtu.be/l_tULSeO9yg[watch^]
+
+* Dan *North* (2016) _Microservices: software that fits in your head._
+  [.provenance]#GOTO Amsterdam#
+  https://youtu.be/4Y0tOi7QWqM[watch^]
+
+* Adam *Tornhill* (2016) _Seven Secrets of Maintainable Codebases._
+  [.provenance]#GOTO Stockholm#
+  https://youtu.be/0oDporwhToQ[watch^]
+
+* Michael *Nygard* (2016) _Stability Patterns and Antipatterns._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/VZePNGQojfA[watch^]
+
+* Chris *Ward* (2016) _Explain Yourself! Documentation for Better Code._
+  [.provenance]#LinuxCon Berlin#
+  https://youtu.be/pubm3spwkog[watch^]
+
+* Michael *Nygard* (2019) _Uncoupling._
+  [.provenance]#DevOpsDays#
+  https://youtu.be/69ZsszwycPU[watch^]
+
+* Michiel *Borkent* (2019) _clj-kondo: a linter for Clojure code that sparks joy._
+  [.provenance]#ClojuTRE#
+  https://youtu.be/MB3vVREkI7s[watch^]
+
+* Jarppe *Länsiö* (2018) _First 6 years of a life of a Clojure project._
+  [.provenance]#ClojuTRE#
+  https://youtu.be/WtdegIqQbrg[watch^]
+
+* Tommi *Reiman* (2019) _Naked Performance (with Clojure)_
+  [.provenance]#ClojuTRE#
+  https://youtu.be/3SSHjKT3ZmA[watch^]
+
+* Simon *Brown* (2014) _Software Architecture vs Code._
+  [.provenance]#GOTO Amsterdam#
+  https://youtu.be/GAFZcYlO5S0[watch^]
+
+* Nicole *Forsgren* (2015) _DevOps: Next._
+  [.provenance]#GOTO Berlin#
+  https://youtu.be/dMwGfRINpz0[watch^]
+
+* Murat *Erder* (2016) _Continuous Architecture._
+  [.provenance]#GOTO London#
+  https://youtu.be/3xw3a35yLOQ[watch^]
+
+* Michael *Keeling* and Joe *Runde* (2017) _Architecture Decision Records in Action._
+  [.provenance]#Carnegie Mellon#
+  https://youtu.be/41NVge3_cYo[watch^]
+
+* Jonathan *Wolski* (2018) _Using Architecture Decision Records._
+  [.provenance]#VMware Tanzu#
+  https://youtu.be/MQJUWtTM1-E[watch^]
+
+* Andreas *Rueping* (2006) Interview: Agile Documentation._
+  [.provenance]#Software Engineering Radio#
+  https://www.se-radio.net/2006/10/episode-31-agile-documentation/[se-radio.net^],
+  https://youtu.be/k9sthC9hOW0[watch^]
+
+* Birgitta *Boeckeler* (2017) _We're Agile, We Don't Do Documentation._
+  [.provenance]#LeadDev#
+  https://youtu.be/UvI3zlv5oUA[watch^]
+
+* Simon *Brown* (2017) _Visualise, document and explore your software architecture._
+  [.provenance]#NDC London#
+  https://youtu.be/Ym9nhVZs89o[watch^]
+
+* Dan *Saks* (2019) _"New" Features in C._
+  [.provenance]#NDC TechTown#
+  https://youtu.be/ieERUEhs910[watch^]
+
+* Carmen *Andoh* (2017) _The Why of Go._
+  [.provenance]#QCon San Francisco#
+  https://youtu.be/bmZNaUcwBt4[watch^]
+
+* Owen *Synge* (2019) _Why would a Python programmer learn Rust when there are no jobs in it._
+  [.provenance]#MiniDebConf Hamburg#
+  https://youtu.be/IYLf8lUqR40[watch^]
+
+* Dan *Allen* (2019) _Antora: Documentation Sites for Software Teams._
+  [.provenance]#Devoxx#
+  https://youtu.be/BAJ8F7yQz64[watch^]
+
+* Alexandra *White* (2018)
+  _How to tear down existing documentation and rewrite docs that actually work._
+  [.provenance]#Write the Docs Prague#
+  https://youtu.be/u119GkGSYII[watch^]
+
+* Jon *Skeet* (2018) _Dates and times aren't that hard, honestly!_
+  [.provenance]#NDC Oslo#
+  https://youtu.be/64X8rCy1jSA[watch^]
+
+* Brett *Slatkin* (2015) _How to Be More Effective with Functions._
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/WjJUPxKB164[watch^]
+
+* Brett *Slatkin* (2016) _Refactoring Python: Why and how to restructure your code._
+  [.provenance]#PyCon Portland#
+  https://youtu.be/D_6ybDcU5gc[watch^]
+
+* Greg *Ward* (2015) _How to Write Reusable Code._
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/r9cnHO15YgU[watch^]
+
+* Jake *VanderPlas* (2015) _Losing your Loops: Fast Numerical Computing with NumPy._
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/EEUXKG97YRw[watch^]
+
+* Richard *Feldman* (2019) _Why Isn't Functional Programming the Norm?_
+  [.provenance]#ClojuTRE#
+  https://youtu.be/QyJZzq0v7Z4[watch^]
+
+* Evan *Goer* (2013) _Thinking of Documentation as Code._
+  [.provenance]#YUIConf#
+  https://youtu.be/mEvvc80ZYU8[watch^]
+
+* Peter *Hilton* (2017) _Documentation for software developers._
+  [.provenance]#I TAKE Unconf#
+  https://youtu.be/o25QpI0NDIg[watch^]
+
+* Jay *Kreps* (2019) _Keynote._
+  [.provenance]#Kafka Summit San Francisco#
+  https://youtu.be/4QoCbhsQeyE[watch^]
+
+* Gregory *Koberger* (2015)
+  _A Developers Approach to Documentation: From Passive to Dynamic._
+  [.provenance]#Write the Docs#
+  https://youtu.be/5lw8RFy3YNA[watch^]
+
+* Ben *Hall* (2017) _The Art of Documentation and Readme.md for Open Source Projects._
+  [.provenance]#KubeCon and CloudNativeCon#
+  https://youtu.be/-EaJEnFhwjs[watch^]
+
+* Daniel D. *Beck* (2016) _Write the Readable README._
+  [.provenance]#Write the Docs Portland#
+  https://youtu.be/2dAK42B7qtw[watch^]
+
+* James *Cash* (2019) _Crawling Inside the Tauntaun._
+  [.provenance]#Clojure/north#
+  https://youtu.be/uTxmI5y47l4[watch^]
+
+* Jon *Pither* (2019) _The Crux of Bitemporality._
+  [.provenance]#Clojure/north#
+  https://youtu.be/3Stja6YUB94[watch^]
+
+* Martin *Klepsch* (2019) _cljdoc._
+  [.provenance]#Clojure/north#
+  https://youtu.be/8klBWIwYfsY[watch^]
+
+* Tommi *Reiman* (2019) _Reitit, the Ancient Art of Routing._
+  [.provenance]#Clojure/north#
+  https://youtu.be/cSntRGAjPiM[watch^]
+
+* Alex *Hudek* (2019)
+  _Lessons Learned Creating a Successful Machine Learning Startup with Clojure._
+  [.provenance]#Clojure/north#
+  https://youtu.be/u-4FiFpkPlQ[watch^]
+
+* Rafal *Dittwald* (2019) _Composing Applications._
+  [.provenance]#Clojure/north#
+  https://youtu.be/7HpI7d3-hpo[watch^]
+
+* Thomas *Getgood* (2019) _Residential Programming without Mutable State._
+  [.provenance]#Clojure/north#
+  https://youtu.be/Kgw9fblSOx4[watch^]
+
+* Jimmy *Miller* (2019) _Meander: Declarative Explorations at the Limits of FP._
+  [.provenance]#Strange Loop#
+  https://youtu.be/9fhnJpCgtUw[watch^]
+
+* Joe *Ross* (2019) _Why do tree ensembles work?_
+  [.provenance]#Strange Loop#
+  https://youtu.be/QK8svz49DMA[watch^]
+
+* Star *Simpson* (2019) _Building Personable Machines._
+  [.provenance]#Papers We Love#
+  https://youtu.be/0wj8hm-LZqQ[watch^]
+
+* Jeff *Bezanson* (2019) _What's Bad About Julia._
+  [.provenance]#JuliaCon Baltimore#
+  https://youtu.be/TPuJsgyu87U[watch^]
+
+* Heather *Miller* (2019) _Keynote._
+  [.provenance]#JuliaCon Baltimore#
+  https://youtu.be/b_743P8XuvA[watch^]
+
+* Emery *Berger* (2019) _Performance Matters._
+  [.provenance]#Strange Loop#
+  https://youtu.be/r-TLSBdHe1A[watch^]
+
+* Jay *Parlar* (2019) _Finding bugs without running or even looking at code._
+  [.provenance]#Strange Loop#
+  https://youtu.be/FvNRlE4E9QQ[watch^]
+
+* Vlad *Kozin* (2019) _&num;lang wishful thinking._
+  [.provenance]#Strange Loop#
+  https://youtu.be/yU-HUb8Xykg[watch^]
+
+* Hannah *Howard* (2019) _How We Tell Stories in Code._
+  [.provenance]#Strange Loop#
+  https://youtu.be/QZbzD2Wc_dQ[watch^]
+
+* Bobby *Powers* (2019) _Compacting the Uncompactable._
+  [.provenance]#Strange Loop#
+  https://youtu.be/c1UBJbfR-H0[watch^]
+
+* Dave *Yarwood* (2019) _Alda's dynamic relationship with Clojure._
+  [.provenance]#Strange Loop#
+  https://youtu.be/6hUihVWdgW0[watch^]
+
+* Felix *Klock* (2015) _Rust: A type system you didn't know you wanted._
+  [.provenance]#Curry On Prague#
+  https://youtu.be/Q7lQCgnNWU0[watch^]
+
+* Simon *Brown* (2016) _Visualize, Document and Explore your Software Architecture._
+  [.provenance]#GOTO London#
+  https://youtu.be/0o9_zjZeJuE[watch^]
+
+* Corey *Haines* (2015) _Fun with the Lambda Calculus._
+  [.provenance]#GOTO Chicago#
+  https://youtu.be/QPqoFCHpLF4[watch^]
+
+* Matthias *Felleisen* (2015) _The Racket Manifesto._
+  [.provenance]#RacketCon St Louis#
+  https://youtu.be/JnczIyPXGfc[watch^]
+
+* Guido *van Rossum* (2015) _Type Hints._
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/2wDvzy6Hgxg[watch^]
+
+* Mark *Seemann* (2016) _Functional Architecture: The pits of success._
+  [.provenance]#NDC Sydney#
+  https://youtu.be/US8QG9I1XW0[watch^]
+
+* Dave *Cheney* (2019) _Two Go Programs, Three Different Profiling Techniques._
+  [.provenance]#GopherCon#
+  https://youtu.be/nok0aYiGiYA[watch^]
+
+* Maxime *Gréau* and Dan *Allen* (2015) _Write in AsciiDoc, Publish Everywhere!_
+  [.provenance]#Devoxx#
+  https://youtu.be/kyGJEVEjfAs[watch^]
+
+* Stefan *Karpinski* (2019) _The Unreasonable Effectiveness of Multiple Dispatch._
+  [.provenance]#JuliaCon Baltimore#
+  https://youtu.be/kc9HwsxE1OY[watch^]
+
+* Jessica *Kerr* (2015) _Elixir Should Take Over the World._
+  [.provenance]#Elixir Conf Austin#
+  https://youtu.be/X25xOhntr6s[watch^]
+
+* Will *Leinweber* (2016) _Introducing the Crystal Programming Language._
+  [.provenance]#Ruby on Ales#
+  https://youtu.be/5QjvGuL4Opo[watch^]
+
+* Mark *Ranallo* (2016) _Writing CLI applications in Crystal._
+  [.provenance]#Full Stack Talks#
+  https://youtu.be/Tpw1vcxw290[watch^]
+
+* Garrett *Smith* (2015) _The Functional Tao of Bash._
+  [.provenance]#Code Mesh London#
+  https://youtu.be/yD2ekOEP9sU[watch^]
+
+* Mark *Stoodley* (2019) _JIT and AOT in the JVM._
+  [.provenance]#Java#
+  https://youtu.be/gx8DVVFPkcQ[watch^]
+
+* Ben *Brinckerhoff* (2019) _Effect ive Clojure._
+  [.provenance]#Den of Clojure#
+  https://youtu.be/IZlt6hH8YiA[watch^]
+
+* Ambrose *Bonnaire-Sergeant* (2017) _Tool Assisted spec Development._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/kcZVkvO1Dpo[watch^]
+
+* Zach *Tellman* (2014) _Predictably Fast Clojure._
+  [.provenance]#Clojure/West#
+  https://youtu.be/iQwQXVM6oiY[watch^]
+
+* Tom *Crayford* (2015) _Performance and Lies._
+  [.provenance]#EuroClojure Barcelona#
+  https://youtu.be/0tUrbf6Uzu8[watch^]
+
+* Rich *Hickey* (2010) _Interview._
+  [.provenance]#Software Engineering Radio#
+  https://www.se-radio.net/2010/03/episode-158-rich-hickey-on-clojure/[se-radio.net^],
+  https://youtu.be/TFnBYijSqvg[watch^]
+
+* Robert *Balicki* (2019) _Building WebAssembly Apps in Rust using Smithy._
+  [.provenance]#RustNYC#
+  https://youtu.be/3Z5JpQMpN7Q[watch^]
+
+* David *Nolen* (2012) _Jelly Stains! Thoughts on JavaScript, LISP and Play._
+  [.provenance]#JSConf Arizona#
+  https://youtu.be/AnzMEdC2FDk[watch^]
+
+* Bodil *Stokke* (2013) _Build your own Lisp for Great Justice._
+  [.provenance]#FooCafe#
+  https://youtu.be/DHubfS8E--o[watch^]
+
+* Stu *Halloway* (2013) _Clojure in 10 big ideas._
+  [.provenance]#RuPy Budapest#
+  https://youtu.be/noiGVQoyYHw[watch^]
+
+* Laurens *Van Houtven* (2016) _Using Clojure with C APIs for crypto and more._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/Lf-M1ZH6KME[watch^]
+
+* Daniel *Higginbotham* (2016) _Parallel Programming, Fork Join, and Reducers._
+  [.provenance]#Clojure/West#
+  https://youtu.be/eRq5UBx6cbA[watch^]
+
+* Ambrose *Bonnaire-Sergeant* (2014) _Typed Clojure in Practice._
+  [.provenance]#Strange Loop#
+  https://youtu.be/a0gT0syAXsY[watch^]
+
+* Luke *VanderHart* (2015) _Simplicity in Practice._
+  [.provenance]#ClojuTRE#
+  https://youtu.be/2YmmfS5YTQ0[watch^]
+
+* Dave *Fetterman* (2018) _Learning and Teaching Clojure on the job at Amperity._
+  [.provenance]#Clojure Conj#
+  https://youtu.be/QBsjYyg9bLE[watch^]
+
+* Gary *Fredericks* (2015) _Purely Random._
+  [.provenance]#Clojure/West#
+  https://youtu.be/u0t-6lUvXHo[watch^]
+
+* Daniel Solano *Gómez* (2014) _How Clojure Works: Understanding the Clojure Runtime._
+  [.provenance]#Clojure/West#
+  https://youtu.be/8NUI07y1SlQ[watch^]
+
+* Mark *Engelberg* (2014) _Instaparse._
+  [.provenance]#Clojure/West#
+  https://youtu.be/b2AUW6psVcE[watch^]
+
+* Maxime *Chevalier-Boisvert* (2014) _Refactoring JIT Compilation._
+  [.provenance]#DConf#
+  https://youtu.be/FGgFMZhnXvU[watch^]
+
+* Rebecca *Stambler* (2019) _Go, pls stop breaking my editor._
+  [.provenance]#GopherCon#
+  https://youtu.be/EFJfdWzBHwE[watch^]
+
+* Filippo *Valsorda* (2016) _cgo Safely Taming the Beast._
+  [.provenance]#GopherCon#
+  https://youtu.be/lhMhApWQp2E[watch^]
+
+* Rob *Pike* (2016) _The Design of the Go Assembler._
+  [.provenance]#GopherCon#
+  https://youtu.be/KINIAgRpkDA[watch^]
+
+* Arne *Claus* (2017) _Concurrency Patterns in Go._
+  [.provenance]#GopherCon UK#
+  https://youtu.be/rDRa23k70CU[watch^]
+
+* Keith *Randall* (2016) _Inside the Map Implementation._
+  [.provenance]#GopherCon#
+  https://youtu.be/Tl7mi9QmLns[watch^]
+
+* Joe *Groff* and Chris *Lattner* (2015)
+  _Swift Intermediate Language: A high level IR to complement LLVM._
+  [.provenance]#LLVM Dev Meeting#
+  https://youtu.be/Ntj8ab-5cvE[watch^]
+
+* Dann *Toliver* (2014) _Visualizing Persistent Data Structures._
+  [.provenance]#Strange Loop#
+  https://youtu.be/2XH_q494U3U[watch^]
+
+* Aaron *Patterson* (2016) _How Are Method Calls Formed?_
+  [.provenance]#Mountain West Ruby#
+  https://youtu.be/6Dkjus07d9Y[watch^]
+
+* Christopher *Armstrong* (2015) _Side Effects are a Public API._
+  [.provenance]#Strange Loop#
+  https://youtu.be/D37dc9EoFus[watch^]
+
+* Tom *Eastman* (2015) _Serialization formats are not toys._
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/kjZHjvrAS74[watch^]
+
+* Ryan *Kelly* (2015) _PyPy.js: What? How? Why?_
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/PiBfOFqDIAI[watch^]
+
+* David *Beazley* (2015) _Modules and Packages: Live and Let Die!_
+  [.provenance]#PyCon Montréal#
+  https://youtu.be/0oTh1CXRaQ0[watch^]
+
+* Bodil *Stokke* (2018) _Meetings with Remarkable Trees._
+  [.provenance]#ClojuTRE#
+  https://youtu.be/cUx2b_FO8EQ[watch^]
+
+* Scott *Hanselman* (2012) _Scaling Yourself._
+  [.provenance]#GOTO Aarhus#
+  https://youtu.be/FS1mnISoG7U[watch^]
+
+* Joe *Armstrong* (2012) _A Few Improvements to Erlang._
+  [.provenance]#Erlang User Conf Stockholm#
+  https://youtu.be/h8nmzPh5Npg[watch^]
+
+* Melvin *Zhang* (2017) _META II: A Syntax-Oriented Compiler Writing Language._
+  [.provenance]#Papers We Love Singapore#
+  https://youtu.be/L1rwVBLHGiU[watch^]
+
+* Jon *Gjengset* (2018) _Rust at speed--building a fast concurrent database._
+  [.provenance]#Two Sigma#
+  https://youtu.be/s19G6n0UjsM[watch^]
+
+* Colin *Eberhardt* (2018) _WebAssembly and the Death of JavaScript._
+  [.provenance]#JS Monthly London#
+  https://youtu.be/pBYqen3B2gc[watch^]
+
+* Jay *Phelps* (2017) _WebAssembly Demystified._
+  [.provenance]#Jazoon Tech Days#
+  https://youtu.be/6Y3W94_8scw[watch^]
+
+* Clemens *Hammacher* (2018) _Liftoff: V8's new baseline compiler for WebAssembly._
+  [.provenance]#WebAssembly Meetup Munich#
+  https://youtu.be/YCs0ZmElmOs[watch^]
+
+* Max *Bittker* (2019) _Simulating Sand: Building Interactivity with WebAssembly._
+  [.provenance]#JSConf EU#
+  https://youtu.be/-dD-EaZ29hs[watch^]
+
+* Andreas *Haas* (2018) _WebAssembly Disentangled._
+  [.provenance]#WebAssembly Meetup Munich#
+  https://youtu.be/OekKui_QOpU[watch^]
+
+* Carl *Cook* (2017) _When a Microsecond is an Eternity: High Performance Trading Systems in C++._
+  [.provenance]#CppCon#
+  https://youtu.be/NH1Tta7purM[watch^]
+
+// Aug 18
 

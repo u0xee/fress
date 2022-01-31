@@ -8,6 +8,9 @@
 use super::*;
 use vector::eq::{NodeRecord, NodeRecordStack, BLANK, eq_range};
 
+// Compares two trees for equality by traversing them both in tandem.
+// Short circuits if parts of the trees are shared
+// (the two trees had forked from one another and still share components)
 pub fn eq(guide: Guide, o_guide: Guide, has_vals: u32) -> bool {
     if guide.count != o_guide.count { return false }
     if guide.has_hash() && o_guide.has_hash() && guide.hash != o_guide.hash { return false }

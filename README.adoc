@@ -2,19 +2,19 @@
 
 fress is a toolkit for processing information with computers.
 
-* Home page: https://www.fress.io[fress.io]
-** Code docs: https://www.fress.io/fress[fress.io/fress]
+* Code docs: https://www.fress.io/fress[fress.io/fress]
 * Repository: https://github.com/u0xee/fress[github.com/u0xee/fress]
 
 == Welcome, Wayfarer!
 This project is named _fress_ (as in "fresh fruit"). It is software (instructions for a computer) that
-can be used to process information. Visit the home page (listed above) to learn about the project.
+can be used to process information.
 
 == What's here?
 Here in this repository (these project files), you will find:
 
 * Documentation sources in link:/doc[]
-** My thesis source at link:/doc/thesis.adoc[] (better viewed online https://www.fress.io/thesis[fress.io/thesis])
+** Essay on the trees at link:/doc/story/forking-trees.adoc[]
+   (better viewed online https://www.fress.io/story/forking-trees[forking trees])
 ** Images used in documentation in link:/doc/images[]
 * Source code in link:/src[] (code docs viewed online https://www.fress.io/fress[fress.io/fress])
 ** The library root at link:/src/lib.rs[]

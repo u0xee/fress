@@ -1,48 +1,30 @@
-= image:banner-io.svg[fress,260] image:bars.svg[menu,40,float="right",link="#toc"]
-:toc: macro
+= image:logo/shield.svg[fress,47] Hi, I'm Cole!
 :title: fress.io
 
-[.pitch]
-image:tool.svg[tool,50] [small]#a# [big]#tool# [small]#for# [big]#information#
-[.pitch]
-image:people.svg[people,50] [small]#purposely# [big]#understandable#
-[.pitch]
-image:cycle.svg[cycle,50] [small]#whole information# [big]#lifecycle#
+image::face.jpg[picture of my face,width=55%,align="center"]
 
-[cols="3*^",frame=topbot,grid=none]
-|===
-| link:paper[image:book.svg[thesis,60] +++<br>+++ My paper]
-| https://www.fress.in[image:notes.svg[notation,60] +++<br>+++ fress.in]
-| https://www.fress.dev[image:dev.svg[virtual terminal,60] +++<br>+++ fress.dev]
-| White paper | Notation for Information | Programming with fress
-|===
+I'm Cole Frederick. I develop software and I used to teach undergrad computer science,
+algorithms and data structures mostly.
+I've spent way too much time tinkering with off-the-beaten-path software setups,
+and I love learning about language and runtime implementations.
+See some of my writing and gathered resources:
 
-toc::[]
+* For a few years I've been fiddling with some tree data structures in Rust,
+  learning about topics as I go
+** https://www.fress.io/story/forking-trees[Here] is an essay about the trees
+** https://github.com/u0xee/fress[github.com/u0xee/fress^] -- the repository
+** https://www.fress.io/bib[Here] are some papers related to the tree data structures
+   (and some papers that I just thought were interesting)
+** Posts about bug hunts while implementing polymorphism:
+   https://www.fress.io/story/look-the-same[they look the same] and
+   https://www.fress.io/story/panicked-while-panicking[the follow-up]
+* A post about https://www.fress.io/story/seed-to-test[generative testing]
+* A post about the hashing scheme https://www.fress.io/story/k12[Kangaroo Twelve]
+* I love listening to tech talks,
+  https://www.fress.io/story/watch-history[here] is a list of talks I've heard recently
+* Humorous anecdotes:
+  https://www.fress.io/story/fly-in-my-coffee[fly in my coffee],
+  and https://www.fress.io/story/raining-hair[raining hair]
 
-== Introduction
-
-IMPORTANT: This site is under construction. The thesis is the main writing focus right now.
-
-fress is a simple system for wielding information.
-
-See getting started video! Reading the thesis.
-
-== Audience
-fress is intended for use by a wide array of people, with or without prior programming experience.
-
-== Scope
-This project consists of a set of recipes for the computer.
-These recipes together form a system for processing information.
-
-== Navigation
-* https://www.fress.io[fress.io] -- home page
-** https://www.fress.io/paper[fress.io/paper] -- my paper
-** https://www.fress.io/fress[fress.io/fress] -- code docs
-* https://www.fress.in[fress.in] -- edn fressian home page
-* https://www.fress.dev[fress.dev] -- developer home page
-* https://github.com/u0xee/fress[github.com/u0xee/fress] -- repository
-
-
-
-// Github, Youtube
+Find me on https://twitter.com/csp_frederick[twitter^]
 

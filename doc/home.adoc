@@ -11,20 +11,20 @@ See some of my writing and gathered resources:
 
 * For a few years I've been fiddling with some tree data structures in Rust,
   learning about topics as I go
-** https://www.fress.io/story/forking-trees[Here] is an essay about the trees
-** https://github.com/u0xee/fress[github.com/u0xee/fress^] -- the repository
-** https://www.fress.io/bib[Here] are some papers related to the tree data structures
+** Here is write-up about the link:story/forking-trees[trees]
+** The https://github.com/u0xee/fress[repository^]
+** Here are some link:bib[papers] relevant to the tree data structures
    (and some papers that I just thought were interesting)
 ** Posts about bug hunts while implementing polymorphism:
-   https://www.fress.io/story/look-the-same[they look the same] and
-   https://www.fress.io/story/panicked-while-panicking[the follow-up]
-* A post about https://www.fress.io/story/seed-to-test[generative testing]
-* A post about the hashing scheme https://www.fress.io/story/k12[Kangaroo Twelve]
-* I love listening to tech talks,
-  https://www.fress.io/story/watch-history[here] is a list of talks I've heard recently
+   link:story/look-the-same[they look the same] and the
+   link:story/panicked-while-panicking[follow-up]
+* A post about link:story/seed-to-test[generative testing]
+* A post about the hashing scheme link:story/k12[kangaroo twelve]
+* I love listening to tech talks; here is a
+  link:story/watch-history[list of talks] I've heard recently
 * Humorous anecdotes:
-  https://www.fress.io/story/fly-in-my-coffee[fly in my coffee],
-  and https://www.fress.io/story/raining-hair[raining hair]
+  link:story/fly-in-my-coffee[fly in my coffee],
+  and link:story/raining-hair[raining hair]
 
 Find me on https://twitter.com/csp_frederick[twitter^]
 

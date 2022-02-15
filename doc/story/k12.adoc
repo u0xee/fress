@@ -69,6 +69,8 @@ let d = [c[4] ^ c[1].rotate_left(1),
          c[3] ^ c[0].rotate_left(1)];
 ----
 
+---
+
 Loading from offsets defined by `PI` achieve the lane permutation
 operation π:
 
@@ -88,6 +90,8 @@ const PI: [usize; 25] = [
 ];
 ----
 
+---
+
 Rotating by offsets defined in `RHO` is the operation ρ:
 
 .Rho ρ
@@ -103,6 +107,8 @@ const RHO: [u32; 25] = [
     18,  2, 61, 56, 14,
 ];
 ----
+
+---
 
 And the operation χ applied within each row:
 
@@ -260,7 +266,7 @@ state[rateInBytes-1] ^= 0x80;
 This logic comes from the reference implementation, which supports
 messages of arbitrary *bit* length. For SHA-3, it is well defined to hash
 a 7-bit message, for instance. The padding scheme places a single `1`
-bit after the last message bit, and another `1` bit at the end.
+bit after the last message bit, and another `1` bit at the very end of the buffer.
 `delimitedSuffix` is a single byte that holds the final (0-7) bits of
 a message, and the delimiting `1` bit. 
 
@@ -269,8 +275,14 @@ and the sponge has 8 bits until it's full. For example, SHA-256 operates
 on 136 bytes at a time, so a message of 135 bytes and 7 bits would
 trigger this condition. Since it has 7 bits, the top bit is set
 in `delimitedSuffix`, the first `1` bit of padding. Where will the
-second `1` bit go? The sponge is now exactly full, so we have to
-perform a permutation before adding in the final `1` bit.
+second `1` bit go? The sponge is now exactly full (there's not room for
+even one more bit), so we have to
+perform a permutation before adding in the final `1` bit:
+
+[source, rust]
+----
+state[rateInBytes-1] ^= 0x80;
+----
 
 The author notes that the tests pass without this `if`. In fact,
 KangarooTwelve is only defined on whole-byte messages, and the delimited suffixes

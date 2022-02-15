@@ -175,8 +175,8 @@ Instead, this code performs string formatting and calls the `panic` entry point,
 which is not expected to ever return, as evidenced by the
 https://www.felixcloutier.com/x86/ud[`ud2`^] instruction or `unreachable`
 that follows the call. The code _unconditionally_ prints a failed assertion
-and halts the program, *regardless* of whether the number is zero or not.
-It doesn't even check.
+and halts the program, regardless of whether the number is zero or not.
+*It doesn't even check.*
 
 We can ask the compiler tool to skip [.acro]#LLVM# optimization passes entirely:
 [source,shell]
@@ -210,7 +210,7 @@ br i1 %_11, label %bb1, label %bb2
 Before optimization passes, the code tests and branches.
 After optimization, only one branch remains, the other has been pruned.
 Why would an optimization get rid of a test?
-Because *it assumed it already knew the answer*.
+Because it *assumed it already knew the answer*.
 It's time to look at the Rust code.
 
 == Why it happens

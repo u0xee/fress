@@ -6,6 +6,7 @@
 // You must not remove this notice, or any other, from this software.
 
 pub mod keccak;
+pub mod spooky;
 use random::PI;
 use memory::AnchoredRange;
 

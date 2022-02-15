@@ -409,10 +409,10 @@ down and reclaiming their memory.
 
 .Mutual exclusion, readers-writers, semaphore
 Code that has one of these trees in hand, has the absolute promise
-that the exact bit configuration of all memory deeply down the tree
-will remain untouched indefinitely.
-This includes the elements in the vector/hashmap. They won't change either.
-And if an element is itself a container, the items inside are also unchanging.
+that *the exact bit configuration of all memory deeply down the tree
+will remain untouched indefinitely.*
+This includes the elements in the vector/hashmap, they won't change either.
+And if an element is itself a container, the items inside it are also unchanging.
 All memory reachable from the root of the tree will remain unchanged.
 Critically, this is not a lock.
 If there are other forks, they are not impeded: if they want to write
@@ -420,7 +420,7 @@ they will move forward without disturbing others.
 Unlike a mutex, nobody is ever locked out.
 It's somewhat like a readers lock: any number of readers can coexist.
 But unlike a readers lock, writers never wait for readers:
-they just more forward without disturbing readers.
+they just move forward without disturbing readers.
 Of course, this is a form of reference counting, and
 also a type of semaphore. The special rule is that if the count is _more_ than
 one, then the memory is effectively read-only. If the count is exactly one,
@@ -767,7 +767,7 @@ This is palatable, and feels more like a hash table than a binary tree.
 === Map implementation
 The implementation is, perhaps unsurprising, all about
 shuffling things around arrays.
-Here is the loop that descends, level by level in order to find
+Here is the loop that descends, level by level, in order to find
 the right place in the tree for a new key to reside:
 
 [source,rust]
@@ -959,7 +959,7 @@ The instructions operate on an implicit stack, much like RPN calculators or Fort
 ----
 
 The design supports a very small, orthogonal language for arbitrary computation.
-The _implementation_ only has facilities to call the three functions seen above,
+The _implementation_ currently only has facilities to call the three functions seen above,
 and so can't do much more than the above example.
 But it shows the core operational activities: a mothership wasm module is
 loaded into a fresh sandbox/runtime by a host, commands fed into the sandbox
@@ -1016,7 +1016,8 @@ checking at the end that the correct sum is computed
 * takes another quarter of the words and removes them from the map
 * and finally drops the map, recovering all heap memory
 
-//image::map-medley-pie.svg[pie chart of map operation proportions,width=70%,align="center"]
+The code for the map (and set) benchmarks is
+https://github.com/u0xee/fress/blob/trunk/examples/map_medley.rs[here^].
 
 This medley of operations gives just one data point about performance, so we should take
 it with a grain of salt. We could argue
@@ -1141,7 +1142,7 @@ Take the map with 400k keys for example. It does 1.2 million operations total:
 and 1.2 million snapshots is 10x the time and 40x the space (as measured by page-faults).
 At the end you have 1.2m hashmaps, each is distinct in memory and each is a distinct
 logical mapping, no two are equal in contents.
-400k of them contain 400k keys, and another 400k contain over 200k keys;
+400k of them contain 400k keys each, and another 400k contain over 200k keys each;
 these are not small maps. And each is ready for high performance reads and writes.
 You can imagine an implementation where a snapshot is a lazily realized view on
 an underlying data source, making them cheap to create but with poor lookup characteristics.
@@ -1149,7 +1150,7 @@ You can also imagine an implementation where a snapshot is fine for reading, but
 writing would spur a large amount of work.
 My tree implementations use no such "tricks".
 Given how much more work it is to create (and later tear down) 1.2m maps than it is
-to perform 1.2m operations _on_ a map, it's kind of amazing it _only_ takes 10 times as long.
+to just perform 1.2m operations _on_ a map, it's kind of amazing it _only_ takes 10 times as long.
 
 More realistically, you often won't care to fork after every single operation, but maybe
 after a few dozen or a few hundred operations. And often the maps will hold only dozens or
@@ -1227,6 +1228,9 @@ Then it:
 * saves that sum to every third position in the vector
 * pops a quarter of the elements out of the vector
 * and finally drops the vector, recovering all heap memory
+
+The code for the vector benchmarks is
+https://github.com/u0xee/fress/blob/trunk/examples/vec_medley.rs[here^].
 
 Again, this medley gives just one data point and so can't be used to draw broad conclusions.
 I wanted to evaluate a default `Vec` and `Vec::with_capacity`
@@ -1336,7 +1340,7 @@ upwards around 50k is actually an extremely gradual slope.
 You can see that shuffled access is not much different until about 50k elements,
 where the times diverge. This is hitting the limits of my cache, and the increased misses
 from randomly bouncing around the vector slow things down.
-Interestingly, the tree vectors keep roughly the same ratio with the shuffled `Vec` even
+Interestingly, the tree vectors keep roughly the same gap with the shuffled `Vec` even
 as they fall out of cache. I would have thought that the trees might be subject to multiple
 cache misses per operation as they traverse down the tree, whereas the `Vec` would only ever
 miss once per op. I expected the gap to widen with size.
@@ -1614,7 +1618,7 @@ At Colorado State (my university!), David Cann and Rodney Oldehoeft wrote:
 <<../bib.adoc#Cann-Oldehoeft,Reference count and copy elimination for parallel
 applicative computing>> (1988). Their method (a part of [.acro]#SISAL#) used
 static analysis to find unneeded reference count operations and could
-"substitude in-place data modifications for copy operations" when appropriate.
+"substitute in-place data modifications for copy operations" when appropriate.
 Adrienne Bloss writes
 <<../bib.adoc#Bloss,Update analysis and the efficient implementation
 of functional aggregates>> (1989) about using static analysis and "trailers"
@@ -1789,13 +1793,23 @@ creating new information without trashing the old,
 prefix tree (trie) access, and incremental hashtable updates.
 
 == Conclusion
+These tree data structures are not a good fit for many situations; many tasks have no
+need for snapshots or forking histories. But they can be a good fit for some layers of
+software, often higher level tasks like coordination or business logic.
+I compared the working principles used by the trees with other concepts like locking,
+garbage collection, and on-disk structures.
+I showed how the trees use a wide branching factor, making traversals a small number of steps.
+I evaluated speed on limited benchmarks showing that for some reasonable situations
+these trees are within the ballpark of normal data structures. And I quantified the costs
+of forking, finding that for ordinary frequencies of snapshots the overhead for keeping history
+is agreeable.
+Finally, I looked back at the origins of these concepts and predecessors of the tree designs,
+and I looked forward to the possibilities I see for applications of these tree implementations.
+
+
 I started this project with a simple question, what would these data structures
 look like in Rust? It's been a journey, and along the way I've had opportunity to deeply
 explore topics like memory and cache, polymorphism, and hash table design.
-In this document I touched on what properties these
-trees provide and when they are useful. I compared and contrasted these designs with
-other relevant technologies, gave detailed explanations of the inner workings of the trees,
-and provided some insight into performance trade offs.
 I've had fun, but this is really only the beginning, as I look forward to building
 systems on top of these data structures. 
 Thank you for your time, and I hope you learned something new!

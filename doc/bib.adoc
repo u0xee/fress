@@ -1,4 +1,4 @@
-== Interesting resources
+== image:logo/shield.svg[fress,47,link="./"] Interesting resources
 :imagesdir: images
 :scholar: https://scholar.google.com/scholar_lookup?author=
 :archive: https://web.archive.org/web/
@@ -1705,6 +1705,7 @@ to be _spent in finding errors in my own programs._"
 | <<bib-w,W>> | <<bib-y,Y>> | <<bib-y,Z>>
 |===
 
+////
 [bibliography]
 == Presentations
 
@@ -1773,4 +1774,5 @@ to be _spent in finding errors in my own programs._"
   [.provenance]#Keynote Address Nov. 7, [.semi]*QCon* San Francisco, Hyatt Regency San Francisco, InfoQ#
   https://www.infoq.com/presentations/Software-Engineering[infoq.com^] •
   https://qconsf.com/sf2012/dl/qcon-sanfran-2012/slides/GlennVanderburg_OpeningKeynoteRealSoftwareEngineering.pdf[slides^]
+////
 
